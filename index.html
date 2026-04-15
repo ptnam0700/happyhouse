@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IELTS Placement Test</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #E8303A;
+    --red-dark: #C0222B;
+    --navy: #1A2744;
+    --navy-light: #243461;
+    --gold: #F5A623;
+    --bg: #F7F6F2;
+    --white: #FFFFFF;
+    --text: #1A2744;
+    --text-muted: #6B7280;
+    --border: #E5E7EB;
+    --success: #10B981;
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(26,39,68,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--navy);
+    padding: 0 2rem;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    font-weight: 700;
+    font-size: 20px;
+  }
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--red);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 800;
+    font-size: 14px;
+  }
+  .header-timer {
+    color: var(--gold);
+    font-weight: 600;
+    font-size: 18px;
+    display: none;
+    align-items: center;
+    gap: 6px;
+  }
+  .header-timer.show { display: flex; }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ===== LANDING PAGE ===== */
+  .landing-hero {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    color: white;
+  }
+  .landing-hero h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+  .landing-hero h1 span { color: var(--gold); }
+  .landing-hero p {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.75);
+    max-width: 560px;
+    margin: 0 auto 2.5rem;
+  }
+
+  .register-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    max-width: 480px;
+    margin: -2rem auto 0;
+    box-shadow: var(--shadow);
+    position: relative;
+    z-index: 10;
+  }
+  .register-card h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+  .register-card p {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+  .form-group {
+    margin-bottom: 1.2rem;
+  }
+  .form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+  .form-group input, .form-group select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus {
+    border-color: var(--red);
+  }
+  .btn-start {
+    width: 100%;
+    padding: 1rem;
+    background: var(--red);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.5px;
+  }
+  .btn-start:hover { background: var(--red-dark); }
+  .btn-start:active { transform: scale(0.98); }
+
+  .test-options {
+    max-width: 860px;
+    margin: 3rem auto;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  @media(max-width: 600px) { .test-options { grid-template-columns: 1fr; } }
+
+  .test-option-card {
+    border-radius: 16px;
+    padding: 2rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 2.5px solid transparent;
+  }
+  .test-option-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+  .test-option-card.full { background: var(--red); color: white; }
+  .test-option-card.mini { background: var(--navy); color: white; }
+  .test-option-card.selected { border-color: var(--gold); }
+  .card-time {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .card-time span { font-size: 1rem; font-weight: 500; opacity: 0.8; }
+  .card-title { font-size: 1.3rem; font-weight: 700; margin: 0.5rem 0; }
+  .card-features { list-style: none; margin-top: 1rem; }
+  .card-features li {
+    font-size: 0.85rem;
+    opacity: 0.85;
+    padding: 3px 0;
+  }
+  .card-features li::before { content: "→ "; }
+
+  /* ===== TEST PAGE ===== */
+  .test-layout {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+  .test-progress-bar-wrap {
+    background: var(--border);
+    border-radius: 999px;
+    height: 6px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+  .test-progress-bar {
+    height: 100%;
+    background: var(--red);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+
+  .section-badge {
+    display: inline-block;
+    background: var(--navy);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .question-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+  }
+  .question-number {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .question-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    line-height: 1.6;
+    color: var(--navy);
+    margin-bottom: 2rem;
+  }
+
+  .audio-player {
+    background: #F0F4FF;
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .audio-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--navy);
+    border: none;
+    cursor: pointer;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .audio-btn:hover { background: var(--red); }
+  .audio-track {
+    flex: 1;
+    height: 4px;
+    background: #CBD5E1;
+    border-radius: 2px;
+    position: relative;
+  }
+  .audio-track-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: var(--navy);
+    border-radius: 2px;
+    width: 0;
+    transition: width 0.1s;
+  }
+  .audio-time {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    min-width: 60px;
+    text-align: right;
+  }
+
+  .options-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .option-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 1rem 1.25rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.15s;
+    background: white;
+  }
+  .option-item:hover { border-color: var(--navy); background: #F8F9FF; }
+  .option-item.selected { border-color: var(--red); background: #FFF5F5; }
+  .option-letter {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .option-item.selected .option-letter { background: var(--red); color: white; }
+  .option-text { font-size: 0.95rem; line-height: 1.5; padding-top: 3px; }
+
+  .test-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .btn-nav {
+    padding: 0.75rem 2rem;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+  }
+  .btn-nav.primary { background: var(--red); color: white; }
+  .btn-nav.primary:hover { background: var(--red-dark); }
+  .btn-nav.secondary { background: white; color: var(--navy); border: 1.5px solid var(--border); }
+  .btn-nav.secondary:hover { border-color: var(--navy); }
+  .btn-nav:disabled { opacity: 0.4; cursor: not-allowed; }
+  .question-counter { font-size: 0.9rem; color: var(--text-muted); }
+
+  /* ===== RESULT PAGE ===== */
+  .result-wrap {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 3rem 1rem;
+    text-align: center;
+  }
+  .result-circle {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: var(--navy);
+    margin: 0 auto 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+  .result-band {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--gold);
+    text-align: center;
+    padding: 0 1rem;
+  }
+  .result-band-label {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin-top: 4px;
+  }
+  .result-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 0.5rem;
+  }
+  .result-subtitle {
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+  }
+  .result-scores {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+  .score-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    box-shadow: 0 2px 8px rgba(26,39,68,0.08);
+  }
+  .score-card-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .score-card-value { font-size: 2rem; font-weight: 700; color: var(--navy); margin: 4px 0; }
+  .score-card-max { font-size: 0.8rem; color: var(--text-muted); }
+  .result-cta {
+    background: var(--navy);
+    color: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  .result-cta h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .result-cta p { font-size: 0.9rem; opacity: 0.8; margin-bottom: 1.25rem; }
+  .btn-contact {
+    display: inline-block;
+    background: var(--red);
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: var(--radius);
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 0.95rem;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-retry {
+    display: inline-block;
+    background: transparent;
+    color: var(--text-muted);
+    padding: 0.75rem 2rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    font-family: inherit;
+    margin-left: 1rem;
+    transition: border-color 0.15s;
+  }
+  .btn-retry:hover { border-color: var(--navy); color: var(--navy); }
+
+  /* ===== SAVING OVERLAY ===== */
+  .saving-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,39,68,0.6);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  .saving-overlay.show { display: flex; }
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Misc */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+  .text-center { text-align: center; }
+
+  .reading-passage {
+    background: #F0F4FF;
+    border-left: 4px solid var(--navy);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 1.25rem 1.5rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--navy);
+    margin-bottom: 1.5rem;
+  }
+
+  .status-msg {
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9rem;
+    border-radius: var(--radius);
+    margin-top: 1rem;
+  }
+  .status-msg.error { background: #FEF2F2; color: #DC2626; }
+  .status-msg.success { background: #F0FDF4; color: #16A34A; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">HH</div>
+    <span>HappyHouse IELTS</span>
+  </div>
+  <div class="header-timer" id="timerDisplay">
+    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="9" stroke-width="2"/><path d="M12 7v5l3 3" stroke-width="2" stroke-linecap="round"/></svg>
+    <span id="timerText">--:--</span>
+  </div>
+</header>
+
+<!-- LOADING OVERLAY -->
+<div class="saving-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <span id="loadingText">Đang tải bài test...</span>
+</div>
+
+<!-- SAVING OVERLAY -->
+<div class="saving-overlay" id="savingOverlay">
+  <div class="spinner"></div>
+  <span>Đang lưu kết quả...</span>
+</div>
+
+<!-- ===== PAGE: LANDING ===== -->
+<div class="page active" id="pageLanding">
+  <div class="landing-hero">
+    <h1>Kiểm tra trình độ<br><span>IELTS</span> của bạn</h1>
+    <p>Bài kiểm tra chuẩn hoá được thiết kế bởi đội ngũ 8.5+ IELTS của HappyHouse</p>
+  </div>
+
+  <div class="register-card">
+    <h2>Thông tin thí sinh</h2>
+    <p>Vui lòng điền thông tin để bắt đầu làm bài</p>
+    <div class="form-group">
+      <label>Họ và tên *</label>
+      <input type="text" id="inputName" placeholder="Nguyễn Văn A">
+    </div>
+    <div class="form-group">
+      <label>Số điện thoại *</label>
+      <input type="tel" id="inputPhone" placeholder="0901234567">
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="inputEmail" placeholder="email@example.com">
+    </div>
+    <div id="registerError" class="status-msg error" style="display:none"></div>
+    <button class="btn-start" onclick="goToTestSelect()">TIẾP THEO →</button>
+  </div>
+
+  <div class="test-options" id="testOptions" style="display:none">
+    <div class="test-option-card full" id="cardFull" onclick="selectTest('full')">
+      <div class="card-time">90 <span>phút</span></div>
+      <div class="card-title">Full Placement Test</div>
+      <ul class="card-features">
+        <li>Ngữ pháp, Nghe, Đọc, Từ vựng</li>
+        <li>95 câu hỏi toàn diện</li>
+        <li>Kết quả chi tiết theo từng kỹ năng</li>
+        <li>Band score IELTS ước tính</li>
+      </ul>
+    </div>
+    <div class="test-option-card mini" id="cardMini" onclick="selectTest('mini')">
+      <div class="card-time">30 <span>phút</span></div>
+      <div class="card-title">Mini Placement Test</div>
+      <ul class="card-features">
+        <li>Ngữ pháp + Từ vựng</li>
+        <li>Đánh giá nhanh trình độ cơ bản</li>
+        <li>Dành cho người mới bắt đầu</li>
+        <li>Gợi ý lộ trình học phù hợp</li>
+      </ul>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:center;text-align:center;padding:0 2rem 3rem;margin-top:-0.5rem">
+    <button id="btnBeginTest" onclick="startTest()"
+      style="display:none;background:var(--red);color:white;border:none;border-radius:12px;padding:1rem 3rem;font-family:inherit;font-size:1.05rem;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:background 0.2s,transform 0.1s"
+      onmouseover="this.style.background='#C0222B'"
+      onmouseout="this.style.background='var(--red)'"
+      onmousedown="this.style.transform='scale(0.97)'"
+      onmouseup="this.style.transform='scale(1)'">
+      BẮT ĐẦU LÀM BÀI →
+    </button>
+  </div>
+</div>
+
+<!-- ===== PAGE: TEST ===== -->
+<div class="page" id="pageTest">
+  <div class="test-layout">
+    <div class="test-progress-bar-wrap">
+      <div class="test-progress-bar" id="progressBar"></div>
+    </div>
+    <div id="questionContainer"></div>
+    <div class="test-nav">
+      <button class="btn-nav secondary" id="btnPrev" onclick="prevQuestion()">← Quay lại</button>
+      <span class="question-counter" id="questionCounter"></span>
+      <button class="btn-nav primary" id="btnNext" onclick="nextQuestion()">Câu tiếp →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: RESULT ===== -->
+<div class="page" id="pageResult">
+  <div class="result-wrap">
+    <div class="result-circle">
+      <div class="result-band" id="resultBand">-</div>
+      <div class="result-band-label">Band IELTS</div>
+    </div>
+    <div class="result-title" id="resultTitle">Kết quả của bạn</div>
+    <div class="result-subtitle" id="resultSubtitle"></div>
+
+    <div class="result-scores" id="resultScores"></div>
+
+    <div class="result-cta">
+      <h3>Bạn muốn cải thiện trình độ?</h3>
+      <p>Tư vấn viên HappyHouse sẽ liên hệ để tư vấn lộ trình học IELTS phù hợp với bạn</p>
+      <button class="btn-contact" onclick="contactHappyHouse()">Đăng ký tư vấn miễn phí</button>
+    </div>
+
+    <button class="btn-retry" onclick="retryTest()">Làm lại bài test</button>
+    <div id="saveStatus" class="status-msg" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+// ==========================================
+// CONFIG - THAY ĐỔI URL NÀY
+// ==========================================
+const CONFIG = {
+  // 1. Tạo Google Apps Script Web App và paste URL vào đây
+  GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxHtOgnjMsX1ytnym_ghTFs1TiH37CGg5N3_k4UFHgbLJRgxoGUSVzzkzRp5pn2YstZxA/exec',
+
+  // 2. Thời gian làm bài (giây)
+  FULL_TIME: 90 * 60,
+  MINI_TIME: 30 * 60,
+};
+
+// ==========================================
+// CẤU TRÚC CÂU HỎI MẪU
+// Khi dùng Google Sheets, dữ liệu này sẽ được load từ Sheets
+// ==========================================
+const SAMPLE_QUESTIONS = [
+  // GRAMMAR
+  {
+    id: 1, section: "grammar", type: "multiple_choice",
+    question: "She ______ to school every day by bus.",
+    options: ["go", "goes", "going", "gone"],
+    correct: "B",
+    level: "A1"
+  },
+  {
+    id: 2, section: "grammar", type: "multiple_choice",
+    question: "Museum of Natural History: Visitors are not ______ to touch the exhibits. Please keep a safe distance from the displays.",
+    options: ["allowed", "advised", "let"],
+    correct: "A",
+    level: "A2"
+  },
+  {
+    id: 3, section: "grammar", type: "fill_blank",
+    question: "If you want to improve your English, you should try to read as much as possible. ______ They use simpler language and are easier to understand than regular fiction.",
+    options: [
+      "Watching movies in English is also a great idea.",
+      "You can start with graded readers, which are books written for language learners.",
+      "You will need a good dictionary to look up new words."
+    ],
+    correct: "B",
+    level: "B1"
+  },
+  {
+    id: 4, section: "grammar", type: "multiple_choice",
+    question: "The library is a quiet place for study. You ______ talk on your phone inside. Please go outside if you need to make a call.",
+    options: ["can't", "don't", "haven't", "shouldn't"],
+    correct: "A",
+    level: "A2"
+  },
+  // READING
+  {
+    id: 5, section: "reading", type: "reading",
+    passage: "Dr. Sarah Mitchell has been studying sleep patterns for over fifteen years. Her latest research shows that many adults are not getting enough quality sleep, and this is affecting their health in serious ways. \"People think they can function normally on five or six hours of sleep, but our bodies need seven to nine hours for proper recovery,\" she explains. Poor sleep doesn't just make us tired - it weakens our immune system, makes it harder to concentrate, and can even lead to weight gain. Dr. Mitchell recommends creating a bedtime routine, avoiding screens for an hour before sleep, and keeping bedrooms cool and dark.",
+    question: "What does Dr. Mitchell believe about people's understanding of sleep?",
+    options: [
+      "Most people know exactly how much sleep they need.",
+      "People understand the connection between sleep and health.",
+      "People incorrectly think they can function well on less sleep than they need.",
+      "People are getting better at following good sleep habits."
+    ],
+    correct: "C",
+    level: "B2"
+  },
+  // VOCABULARY
+  {
+    id: 6, section: "vocabulary", type: "multiple_choice",
+    question: "The scientist made a ______ discovery that changed our understanding of the universe.",
+    options: ["groundbreaking", "ordinary", "subtle", "delayed"],
+    correct: "A",
+    level: "B2"
+  },
+  {
+    id: 7, section: "vocabulary", type: "multiple_choice",
+    question: "Despite the heavy rain, they decided to ______ with their outdoor event.",
+    options: ["proceed", "precede", "recede", "concede"],
+    correct: "A",
+    level: "B1"
+  },
+];
+
+// ==========================================
+// APP STATE
+// ==========================================
+let state = {
+  student: { name: '', phone: '', email: '' },
+  testType: 'full',
+  questions: [],
+  answers: {},
+  currentIndex: 0,
+  startTime: null,
+  timer: null,
+  timeLeft: 0,
+  submitted: false
+};
+
+// ==========================================
+// NAVIGATION
+// ==========================================
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goToTestSelect() {
+  const name = document.getElementById('inputName').value.trim();
+  const phone = document.getElementById('inputPhone').value.trim();
+  const errEl = document.getElementById('registerError');
+
+  if (!name || !phone) {
+    errEl.textContent = 'Vui lòng điền họ tên và số điện thoại';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!/^(0|\+84)[0-9]{8,10}$/.test(phone.replace(/\s/g,''))) {
+    errEl.textContent = 'Số điện thoại không hợp lệ';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  state.student = {
+    name,
+    phone: phone.replace(/\s/g,''),
+    email: document.getElementById('inputEmail').value.trim()
+  };
+  // Show test type selection with animation
+  const opts = document.getElementById('testOptions');
+  opts.style.display = 'grid';
+  opts.style.opacity = '0';
+  opts.style.transform = 'translateY(20px)';
+  opts.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+  setTimeout(() => {
+    opts.style.opacity = '1';
+    opts.style.transform = 'translateY(0)';
+  }, 10);
+  opts.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function selectTest(type) {
+  state.testType = type;
+  document.querySelectorAll('.test-option-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById(type === 'full' ? 'cardFull' : 'cardMini').classList.add('selected');
+  document.getElementById('btnBeginTest').style.display = 'block';
+  document.getElementById('btnBeginTest').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ==========================================
+// LOAD QUESTIONS (từ Google Sheets hoặc sample)
+// ==========================================
+async function loadQuestions() {
+  // Nếu đã cấu hình Google Script URL, load từ đó
+  if (CONFIG.GOOGLE_SCRIPT_URL && !CONFIG.GOOGLE_SCRIPT_URL.includes('YOUR_SCRIPT_ID')) {
+    try {
+      const url = CONFIG.GOOGLE_SCRIPT_URL + '?action=getQuestions&type=' + state.testType;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.questions && data.questions.length > 0) {
+        return data.questions;
+      }
+    } catch(e) {
+      console.warn('Could not load from Google Sheets, using sample questions');
+    }
+  }
+  // Fallback: dùng câu hỏi mẫu
+  return state.testType === 'mini'
+    ? SAMPLE_QUESTIONS.filter(q => ['grammar','vocabulary'].includes(q.section))
+    : SAMPLE_QUESTIONS;
+}
+
+async function startTest() {
+  if (!state.student.name || !state.student.phone) {
+    alert('Vui lòng điền thông tin trước khi bắt đầu!');
+    return;
+  }
+
+  const overlay = document.getElementById('loadingOverlay');
+  const loadingText = document.getElementById('loadingText');
+  overlay.classList.add('show');
+
+  const msgs = ['Đang tải câu hỏi...', 'Đang chuẩn bị bài test...', 'Sắp xong rồi...'];
+  let mi = 0;
+  const msgInterval = setInterval(() => {
+    mi = (mi + 1) % msgs.length;
+    loadingText.textContent = msgs[mi];
+  }, 900);
+
+  try {
+    state.questions = await loadQuestions();
+  } finally {
+    clearInterval(msgInterval);
+    overlay.classList.remove('show');
+  }
+
+  state.answers = {};
+  state.currentIndex = 0;
+  state.startTime = new Date();
+  state.submitted = false;
+  state.timeLeft = state.testType === 'full' ? CONFIG.FULL_TIME : CONFIG.MINI_TIME;
+
+  showPage('pageTest');
+  startTimer();
+  renderQuestion();
+}
+
+// ==========================================
+// TIMER
+// ==========================================
+function startTimer() {
+  const display = document.getElementById('timerDisplay');
+  const text = document.getElementById('timerText');
+  display.classList.add('show');
+
+  clearInterval(state.timer);
+  state.timer = setInterval(() => {
+    state.timeLeft--;
+    const m = Math.floor(state.timeLeft / 60).toString().padStart(2,'0');
+    const s = (state.timeLeft % 60).toString().padStart(2,'0');
+    text.textContent = m + ':' + s;
+    if (state.timeLeft <= 0) {
+      clearInterval(state.timer);
+      submitTest();
+    }
+    if (state.timeLeft <= 300) {
+      text.style.color = '#E8303A';
+    }
+  }, 1000);
+}
+
+// ==========================================
+// RENDER QUESTION
+// ==========================================
+const SECTION_LABELS = {
+  grammar: 'NGỮ PHÁP',
+  listening: 'NGHE HIỂU',
+  reading: 'ĐỌC HIỂU',
+  vocabulary: 'TỪ VỰNG'
+};
+
+function renderQuestion() {
+  const q = state.questions[state.currentIndex];
+  const total = state.questions.length;
+  const answered = Object.keys(state.answers).length;
+
+  // Progress
+  document.getElementById('progressBar').style.width = ((state.currentIndex) / total * 100) + '%';
+  document.getElementById('questionCounter').textContent = `Câu ${state.currentIndex + 1} / ${total}`;
+
+  // Nav buttons
+  document.getElementById('btnPrev').disabled = state.currentIndex === 0;
+  const isLast = state.currentIndex === total - 1;
+  document.getElementById('btnNext').textContent = isLast ? 'Nộp bài ✓' : 'Câu tiếp →';
+  document.getElementById('btnNext').onclick = isLast ? () => confirmSubmit() : () => nextQuestion();
+
+  // Render
+  let html = `<div class="question-card">`;
+  html += `<div class="section-badge">${SECTION_LABELS[q.section] || q.section}</div>`;
+  html += `<div class="question-number">Câu ${state.currentIndex + 1}</div>`;
+
+  if (q.passage) {
+    html += `<div class="reading-passage">${q.passage}</div>`;
+  }
+
+  html += `<div class="question-text">${q.question}</div>`;
+
+  if (q.audio) {
+    html += renderAudio(q.audio, q.id);
+  }
+
+  html += `<ul class="options-list">`;
+  const letters = ['A','B','C','D','E'];
+  q.options.forEach((opt, i) => {
+    const letter = letters[i];
+    const sel = state.answers[q.id] === letter ? 'selected' : '';
+    html += `<li class="option-item ${sel}" onclick="selectAnswer('${q.id}','${letter}',this)">
+      <div class="option-letter">${letter}</div>
+      <div class="option-text">${opt}</div>
+    </li>`;
+  });
+  html += `</ul></div>`;
+
+  document.getElementById('questionContainer').innerHTML = html;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderAudio(src, qid) {
+  return `<div class="audio-player" id="audio_wrap_${qid}">
+    <button class="audio-btn" onclick="toggleAudio('${qid}')">
+      <svg id="audio_icon_${qid}" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+    <div class="audio-track"><div class="audio-track-fill" id="audio_fill_${qid}"></div></div>
+    <span class="audio-time" id="audio_time_${qid}">0:00</span>
+    <audio id="audio_el_${qid}" src="${src}" onended="audioEnded('${qid}')" ontimeupdate="audioUpdate('${qid}')"></audio>
+  </div>`;
+}
+
+let currentAudio = null;
+function toggleAudio(id) {
+  const el = document.getElementById('audio_el_' + id);
+  if (!el) return;
+  if (currentAudio && currentAudio !== el) { currentAudio.pause(); }
+  if (el.paused) { el.play(); currentAudio = el; updateAudioIcon(id, false); }
+  else { el.pause(); updateAudioIcon(id, true); }
+}
+function updateAudioIcon(id, playing) {
+  const icon = document.getElementById('audio_icon_' + id);
+  if (!icon) return;
+  icon.innerHTML = playing
+    ? '<path d="M8 5v14l11-7z"/>'
+    : '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+}
+function audioUpdate(id) {
+  const el = document.getElementById('audio_el_' + id);
+  const fill = document.getElementById('audio_fill_' + id);
+  const time = document.getElementById('audio_time_' + id);
+  if (!el || !fill || !time) return;
+  const pct = el.duration ? (el.currentTime / el.duration * 100) : 0;
+  fill.style.width = pct + '%';
+  const s = Math.floor(el.currentTime);
+  time.textContent = Math.floor(s/60) + ':' + (s%60).toString().padStart(2,'0');
+}
+function audioEnded(id) { updateAudioIcon(id, true); }
+
+function selectAnswer(qid, letter, el) {
+  state.answers[qid] = letter;
+  el.closest('.options-list').querySelectorAll('.option-item').forEach(li => {
+    li.classList.remove('selected');
+    const ltr = li.querySelector('.option-letter');
+    if (ltr) { ltr.style.background = ''; ltr.style.color = ''; }
+  });
+  el.classList.add('selected');
+}
+
+function prevQuestion() {
+  if (state.currentIndex > 0) { state.currentIndex--; renderQuestion(); }
+}
+function nextQuestion() {
+  if (state.currentIndex < state.questions.length - 1) { state.currentIndex++; renderQuestion(); }
+}
+function confirmSubmit() {
+  const unanswered = state.questions.length - Object.keys(state.answers).length;
+  if (unanswered > 0) {
+    if (!confirm(`Bạn còn ${unanswered} câu chưa trả lời. Bạn có chắc muốn nộp bài?`)) return;
+  }
+  submitTest();
+}
+
+// ==========================================
+// SUBMIT & SCORE
+// ==========================================
+function submitTest() {
+  if (state.submitted) return;
+  state.submitted = true;
+  clearInterval(state.timer);
+  document.getElementById('timerDisplay').classList.remove('show');
+
+  const scores = calculateScores();
+  showResults(scores);
+  saveToGoogleSheets(scores);
+}
+
+function calculateScores() {
+  const sections = {};
+  state.questions.forEach(q => {
+    if (!sections[q.section]) sections[q.section] = { correct: 0, total: 0 };
+    sections[q.section].total++;
+    if (state.answers[q.id] === q.correct) sections[q.section].correct++;
+  });
+
+  let totalCorrect = 0, totalQ = 0;
+  Object.values(sections).forEach(s => { totalCorrect += s.correct; totalQ += s.total; });
+
+  const pct = totalQ > 0 ? totalCorrect / totalQ : 0;
+  const bandInfo = getBand(totalCorrect, totalQ);
+  const teacherNote = getTeacherNote(totalCorrect, totalQ);
+
+  return { sections, totalCorrect, totalQ, pct, band: bandInfo.band, bandLevel: bandInfo.level, scaled: bandInfo.scaled, teacherNote };
+}
+
+function getBand(totalCorrect, totalQ) {
+  // Scale score to 30-question equivalent
+  const scaled = totalQ > 0 ? Math.round(totalCorrect / totalQ * 30) : 0;
+
+  if (scaled >= 27) return { band: '6.5 – 7.0', scaled, level: 'advanced' };
+  if (scaled >= 23) return { band: '5.5 – 6.0', scaled, level: 'upper_intermediate' };
+  if (scaled >= 18) return { band: '4.5 – 5.0', scaled, level: 'intermediate' };
+  if (scaled >= 13) return { band: '3.5 – 4.0', scaled, level: 'elementary' };
+  return { band: 'Below 3.5', scaled, level: 'beginner' };
+}
+
+function getTeacherNote(totalCorrect, totalQ) {
+  const scaled = totalQ > 0 ? Math.round(totalCorrect / totalQ * 30) : 0;
+  if (scaled >= 25) return { text: 'Có thể vào lớp IELTS 6.0+', color: '#10B981', icon: '🎯' };
+  if (scaled >= 20) return { text: 'Nên học Pre-IELTS / Foundation', color: '#F5A623', icon: '📘' };
+  return { text: 'Cần củng cố Grammar + Vocabulary cơ bản', color: '#E8303A', icon: '📝' };
+}
+
+function showResults(scores) {
+  showPage('pageResult');
+  document.getElementById('resultBand').textContent = scores.band;
+
+  const levelMessages = {
+    advanced: 'Trình độ cao – Sẵn sàng chinh phục IELTS thực tế',
+    upper_intermediate: 'Trên trung cấp – Mục tiêu IELTS 6.0+',
+    intermediate: 'Trung cấp – Cần phát triển thêm các kỹ năng',
+    elementary: 'Sơ cấp – Cần củng cố kiến thức nền',
+    beginner: 'Người mới bắt đầu – Cần học từ nền tảng cơ bản'
+  };
+
+  document.getElementById('resultTitle').textContent = `Xin chúc mừng, ${state.student.name}!`;
+  document.getElementById('resultSubtitle').textContent = levelMessages[scores.bandLevel] || '';
+
+  // Teacher note banner
+  const note = scores.teacherNote;
+  const noteHtml = `<div style="background:${note.color}18;border:1.5px solid ${note.color}40;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:12px;">
+    <span style="font-size:1.4rem">${note.icon}</span>
+    <div>
+      <div style="font-size:0.75rem;font-weight:700;color:${note.color};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px">Gợi ý lộ trình</div>
+      <div style="font-size:0.95rem;font-weight:600;color:${note.color}">${note.text}</div>
+    </div>
+  </div>`;
+
+  const SECTION_NAMES = { grammar: 'Ngữ pháp', listening: 'Nghe', reading: 'Đọc', vocabulary: 'Từ vựng' };
+  let scoresHtml = '';
+  Object.entries(scores.sections).forEach(([key, val]) => {
+    const pct = val.total > 0 ? Math.round(val.correct / val.total * 100) : 0;
+    scoresHtml += `<div class="score-card">
+      <div class="score-card-label">${SECTION_NAMES[key] || key}</div>
+      <div class="score-card-value">${val.correct}</div>
+      <div class="score-card-max">/ ${val.total} câu (${pct}%)</div>
+    </div>`;
+  });
+  scoresHtml += `<div class="score-card">
+    <div class="score-card-label">Tổng điểm</div>
+    <div class="score-card-value">${scores.totalCorrect}</div>
+    <div class="score-card-max">/ ${scores.totalQ} câu (${Math.round(scores.pct*100)}%)</div>
+  </div>`;
+
+  document.getElementById('resultScores').innerHTML = noteHtml + scoresHtml;
+}
+
+// ==========================================
+// SAVE TO GOOGLE SHEETS
+// ==========================================
+async function saveToGoogleSheets(scores) {
+  const overlay = document.getElementById('savingOverlay');
+  overlay.classList.add('show');
+
+  const duration = Math.round((new Date() - state.startTime) / 1000);
+  const payload = {
+    action: 'saveResult',
+    name: state.student.name,
+    phone: state.student.phone,
+    email: state.student.email,
+    testType: state.testType,
+    band: scores.band,
+    scaled: scores.scaled,
+    totalQ: scores.totalQ,
+    sections: JSON.stringify(scores.sections),
+    duration: duration,
+    timestamp: new Date().toISOString()
+  };
+
+  const saveStatus = document.getElementById('saveStatus');
+
+  if (!CONFIG.GOOGLE_SCRIPT_URL || CONFIG.GOOGLE_SCRIPT_URL.includes('YOUR_SCRIPT_ID')) {
+    overlay.classList.remove('show');
+    saveStatus.textContent = '⚠️ Chưa cấu hình Google Sheets. Xem file README.md để thiết lập.';
+    saveStatus.className = 'status-msg error';
+    saveStatus.style.display = 'block';
+    return;
+  }
+
+  try {
+    const params = new URLSearchParams(payload);
+    await fetch(CONFIG.GOOGLE_SCRIPT_URL + '?' + params.toString());
+    overlay.classList.remove('show');
+    saveStatus.textContent = '✓ Kết quả đã được lưu thành công!';
+    saveStatus.className = 'status-msg success';
+    saveStatus.style.display = 'block';
+  } catch(e) {
+    overlay.classList.remove('show');
+    saveStatus.textContent = 'Không thể lưu kết quả. Vui lòng liên hệ HappyHouse.';
+    saveStatus.className = 'status-msg error';
+    saveStatus.style.display = 'block';
+  }
+}
+
+function contactHappyHouse() {
+  alert('Cảm ơn bạn! Tư vấn viên HappyHouse sẽ liên hệ với số ' + state.student.phone + ' trong thời gian sớm nhất.');
+}
+
+function retryTest() {
+  state = { student: state.student, testType: 'full', questions: [], answers: {}, currentIndex: 0, startTime: null, timer: null, timeLeft: 0, submitted: false };
+  showPage('pageLanding');
+  document.getElementById('inputName').value = state.student.name;
+  document.getElementById('inputPhone').value = state.student.phone;
+  document.getElementById('inputEmail').value = state.student.email;
+}
+</script>
+</body>
+</html>
