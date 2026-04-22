@@ -50,16 +50,16 @@
     font-size: 20px;
   }
   .logo-icon {
-    width: 36px;
-    height: 36px;
-    background: var(--red);
-    border-radius: 8px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-weight: 800;
-    font-size: 14px;
+  }
+  .logo-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
   .header-timer {
     color: var(--gold);
@@ -253,17 +253,33 @@
   }
 
   .audio-player {
-    background: #F0F4FF;
-    border-radius: var(--radius);
-    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #F0F4FF 0%, #E8F0FF 100%);
+    border: 2px solid #D1E3FF;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
     display: flex;
     align-items: center;
     gap: 1rem;
     margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(26,39,68,0.08);
+    transition: all 0.2s;
+  }
+  .audio-player:hover {
+    box-shadow: 0 4px 16px rgba(26,39,68,0.12);
+    border-color: var(--navy);
+  }
+  .audio-player.playing {
+    background: linear-gradient(135deg, #FFF5F5 0%, #FFE8E8 100%);
+    border-color: var(--red);
+  }
+  .audio-controls {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
   }
   .audio-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: var(--navy);
     border: none;
@@ -272,31 +288,128 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-    transition: background 0.2s;
-  }
-  .audio-btn:hover { background: var(--red); }
-  .audio-track {
-    flex: 1;
-    height: 4px;
-    background: #CBD5E1;
-    border-radius: 2px;
+    transition: all 0.2s;
     position: relative;
+  }
+  .audio-btn:hover {
+    background: var(--red);
+    transform: scale(1.05);
+  }
+  .audio-btn:active {
+    transform: scale(0.95);
+  }
+  .audio-btn.loading {
+    opacity: 0.6;
+    cursor: wait;
+  }
+  .audio-btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .audio-btn-secondary {
+    width: 36px;
+    height: 36px;
+    background: rgba(26,39,68,0.1);
+    color: var(--navy);
+  }
+  .audio-btn-secondary:hover {
+    background: rgba(26,39,68,0.2);
+  }
+  .audio-track-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .audio-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .audio-icon-wave {
+    display: inline-flex;
+    gap: 2px;
+    align-items: center;
+  }
+  .audio-icon-wave span {
+    width: 2px;
+    height: 8px;
+    background: var(--navy);
+    display: inline-block;
+    animation: wave 1s ease-in-out infinite;
+  }
+  .audio-icon-wave span:nth-child(2) { animation-delay: 0.1s; }
+  .audio-icon-wave span:nth-child(3) { animation-delay: 0.2s; }
+  @keyframes wave {
+    0%, 100% { height: 8px; }
+    50% { height: 14px; }
+  }
+  .audio-track {
+    height: 6px;
+    background: rgba(26,39,68,0.1);
+    border-radius: 3px;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .audio-track:hover .audio-track-fill {
+    background: var(--red);
   }
   .audio-track-fill {
     position: absolute;
     left: 0; top: 0; bottom: 0;
     background: var(--navy);
-    border-radius: 2px;
+    border-radius: 3px;
     width: 0;
-    transition: width 0.1s;
+    transition: background 0.2s;
+  }
+  .audio-time-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    min-width: 80px;
+    justify-content: flex-end;
   }
   .audio-time {
+    font-variant-numeric: tabular-nums;
+  }
+  .audio-error {
+    background: #FEF2F2;
+    border-color: #DC2626;
+    color: #DC2626;
+    padding: 0.75rem 1rem;
     font-size: 0.85rem;
-    color: var(--text-muted);
-    font-weight: 500;
-    min-width: 60px;
-    text-align: right;
+  }
+  @media (max-width: 600px) {
+    .audio-player {
+      padding: 1rem;
+      gap: 0.75rem;
+    }
+    .audio-btn {
+      width: 40px;
+      height: 40px;
+    }
+    .audio-btn-secondary {
+      width: 32px;
+      height: 32px;
+    }
+    .audio-label {
+      font-size: 0.7rem;
+    }
   }
 
   .options-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
@@ -499,6 +612,277 @@
   }
   .status-msg.error { background: #FEF2F2; color: #DC2626; }
   .status-msg.success { background: #F0FDF4; color: #16A34A; }
+
+  /* ===== SPLIT-PANE (reading + listening) ===== */
+  .test-body { display: block; }
+  .passage-container { display: none; }
+  .question-pane { flex: 1; min-width: 0; }
+
+  /* Unified split mode — passage/audio LEFT, all questions RIGHT */
+  .test-layout.split-mode { max-width: 1240px; }
+  .test-layout.split-mode .test-body {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+  .test-layout.split-mode .passage-container {
+    display: block;
+    flex: 0 0 44%;
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+
+  .passage-panel {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: var(--shadow);
+  }
+  .passage-header {
+    padding-bottom: 1rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .passage-title-text {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.4;
+  }
+  .passage-body {
+    font-size: 0.9rem;
+    line-height: 1.85;
+    color: #2D3748;
+  }
+  .passage-body p { margin-bottom: 1rem; }
+
+  /* Listening panel (left side) */
+  .listening-panel .listen-tip {
+    margin-top: 1rem;
+    padding: 0.85rem 1rem;
+    background: #EFF6FF;
+    border-radius: var(--radius);
+    font-size: 0.82rem;
+    color: #1E40AF;
+    line-height: 1.5;
+  }
+
+  /* Compact question cards stacked on right */
+  .inline-question {
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 0.85rem;
+  }
+  .inline-question .question-text {
+    font-size: 0.98rem;
+    margin-bottom: 1rem;
+  }
+  .inline-question .options-list { gap: 7px; }
+  .inline-question .option-item  { padding: 0.75rem 1rem; }
+
+  /* Sub-group instruction header (e.g. "Questions 1–3: True or False?") */
+  .subgroup-header {
+    font-size: 0.83rem;
+    font-style: italic;
+    color: var(--text-muted);
+    padding: 0.6rem 1rem;
+    background: var(--bg);
+    border-left: 3px solid var(--navy);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin-bottom: 0.75rem;
+    margin-top: 0.25rem;
+  }
+
+  /* Question-number jump bar */
+  .q-num-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 0.9rem 1.1rem;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: 0 2px 8px rgba(26,39,68,0.07);
+    margin-top: 0.5rem;
+  }
+  .q-num-bar-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 4px;
+  }
+  .q-num-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text-muted);
+    font-family: inherit;
+  }
+  .q-num-btn:hover { border-color: var(--navy); color: var(--navy); }
+  .q-num-btn.done  { background: var(--navy); color: white; border-color: var(--navy); }
+
+  /* ===== GLOBAL QUESTION NAVIGATOR (replaces progress bar) ===== */
+  .question-nav-wrap {
+    background: white;
+    border-radius: 16px;
+    padding: 0.75rem 1.1rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(26,39,68,0.07);
+  }
+  .question-nav-scroll {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+    padding-bottom: 2px;
+  }
+  .question-nav-scroll::-webkit-scrollbar { height: 3px; }
+  .question-nav-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .q-nav-sep {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-muted);
+    padding: 0 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+  .q-nav-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text-muted);
+    font-family: inherit;
+    flex-shrink: 0;
+  }
+  .q-nav-btn:hover                    { border-color: var(--navy); color: var(--navy); }
+  .q-nav-btn.qn-answered              { background: var(--navy); color: white; border-color: var(--navy); }
+  .q-nav-btn.qn-current               { border-color: var(--red); color: var(--red); box-shadow: 0 0 0 2px rgba(232,48,58,0.18); }
+  .q-nav-btn.qn-answered.qn-current   { background: var(--red); color: white; border-color: var(--red); box-shadow: 0 0 0 2px rgba(232,48,58,0.18); }
+
+  .passage-question-number {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.35rem;
+  }
+
+  @media (max-width: 768px) {
+    .test-layout.split-mode .test-body { flex-direction: column; }
+    .test-layout.split-mode .passage-container {
+      position: static;
+      flex: none;
+      width: 100%;
+      max-height: 48vh;
+    }
+  }
+
+  /* ===== TRUE / FALSE BUTTONS ===== */
+  .tf-options {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .tf-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 1.1rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    background: white;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text-muted);
+  }
+  .tf-btn:hover { border-color: var(--navy); color: var(--navy); }
+  .tf-btn.tf-true.selected  { border-color: #10B981; background: #F0FDF4; color: #10B981; }
+  .tf-btn.tf-false.selected { border-color: var(--red); background: #FFF5F5; color: var(--red); }
+
+  /* ===== FILL IN THE BLANK ===== */
+  .fill-blank-wrap { margin-top: 1.5rem; }
+  .fill-blank-gap {
+    display: inline-block;
+    min-width: 80px;
+    border-bottom: 2.5px solid var(--navy);
+    margin: 0 3px;
+    vertical-align: bottom;
+  }
+  .fill-blank-input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #F8F9FF;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    transition: border-color 0.2s;
+    margin-top: 1.25rem;
+  }
+  .fill-blank-input-row:focus-within { border-color: var(--red); }
+  .fill-blank-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .fill-blank-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--navy);
+    outline: none;
+  }
+
+  /* Question type badge (shown inside question card for listening) */
+  .qtype-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 10px;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+  }
+  .qtype-badge.tf   { background: #D1FAE5; color: #065F46; }
+  .qtype-badge.fill { background: #EDE9FE; color: #4C1D95; }
+  .qtype-badge.mc   { background: #DBEAFE; color: #1E3A8A; }
 </style>
 </head>
 <body>
@@ -506,7 +890,9 @@
 <!-- HEADER -->
 <header class="header">
   <div class="logo">
-    <div class="logo-icon">HH</div>
+    <div class="logo-icon">
+      <img src="happy_house_sun.png" alt="HappyHouse Logo">
+    </div>
     <span>HappyHouse IELTS</span>
   </div>
   <div class="header-timer" id="timerDisplay">
@@ -589,15 +975,21 @@
 
 <!-- ===== PAGE: TEST ===== -->
 <div class="page" id="pageTest">
-  <div class="test-layout">
-    <div class="test-progress-bar-wrap">
-      <div class="test-progress-bar" id="progressBar"></div>
+  <div class="test-layout" id="testLayout">
+    <div class="question-nav-wrap">
+      <div class="question-nav-scroll" id="questionNavBar"></div>
     </div>
-    <div id="questionContainer"></div>
-    <div class="test-nav">
-      <button class="btn-nav secondary" id="btnPrev" onclick="prevQuestion()">← Quay lại</button>
-      <span class="question-counter" id="questionCounter"></span>
-      <button class="btn-nav primary" id="btnNext" onclick="nextQuestion()">Câu tiếp →</button>
+    <div id="testBody" class="test-body">
+      <!-- passage panel: reading article (left) or listening audio bar (top) -->
+      <div id="passageContainer" class="passage-container"></div>
+      <div class="question-pane">
+        <div id="questionContainer"></div>
+        <div class="test-nav">
+          <button class="btn-nav secondary" id="btnPrev" onclick="prevQuestion()">← Quay lại</button>
+          <span class="question-counter" id="questionCounter"></span>
+          <button class="btn-nav primary" id="btnNext" onclick="nextQuestion()">Tiếp theo →</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -625,87 +1017,20 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 // ==========================================
-// CONFIG - THAY ĐỔI URL NÀY
+// CONFIG
 // ==========================================
 const CONFIG = {
-  // 1. Tạo Google Apps Script Web App và paste URL vào đây
-  GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxHtOgnjMsX1ytnym_ghTFs1TiH37CGg5N3_k4UFHgbLJRgxoGUSVzzkzRp5pn2YstZxA/exec',
-
-  // 2. Thời gian làm bài (giây)
+  SUPABASE_URL: 'https://wvfbmfbfpqkqyeoirvpq.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2ZmJtZmJmcHFrcXllb2lydnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODU4NzAsImV4cCI6MjA5MjI2MTg3MH0.xyCARXgOU53eo1BEuIbdM6MPfAkCgNQ7tXXG1CfjZRg',
   FULL_TIME: 90 * 60,
   MINI_TIME: 30 * 60,
 };
 
-// ==========================================
-// CẤU TRÚC CÂU HỎI MẪU
-// Khi dùng Google Sheets, dữ liệu này sẽ được load từ Sheets
-// ==========================================
-const SAMPLE_QUESTIONS = [
-  // GRAMMAR
-  {
-    id: 1, section: "grammar", type: "multiple_choice",
-    question: "She ______ to school every day by bus.",
-    options: ["go", "goes", "going", "gone"],
-    correct: "B",
-    level: "A1"
-  },
-  {
-    id: 2, section: "grammar", type: "multiple_choice",
-    question: "Museum of Natural History: Visitors are not ______ to touch the exhibits. Please keep a safe distance from the displays.",
-    options: ["allowed", "advised", "let"],
-    correct: "A",
-    level: "A2"
-  },
-  {
-    id: 3, section: "grammar", type: "fill_blank",
-    question: "If you want to improve your English, you should try to read as much as possible. ______ They use simpler language and are easier to understand than regular fiction.",
-    options: [
-      "Watching movies in English is also a great idea.",
-      "You can start with graded readers, which are books written for language learners.",
-      "You will need a good dictionary to look up new words."
-    ],
-    correct: "B",
-    level: "B1"
-  },
-  {
-    id: 4, section: "grammar", type: "multiple_choice",
-    question: "The library is a quiet place for study. You ______ talk on your phone inside. Please go outside if you need to make a call.",
-    options: ["can't", "don't", "haven't", "shouldn't"],
-    correct: "A",
-    level: "A2"
-  },
-  // READING
-  {
-    id: 5, section: "reading", type: "reading",
-    passage: "Dr. Sarah Mitchell has been studying sleep patterns for over fifteen years. Her latest research shows that many adults are not getting enough quality sleep, and this is affecting their health in serious ways. \"People think they can function normally on five or six hours of sleep, but our bodies need seven to nine hours for proper recovery,\" she explains. Poor sleep doesn't just make us tired - it weakens our immune system, makes it harder to concentrate, and can even lead to weight gain. Dr. Mitchell recommends creating a bedtime routine, avoiding screens for an hour before sleep, and keeping bedrooms cool and dark.",
-    question: "What does Dr. Mitchell believe about people's understanding of sleep?",
-    options: [
-      "Most people know exactly how much sleep they need.",
-      "People understand the connection between sleep and health.",
-      "People incorrectly think they can function well on less sleep than they need.",
-      "People are getting better at following good sleep habits."
-    ],
-    correct: "C",
-    level: "B2"
-  },
-  // VOCABULARY
-  {
-    id: 6, section: "vocabulary", type: "multiple_choice",
-    question: "The scientist made a ______ discovery that changed our understanding of the universe.",
-    options: ["groundbreaking", "ordinary", "subtle", "delayed"],
-    correct: "A",
-    level: "B2"
-  },
-  {
-    id: 7, section: "vocabulary", type: "multiple_choice",
-    question: "Despite the heavy rain, they decided to ______ with their outdoor event.",
-    options: ["proceed", "precede", "recede", "concede"],
-    correct: "A",
-    level: "B1"
-  },
-];
+const sbClient = window.supabase?.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY) ?? null;
+
 
 // ==========================================
 // APP STATE
@@ -721,6 +1046,8 @@ let state = {
   timeLeft: 0,
   submitted: false
 };
+
+let activePassageId = null;
 
 // ==========================================
 // NAVIGATION
@@ -773,26 +1100,54 @@ function selectTest(type) {
 }
 
 // ==========================================
-// LOAD QUESTIONS (từ Google Sheets hoặc sample)
+// LOAD QUESTIONS từ Supabase
 // ==========================================
 async function loadQuestions() {
-  // Nếu đã cấu hình Google Script URL, load từ đó
-  if (CONFIG.GOOGLE_SCRIPT_URL && !CONFIG.GOOGLE_SCRIPT_URL.includes('YOUR_SCRIPT_ID')) {
-    try {
-      const url = CONFIG.GOOGLE_SCRIPT_URL + '?action=getQuestions&type=' + state.testType;
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data.questions && data.questions.length > 0) {
-        return data.questions;
-      }
-    } catch(e) {
-      console.warn('Could not load from Google Sheets, using sample questions');
-    }
+  if (!sbClient) throw new Error('Supabase not initialised — check CDN and internet connection.');
+  let query = sbClient
+    .from('public_questions')
+    .select('id, section, type, level, question_text, passage_id, passage_title, passage_content, passage_audio_url, question_audio_url, option_a, option_b, option_c, option_d');
+
+  if (state.testType === 'mini') {
+    query = query.in('section', ['grammar', 'vocabulary']);
   }
-  // Fallback: dùng câu hỏi mẫu
-  return state.testType === 'mini'
-    ? SAMPLE_QUESTIONS.filter(q => ['grammar','vocabulary'].includes(q.section))
-    : SAMPLE_QUESTIONS;
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  // Separate standalone questions from passage-grouped questions
+  const standalone = data.filter(q => !q.passage_id);
+  const passageQs  = data.filter(q =>  q.passage_id);
+
+  // Shuffle standalone freely; keep passage questions grouped and shuffle groups
+  standalone.sort(() => Math.random() - 0.5);
+
+  const groups = {};
+  passageQs.forEach(q => {
+    if (!groups[q.passage_id]) groups[q.passage_id] = [];
+    groups[q.passage_id].push(q);
+  });
+  const groupOrder = Object.keys(groups).sort(() => Math.random() - 0.5);
+  const ordered = [];
+  groupOrder.forEach(k => ordered.push(...groups[k]));
+
+  // Standalone first (grammar/vocab), then passages (reading/listening)
+  const combined = [...standalone, ...ordered];
+  const limit = state.testType === 'mini' ? 30 : 95;
+
+  return combined.slice(0, limit).map(q => ({
+    id:             q.id,
+    section:        q.section,
+    type:           q.type,
+    level:          q.level,
+    question:       q.question_text,
+    passageId:      q.passage_id      || null,
+    passageTitle:   q.passage_title   || null,
+    passageContent: q.passage_content || null,
+    passageAudio:   q.passage_audio_url || null,
+    audio:          q.question_audio_url || null,
+    options:        [q.option_a, q.option_b, q.option_c, q.option_d].filter(Boolean),
+  }));
 }
 
 async function startTest() {
@@ -827,6 +1182,7 @@ async function startTest() {
 
   showPage('pageTest');
   startTimer();
+  initQuestionNav();
   renderQuestion();
 }
 
@@ -864,38 +1220,226 @@ const SECTION_LABELS = {
   vocabulary: 'TỪ VỰNG'
 };
 
+// ==========================================
+// GROUP HELPERS (passage-aware navigation)
+// ==========================================
+function getGroupStart(idx) {
+  const q = state.questions[idx];
+  if (!q || !q.passageId) return idx;
+  let i = idx;
+  while (i > 0 && state.questions[i - 1].passageId === q.passageId) i--;
+  return i;
+}
+function getGroupEnd(idx) {
+  const q = state.questions[idx];
+  if (!q || !q.passageId) return idx;
+  let i = idx;
+  while (i < state.questions.length - 1 && state.questions[i + 1].passageId === q.passageId) i++;
+  return i;
+}
+
 function renderQuestion() {
   const q = state.questions[state.currentIndex];
   const total = state.questions.length;
-  const answered = Object.keys(state.answers).length;
+  // Nav: counter + buttons
+  const start = getGroupStart(state.currentIndex);
+  const end   = getGroupEnd(state.currentIndex);
+  const startNum = start + 1, endNum = end + 1;
+  document.getElementById('questionCounter').textContent =
+    startNum === endNum
+      ? `Câu ${startNum} / ${total}`
+      : `Câu ${startNum}–${endNum} / ${total}`;
 
-  // Progress
-  document.getElementById('progressBar').style.width = ((state.currentIndex) / total * 100) + '%';
-  document.getElementById('questionCounter').textContent = `Câu ${state.currentIndex + 1} / ${total}`;
-
-  // Nav buttons
-  document.getElementById('btnPrev').disabled = state.currentIndex === 0;
-  const isLast = state.currentIndex === total - 1;
-  document.getElementById('btnNext').textContent = isLast ? 'Nộp bài ✓' : 'Câu tiếp →';
+  document.getElementById('btnPrev').disabled = start === 0;
+  const isLast = end >= total - 1;
+  document.getElementById('btnNext').textContent = isLast ? 'Nộp bài ✓' : 'Tiếp theo →';
   document.getElementById('btnNext').onclick = isLast ? () => confirmSubmit() : () => nextQuestion();
 
-  // Render
-  let html = `<div class="question-card">`;
-  html += `<div class="section-badge">${SECTION_LABELS[q.section] || q.section}</div>`;
-  html += `<div class="question-number">Câu ${state.currentIndex + 1}</div>`;
+  const layout    = document.getElementById('testLayout');
+  const passageEl = document.getElementById('passageContainer');
 
-  if (q.passage) {
-    html += `<div class="reading-passage">${q.passage}</div>`;
+  if (q.passageId) {
+    layout.classList.add('split-mode');
+    // Re-render left panel only when passage changes (preserves audio state)
+    if (q.passageId !== activePassageId) {
+      passageEl.innerHTML = q.section === 'reading'
+        ? buildReadingPanelHTML(q)
+        : buildListeningPanelHTML(q);
+      activePassageId = q.passageId;
+    }
+    // Always rebuild right panel (answer state may have changed)
+    document.getElementById('questionContainer').innerHTML = buildPassageQuestionsHTML(q.passageId);
+
+  } else {
+    layout.classList.remove('split-mode');
+    passageEl.innerHTML = '';
+    activePassageId = null;
+    document.getElementById('questionContainer').innerHTML = buildStandaloneHTML(q);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  html += `<div class="question-text">${q.question}</div>`;
+  updateQuestionNav();
+}
 
-  if (q.audio) {
-    html += renderAudio(q.audio, q.id);
+// ==========================================
+// QUESTION NAVIGATOR (top bar)
+// ==========================================
+const Q_NAV_SECTION_NAMES = {
+  grammar: 'Ngữ pháp', vocabulary: 'Từ vựng', reading: 'Đọc', listening: 'Nghe'
+};
+
+function initQuestionNav() {
+  const bar = document.getElementById('questionNavBar');
+  if (!bar || !state.questions.length) return;
+
+  let html = '';
+  let lastSection = null;
+
+  state.questions.forEach((q, i) => {
+    if (q.section !== lastSection) {
+      if (lastSection !== null) html += `<span class="q-nav-sep">|</span>`;
+      html += `<span class="q-nav-sep">${Q_NAV_SECTION_NAMES[q.section] || q.section}</span>`;
+      lastSection = q.section;
+    }
+    html += `<button class="q-nav-btn" id="qnav_${q.id}" onclick="jumpToQuestion(${i})" title="Câu ${i + 1}">${i + 1}</button>`;
+  });
+
+  bar.innerHTML = html;
+  updateQuestionNav();
+}
+
+function updateQuestionNav() {
+  const start = getGroupStart(state.currentIndex);
+  const end   = getGroupEnd(state.currentIndex);
+
+  state.questions.forEach((q, i) => {
+    const btn = document.getElementById('qnav_' + q.id);
+    if (!btn) return;
+    btn.classList.toggle('qn-answered', state.answers[q.id] !== undefined);
+    btn.classList.toggle('qn-current',  i >= start && i <= end);
+  });
+
+  // Scroll the current button into view inside the nav bar
+  const firstCurrentBtn = document.getElementById('qnav_' + state.questions[start].id);
+  if (firstCurrentBtn) {
+    firstCurrentBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }
+}
 
-  html += `<ul class="options-list">`;
-  const letters = ['A','B','C','D','E'];
+function jumpToQuestion(idx) {
+  const groupStart = getGroupStart(idx);
+  state.currentIndex = groupStart;
+  renderQuestion();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // For passage groups: after render, scroll to the specific question card
+  if (idx !== groupStart) {
+    requestAnimationFrame(() => scrollToQ(state.questions[idx].id));
+  }
+}
+
+// ---- Left panel: reading passage ----
+function buildReadingPanelHTML(q) {
+  const body = (q.passageContent || '')
+    .split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
+  return `<div class="passage-panel">
+    <div class="passage-header">
+      <div class="section-badge" style="margin-bottom:0">ĐỌC HIỂU</div>
+      ${q.passageTitle ? `<span class="passage-title-text">${q.passageTitle}</span>` : ''}
+    </div>
+    <div class="passage-body">${body}</div>
+  </div>`;
+}
+
+// ---- Left panel: listening audio ----
+function buildListeningPanelHTML(q) {
+  const src     = q.passageAudio || '';
+  const audioId = 'pg_' + q.passageId;
+  return `<div class="passage-panel listening-panel">
+    <div class="passage-header">
+      <div class="section-badge" style="margin-bottom:0">NGHE HIỂU</div>
+      ${q.passageTitle ? `<span class="passage-title-text">${q.passageTitle}</span>` : ''}
+    </div>
+    ${src
+      ? renderAudio(src, audioId)
+      : '<p style="color:var(--text-muted);font-size:0.85rem">Audio sẽ được cập nhật sớm.</p>'}
+    <div class="listen-tip">
+      Nghe audio, sau đó trả lời tất cả các câu hỏi ở bên phải.<br>
+      Bạn có thể nghe lại bằng nút replay.
+    </div>
+  </div>`;
+}
+
+// ---- Right panel: ALL questions for a passage at once ----
+function buildPassageQuestionsHTML(passageId) {
+  const group      = state.questions.filter(q => q.passageId === passageId);
+  const globalBase = state.questions.indexOf(group[0]); // absolute index of first Q in group
+
+  // Split into sub-groups by consecutive type for instruction headers
+  const subGroups = [];
+  let cur = null;
+  group.forEach((q, i) => {
+    if (!cur || cur.type !== q.type) { cur = { type: q.type, start: i, qs: [] }; subGroups.push(cur); }
+    cur.qs.push(q);
+  });
+
+  let html = '';
+  let offset = 0;
+  subGroups.forEach(sg => {
+    const s = globalBase + offset + 1;
+    const e = s + sg.qs.length - 1;
+    html += `<div class="subgroup-header">${subgroupInstruction(sg.type, s, e)}</div>`;
+    sg.qs.forEach((q, i) => {
+      const absNum = globalBase + offset + i + 1;
+      html += `<div class="question-card inline-question" id="q_${q.id}">
+        <div class="passage-question-number">Câu ${absNum}</div>
+        <div class="question-text">${formatQuestionText(q)}</div>
+        ${buildOptionsHTML(q)}
+      </div>`;
+    });
+    offset += sg.qs.length;
+  });
+
+  return html;
+}
+
+function subgroupInstruction(type, startNum, endNum) {
+  const range = startNum === endNum ? `Câu ${startNum}` : `Câu ${startNum}–${endNum}`;
+  if (type === 'true_false')      return `${range} — Các câu sau là True hay False?`;
+  if (type === 'fill_blank')      return `${range} — Điền một từ hoặc số vào chỗ trống.`;
+  if (type === 'multiple_choice') return `${range} — Chọn đáp án đúng.`;
+  return range;
+}
+
+function scrollToQ(qid) {
+  const el = document.getElementById('q_' + qid);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function formatQuestionText(q) {
+  if (q.type === 'fill_blank') {
+    return q.question.replace(/__+/g, '<span class="fill-blank-gap">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
+  }
+  return q.question;
+}
+
+// ---- Standalone question card (grammar / vocab) ----
+function buildStandaloneHTML(q) {
+  return `<div class="question-card">
+    <div class="section-badge">${SECTION_LABELS[q.section] || q.section}</div>
+    <div class="question-number">Câu ${state.currentIndex + 1}</div>
+    <div class="question-text">${formatQuestionText(q)}</div>
+    ${q.audio ? renderAudio(q.audio, q.id) : ''}
+    ${buildOptionsHTML(q)}
+  </div>`;
+}
+
+// ---- Options: dispatches by question type ----
+function buildOptionsHTML(q) {
+  if (q.type === 'true_false') return buildTrueFalseHTML(q);
+  if (q.type === 'fill_blank') return buildFillBlankHTML(q);
+  // Multiple choice (default)
+  const letters = ['A','B','C','D'];
+  let html = `<ul class="options-list">`;
   q.options.forEach((opt, i) => {
     const letter = letters[i];
     const sel = state.answers[q.id] === letter ? 'selected' : '';
@@ -904,49 +1448,218 @@ function renderQuestion() {
       <div class="option-text">${opt}</div>
     </li>`;
   });
-  html += `</ul></div>`;
+  html += `</ul>`;
+  return html;
+}
 
-  document.getElementById('questionContainer').innerHTML = html;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+// ---- True / False ----
+function buildTrueFalseHTML(q) {
+  const ans = state.answers[q.id];
+  return `<div class="tf-options" id="tf_${q.id}">
+    <button class="tf-btn tf-true ${ans === 'A' ? 'selected' : ''}"
+      onclick="selectTF('${q.id}','A')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      True
+    </button>
+    <button class="tf-btn tf-false ${ans === 'B' ? 'selected' : ''}"
+      onclick="selectTF('${q.id}','B')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      False
+    </button>
+  </div>`;
+}
+
+function selectTF(qid, letter) {
+  state.answers[qid] = letter;
+  const wrap = document.getElementById('tf_' + qid);
+  if (!wrap) return;
+  wrap.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('selected'));
+  const target = wrap.querySelector(letter === 'A' ? '.tf-true' : '.tf-false');
+  if (target) target.classList.add('selected');
+  updateQuestionNav();
+}
+
+// ---- Fill in the blank ----
+function buildFillBlankHTML(q) {
+  const val = state.answers[q.id] || '';
+  return `<div class="fill-blank-wrap">
+    <div class="fill-blank-input-row">
+      <span class="fill-blank-label">Answer:</span>
+      <input type="text" class="fill-blank-input"
+        placeholder="Type your answer..."
+        value="${val.replace(/"/g,'&quot;')}"
+        oninput="selectFillAnswer('${q.id}', this.value)"
+        autocomplete="off" spellcheck="false">
+    </div>
+  </div>`;
+}
+
+function selectFillAnswer(qid, value) {
+  const trimmed = value.trim();
+  if (trimmed) {
+    state.answers[qid] = trimmed;
+  } else {
+    delete state.answers[qid];
+  }
+  updateQuestionNav();
 }
 
 function renderAudio(src, qid) {
   return `<div class="audio-player" id="audio_wrap_${qid}">
-    <button class="audio-btn" onclick="toggleAudio('${qid}')">
-      <svg id="audio_icon_${qid}" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-    </button>
-    <div class="audio-track"><div class="audio-track-fill" id="audio_fill_${qid}"></div></div>
-    <span class="audio-time" id="audio_time_${qid}">0:00</span>
-    <audio id="audio_el_${qid}" src="${src}" onended="audioEnded('${qid}')" ontimeupdate="audioUpdate('${qid}')"></audio>
+    <div class="audio-controls">
+      <button class="audio-btn" id="audio_btn_${qid}" onclick="toggleAudio('${qid}')" title="Play/Pause audio">
+        <svg id="audio_icon_${qid}" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+      </button>
+      <button class="audio-btn audio-btn-secondary" onclick="restartAudio('${qid}')" title="Replay from start">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
+        </svg>
+      </button>
+    </div>
+    <div class="audio-track-container">
+      <div class="audio-label">
+        <span class="audio-icon-wave">
+          <span></span><span></span><span></span>
+        </span>
+        Listening Audio
+      </div>
+      <div class="audio-track" onclick="seekAudio('${qid}', event)">
+        <div class="audio-track-fill" id="audio_fill_${qid}"></div>
+      </div>
+    </div>
+    <div class="audio-time-display">
+      <span class="audio-time" id="audio_time_${qid}">0:00</span>
+      <span style="opacity: 0.5;">/</span>
+      <span class="audio-time" id="audio_duration_${qid}">0:00</span>
+    </div>
+    <audio id="audio_el_${qid}" preload="metadata"
+           onloadedmetadata="audioLoaded('${qid}')"
+           onended="audioEnded('${qid}')"
+           ontimeupdate="audioUpdate('${qid}')"
+           onplay="audioPlaying('${qid}')"
+           onpause="audioPaused('${qid}')"
+           onerror="audioError('${qid}')">
+      <source src="${src}" type="audio/mpeg">
+      Your browser does not support audio playback.
+    </audio>
   </div>`;
 }
 
 let currentAudio = null;
+
 function toggleAudio(id) {
   const el = document.getElementById('audio_el_' + id);
+  const btn = document.getElementById('audio_btn_' + id);
   if (!el) return;
-  if (currentAudio && currentAudio !== el) { currentAudio.pause(); }
-  if (el.paused) { el.play(); currentAudio = el; updateAudioIcon(id, false); }
-  else { el.pause(); updateAudioIcon(id, true); }
+
+  // Pause other audio if playing
+  if (currentAudio && currentAudio !== el) {
+    currentAudio.pause();
+  }
+
+  // Toggle play/pause
+  if (el.paused) {
+    btn.classList.add('loading');
+    el.play().then(() => {
+      btn.classList.remove('loading');
+      currentAudio = el;
+    }).catch(err => {
+      btn.classList.remove('loading');
+      console.error('Audio playback failed:', err);
+      alert('⚠️ Cannot play audio. Please check your internet connection or audio file.');
+    });
+  } else {
+    el.pause();
+  }
 }
-function updateAudioIcon(id, playing) {
+
+function restartAudio(id) {
+  const el = document.getElementById('audio_el_' + id);
+  if (!el) return;
+  el.currentTime = 0;
+  if (!el.paused) {
+    el.pause();
+    el.play();
+  }
+}
+
+function seekAudio(id, event) {
+  const el = document.getElementById('audio_el_' + id);
+  const track = event.currentTarget;
+  if (!el || !track) return;
+
+  const rect = track.getBoundingClientRect();
+  const percent = (event.clientX - rect.left) / rect.width;
+  el.currentTime = percent * el.duration;
+}
+
+function updateAudioIcon(id, paused) {
   const icon = document.getElementById('audio_icon_' + id);
   if (!icon) return;
-  icon.innerHTML = playing
-    ? '<path d="M8 5v14l11-7z"/>'
-    : '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+  icon.innerHTML = paused
+    ? '<path d="M8 5v14l11-7z"/>'  // Play icon
+    : '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'; // Pause icon
 }
+
+function formatTime(seconds) {
+  if (!seconds || isNaN(seconds)) return '0:00';
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return mins + ':' + secs.toString().padStart(2, '0');
+}
+
+function audioLoaded(id) {
+  const el = document.getElementById('audio_el_' + id);
+  const duration = document.getElementById('audio_duration_' + id);
+  if (el && duration) {
+    duration.textContent = formatTime(el.duration);
+  }
+}
+
 function audioUpdate(id) {
   const el = document.getElementById('audio_el_' + id);
   const fill = document.getElementById('audio_fill_' + id);
   const time = document.getElementById('audio_time_' + id);
+
   if (!el || !fill || !time) return;
+
   const pct = el.duration ? (el.currentTime / el.duration * 100) : 0;
   fill.style.width = pct + '%';
-  const s = Math.floor(el.currentTime);
-  time.textContent = Math.floor(s/60) + ':' + (s%60).toString().padStart(2,'0');
+  time.textContent = formatTime(el.currentTime);
 }
-function audioEnded(id) { updateAudioIcon(id, true); }
+
+function audioPlaying(id) {
+  updateAudioIcon(id, false);
+  const wrap = document.getElementById('audio_wrap_' + id);
+  if (wrap) wrap.classList.add('playing');
+}
+
+function audioPaused(id) {
+  updateAudioIcon(id, true);
+  const wrap = document.getElementById('audio_wrap_' + id);
+  if (wrap) wrap.classList.remove('playing');
+}
+
+function audioEnded(id) {
+  updateAudioIcon(id, true);
+  const wrap = document.getElementById('audio_wrap_' + id);
+  if (wrap) wrap.classList.remove('playing');
+
+  // Reset to start
+  const el = document.getElementById('audio_el_' + id);
+  if (el) el.currentTime = 0;
+}
+
+function audioError(id) {
+  const wrap = document.getElementById('audio_wrap_' + id);
+  if (wrap) {
+    wrap.classList.add('audio-error');
+    wrap.innerHTML = '<p>⚠️ Cannot load audio. Please check your internet connection or contact support.</p>';
+  }
+  console.error('Audio loading error for question:', id);
+}
 
 function selectAnswer(qid, letter, el) {
   state.answers[qid] = letter;
@@ -956,13 +1669,22 @@ function selectAnswer(qid, letter, el) {
     if (ltr) { ltr.style.background = ''; ltr.style.color = ''; }
   });
   el.classList.add('selected');
+  updateQuestionNav();
 }
 
 function prevQuestion() {
-  if (state.currentIndex > 0) { state.currentIndex--; renderQuestion(); }
+  const start = getGroupStart(state.currentIndex);
+  if (start === 0) return;
+  state.currentIndex = getGroupStart(start - 1);
+  renderQuestion();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 function nextQuestion() {
-  if (state.currentIndex < state.questions.length - 1) { state.currentIndex++; renderQuestion(); }
+  const end = getGroupEnd(state.currentIndex);
+  if (end >= state.questions.length - 1) return;
+  state.currentIndex = end + 1;
+  renderQuestion();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 function confirmSubmit() {
   const unanswered = state.questions.length - Object.keys(state.answers).length;
@@ -973,35 +1695,96 @@ function confirmSubmit() {
 }
 
 // ==========================================
-// SUBMIT & SCORE
+// SUBMIT & SCORE (server-side via Supabase RPC)
 // ==========================================
-function submitTest() {
+async function submitTest() {
   if (state.submitted) return;
   state.submitted = true;
   clearInterval(state.timer);
   document.getElementById('timerDisplay').classList.remove('show');
 
-  const scores = calculateScores();
-  showResults(scores);
-  saveToGoogleSheets(scores);
+  const overlay = document.getElementById('savingOverlay');
+  overlay.classList.add('show');
+
+  const duration = Math.round((new Date() - state.startTime) / 1000);
+
+  // Convert answers map: { questionId: "A"|"B"|"C"|"D" }
+  const answersPayload = {};
+  Object.entries(state.answers).forEach(([qid, letter]) => {
+    answersPayload[qid] = letter;
+  });
+
+  try {
+    const { data, error } = await sbClient.rpc('submit_test', {
+      p_name:         state.student.name,
+      p_phone:        state.student.phone,
+      p_email:        state.student.email || '',
+      p_test_type:    state.testType,
+      p_started_at:   state.startTime.toISOString(),
+      p_duration_sec: duration,
+      p_answers:      answersPayload,
+    });
+
+    overlay.classList.remove('show');
+
+    if (error) throw error;
+
+    const scores = mapServerScores(data);
+    showResults(scores);
+
+    const saveStatus = document.getElementById('saveStatus');
+    saveStatus.textContent = '✓ Kết quả đã được lưu thành công!';
+    saveStatus.className = 'status-msg success';
+    saveStatus.style.display = 'block';
+
+  } catch(err) {
+    overlay.classList.remove('show');
+    console.error('Submit error:', err);
+    // Fallback: show client-side scores even if save failed
+    const scores = calculateScoresFallback();
+    showResults(scores);
+    const saveStatus = document.getElementById('saveStatus');
+    saveStatus.textContent = 'Không thể lưu kết quả. Vui lòng liên hệ HappyHouse.';
+    saveStatus.className = 'status-msg error';
+    saveStatus.style.display = 'block';
+  }
 }
 
-function calculateScores() {
+function mapServerScores(data) {
+  const sections = data.sections || {};
+  let totalCorrect = data.total_correct || 0;
+  let totalQ       = data.total_questions || 0;
+  const pct        = totalQ > 0 ? totalCorrect / totalQ : 0;
+  const band       = data.band || 'Below 3.5';
+  const scaled     = totalQ > 0 ? Math.round(totalCorrect / totalQ * 30) : 0;
+
+  const levelMap = {
+    'Below 3.5': 'beginner',
+    '3.5 – 4.0': 'elementary',
+    '4.5 – 5.0': 'intermediate',
+    '5.5 – 6.0': 'upper_intermediate',
+    '6.5 – 7.0': 'advanced',
+  };
+
+  return {
+    sections, totalCorrect, totalQ, pct, band,
+    bandLevel:   levelMap[band] || 'beginner',
+    scaled,
+    teacherNote: getTeacherNote(totalCorrect, totalQ),
+  };
+}
+
+function calculateScoresFallback() {
   const sections = {};
   state.questions.forEach(q => {
     if (!sections[q.section]) sections[q.section] = { correct: 0, total: 0 };
     sections[q.section].total++;
-    if (state.answers[q.id] === q.correct) sections[q.section].correct++;
   });
-
   let totalCorrect = 0, totalQ = 0;
-  Object.values(sections).forEach(s => { totalCorrect += s.correct; totalQ += s.total; });
-
-  const pct = totalQ > 0 ? totalCorrect / totalQ : 0;
-  const bandInfo = getBand(totalCorrect, totalQ);
-  const teacherNote = getTeacherNote(totalCorrect, totalQ);
-
-  return { sections, totalCorrect, totalQ, pct, band: bandInfo.band, bandLevel: bandInfo.level, scaled: bandInfo.scaled, teacherNote };
+  Object.values(sections).forEach(s => { totalQ += s.total; });
+  const pct = 0;
+  const bandInfo = getBand(0, totalQ);
+  return { sections, totalCorrect: 0, totalQ, pct, band: bandInfo.band, bandLevel: bandInfo.level, scaled: 0, teacherNote: getTeacherNote(0, totalQ) };
 }
 
 function getBand(totalCorrect, totalQ) {
@@ -1066,52 +1849,6 @@ function showResults(scores) {
   document.getElementById('resultScores').innerHTML = noteHtml + scoresHtml;
 }
 
-// ==========================================
-// SAVE TO GOOGLE SHEETS
-// ==========================================
-async function saveToGoogleSheets(scores) {
-  const overlay = document.getElementById('savingOverlay');
-  overlay.classList.add('show');
-
-  const duration = Math.round((new Date() - state.startTime) / 1000);
-  const payload = {
-    action: 'saveResult',
-    name: state.student.name,
-    phone: state.student.phone,
-    email: state.student.email,
-    testType: state.testType,
-    band: scores.band,
-    scaled: scores.scaled,
-    totalQ: scores.totalQ,
-    sections: JSON.stringify(scores.sections),
-    duration: duration,
-    timestamp: new Date().toISOString()
-  };
-
-  const saveStatus = document.getElementById('saveStatus');
-
-  if (!CONFIG.GOOGLE_SCRIPT_URL || CONFIG.GOOGLE_SCRIPT_URL.includes('YOUR_SCRIPT_ID')) {
-    overlay.classList.remove('show');
-    saveStatus.textContent = '⚠️ Chưa cấu hình Google Sheets. Xem file README.md để thiết lập.';
-    saveStatus.className = 'status-msg error';
-    saveStatus.style.display = 'block';
-    return;
-  }
-
-  try {
-    const params = new URLSearchParams(payload);
-    await fetch(CONFIG.GOOGLE_SCRIPT_URL + '?' + params.toString());
-    overlay.classList.remove('show');
-    saveStatus.textContent = '✓ Kết quả đã được lưu thành công!';
-    saveStatus.className = 'status-msg success';
-    saveStatus.style.display = 'block';
-  } catch(e) {
-    overlay.classList.remove('show');
-    saveStatus.textContent = 'Không thể lưu kết quả. Vui lòng liên hệ HappyHouse.';
-    saveStatus.className = 'status-msg error';
-    saveStatus.style.display = 'block';
-  }
-}
 
 function contactHappyHouse() {
   alert('Cảm ơn bạn! Tư vấn viên HappyHouse sẽ liên hệ với số ' + state.student.phone + ' trong thời gian sớm nhất.');
@@ -1119,6 +1856,9 @@ function contactHappyHouse() {
 
 function retryTest() {
   state = { student: state.student, testType: 'full', questions: [], answers: {}, currentIndex: 0, startTime: null, timer: null, timeLeft: 0, submitted: false };
+  activePassageId = null;
+  document.getElementById('testLayout').classList.remove('split-mode');
+  document.getElementById('questionNavBar').innerHTML = '';
   showPage('pageLanding');
   document.getElementById('inputName').value = state.student.name;
   document.getElementById('inputPhone').value = state.student.phone;
