@@ -31,21 +31,17 @@ export interface SectionScore {
   total: number
 }
 
-export interface TeacherNote {
-  text: string
-  color: string
-  icon: string
+export interface QuestionResult {
+  is_correct: boolean
+  correct_answer: string | null  // 'A'|'B'|'C'|'D' for MC/TF
+  fill_answer: string | null     // text for fill_blank
 }
 
 export interface TestResult {
   sections: Record<string, SectionScore>
   totalCorrect: number
   totalQ: number
-  pct: number
-  band: string
-  bandLevel: string
-  scaled: number
-  teacherNote: TeacherNote
+  questionResults: Record<string, QuestionResult>
 }
 
 export interface TestState {

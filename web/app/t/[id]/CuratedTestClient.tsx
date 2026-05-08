@@ -8,13 +8,11 @@ import { QuestionNavigator } from '@/components/test/QuestionNavigator'
 import { QuestionCard } from '@/components/test/QuestionCard'
 import { ReadingPanel } from '@/components/test/ReadingPanel'
 import { ListeningPanel } from '@/components/test/ListeningPanel'
-import { BandCircle } from '@/components/result/BandCircle'
-import { ScoreCard } from '@/components/result/ScoreCard'
+import { ResultView } from '@/components/result/ResultView'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import {
   getGroupStart, getGroupEnd, mapServerScores, subgroupInstruction,
-  SECTION_NAMES, LEVEL_MESSAGES,
 } from '@/lib/test-utils'
 import type { Question, Student, Answers, TestResult } from '@/types'
 import { ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react'
@@ -167,38 +165,15 @@ export function CuratedTestClient({ testId, testName, testDesc, timeLimitSec, qu
   if (phase === 'result' && result) return (
     <div className="w-full min-h-screen">
       <Header />
-      <div className="w-full max-w-[700px] mx-auto px-4 py-8 sm:py-12 text-center">
-        <BandCircle band={result.band} />
-        <h1 className="text-xl sm:text-2xl font-bold text-[#1A2744] mb-2">Xin chúc mừng, {student.name}!</h1>
-        <p className="text-sm sm:text-base text-gray-400 mb-8">{LEVEL_MESSAGES[result.bandLevel] ?? ''}</p>
-
-        <div
-          className="flex items-start sm:items-center gap-3 rounded-xl px-4 sm:px-5 py-4 mb-6 text-left"
-          style={{ background: `${result.teacherNote.color}18`, border: `1.5px solid ${result.teacherNote.color}40` }}
-        >
-          <span className="text-2xl shrink-0">{result.teacherNote.icon}</span>
-          <div>
-            <div className="text-[0.7rem] font-bold uppercase tracking-wide mb-0.5" style={{ color: result.teacherNote.color }}>Gợi ý lộ trình</div>
-            <div className="text-sm font-semibold" style={{ color: result.teacherNote.color }}>{result.teacherNote.text}</div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
-          {Object.entries(result.sections).map(([k, v]) => (
-            <ScoreCard key={k} label={SECTION_NAMES[k] ?? k} correct={v.correct} total={v.total} />
-          ))}
-          <ScoreCard label="Tổng điểm" correct={result.totalCorrect} total={result.totalQ} />
-        </div>
-
-        <div className="bg-[#1A2744] text-white rounded-2xl p-5 sm:p-8 mb-4">
-          <h3 className="text-base sm:text-lg font-bold mb-2">Bạn muốn cải thiện trình độ?</h3>
-          <p className="text-xs sm:text-sm opacity-80 mb-5">Tư vấn viên HappyHouse sẽ liên hệ để tư vấn lộ trình học phù hợp</p>
-          <Button onClick={() => alert(`Cảm ơn bạn! Tư vấn viên sẽ liên hệ số ${student.phone} sớm nhất.`)}
-            className="w-full sm:w-auto bg-[#E8303A] hover:bg-[#C0222B] text-white font-bold px-8 h-11 rounded-xl border-0">
-            Đăng ký tư vấn miễn phí
-          </Button>
-        </div>
-      </div>
+      <ResultView
+        studentName={student.name}
+        studentPhone={student.phone}
+        result={result}
+        questions={questions}
+        answers={answers}
+        onRetry={() => window.location.reload()}
+        onContact={() => alert(`Cảm ơn bạn! Tư vấn viên sẽ liên hệ số ${student.phone} sớm nhất.`)}
+      />
     </div>
   )
 

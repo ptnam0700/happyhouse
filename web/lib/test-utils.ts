@@ -1,4 +1,4 @@
-import type { Question, TestType, TestResult, TeacherNote, SectionScore } from '@/types'
+import type { Question, TestType, TestResult, SectionScore } from '@/types'
 
 export const SECTION_LABELS: Record<string, string> = {
   grammar: 'NGỮ PHÁP',
@@ -45,52 +45,18 @@ export function getGroupEnd(questions: Question[], idx: number): number {
   return i
 }
 
-export function getBand(correct: number, total: number): { band: string; level: string } {
-  if (total === 0) return { band: 'Below 3.5', level: 'beginner' }
-  const scaled = Math.round((correct / total) * 30)
-  if (scaled >= 27) return { band: '6.5 – 7.0', level: 'advanced' }
-  if (scaled >= 23) return { band: '5.5 – 6.0', level: 'upper_intermediate' }
-  if (scaled >= 18) return { band: '4.5 – 5.0', level: 'intermediate' }
-  if (scaled >= 13) return { band: '3.5 – 4.0', level: 'elementary' }
-  return { band: 'Below 3.5', level: 'beginner' }
-}
-
-export function getTeacherNote(correct: number, total: number): TeacherNote {
-  const scaled = total > 0 ? Math.round((correct / total) * 30) : 0
-  if (scaled >= 25) return { text: 'Có thể vào lớp IELTS 6.0+', color: '#10B981', icon: '🎯' }
-  if (scaled >= 20) return { text: 'Nên học Pre-IELTS / Foundation', color: '#F5A623', icon: '📘' }
-  return { text: 'Cần củng cố Grammar + Vocabulary cơ bản', color: '#E8303A', icon: '📝' }
-}
 
 export function mapServerScores(data: {
   sections?: Record<string, SectionScore>
   total_correct?: number
   total_questions?: number
-  band?: string
+  question_results?: Record<string, { is_correct: boolean; correct_answer: string | null; fill_answer: string | null }>
 }): TestResult {
-  const sections = data.sections ?? {}
-  const totalCorrect = data.total_correct ?? 0
-  const totalQ = data.total_questions ?? 0
-  const pct = totalQ > 0 ? totalCorrect / totalQ : 0
-  const band = data.band ?? 'Below 3.5'
-
-  const levelMap: Record<string, string> = {
-    'Below 3.5': 'beginner',
-    '3.5 – 4.0': 'elementary',
-    '4.5 – 5.0': 'intermediate',
-    '5.5 – 6.0': 'upper_intermediate',
-    '6.5 – 7.0': 'advanced',
-  }
-
   return {
-    sections,
-    totalCorrect,
-    totalQ,
-    pct,
-    band,
-    bandLevel: levelMap[band] ?? 'beginner',
-    scaled: totalQ > 0 ? Math.round((totalCorrect / totalQ) * 30) : 0,
-    teacherNote: getTeacherNote(totalCorrect, totalQ),
+    sections:        data.sections ?? {},
+    totalCorrect:    data.total_correct ?? 0,
+    totalQ:          data.total_questions ?? 0,
+    questionResults: data.question_results ?? {},
   }
 }
 
