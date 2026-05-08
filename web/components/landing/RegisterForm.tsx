@@ -43,7 +43,7 @@ export function RegisterForm({ onSubmit, className }: RegisterFormProps) {
         Thông tin thí sinh
       </h2>
       <p className="text-center text-gray-400 text-sm mb-6">
-        Vui lòng điền thông tin để bắt đầu làm bài
+        Chỉ cần họ tên và số điện thoại là bắt đầu được ngay
       </p>
 
       <div className="space-y-4">
@@ -67,7 +67,10 @@ export function RegisterForm({ onSubmit, className }: RegisterFormProps) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-[0.85rem] font-semibold text-[#1A2744]">Email</Label>
+          <Label className="text-[0.85rem] font-semibold text-[#1A2744]">
+            Email
+            <span className="ml-1.5 text-[0.75rem] font-normal text-gray-400">(tuỳ chọn)</span>
+          </Label>
           <Input
             type="email"
             value={email}
