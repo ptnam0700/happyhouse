@@ -1,6 +1,8 @@
 export type Section = 'grammar' | 'vocabulary' | 'reading' | 'listening'
-// 'reading' and 'listening' are legacy aliases for multiple_choice with a passage
+// 'reading' | 'listening' are legacy DB values — treated as multiple_choice in the UI
 export type QuestionType = 'multiple_choice' | 'fill_blank' | 'true_false' | 'reading' | 'listening'
+
+export const MULTIPLE_CHOICE_TYPES: QuestionType[] = ['multiple_choice', 'reading', 'listening']
 export type TestType = 'full' | 'mini'
 export type Answers = Record<string, string>
 

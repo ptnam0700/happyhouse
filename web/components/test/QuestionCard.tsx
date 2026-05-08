@@ -7,6 +7,7 @@ import { FillBlank } from './FillBlank'
 import { AudioPlayer } from './AudioPlayer'
 import { SECTION_LABELS } from '@/lib/test-utils'
 import type { Question } from '@/types'
+import { MULTIPLE_CHOICE_TYPES } from '@/types'
 
 interface QuestionCardProps {
   question: Question
@@ -72,8 +73,7 @@ export function QuestionCard({
         <AudioPlayer src={question.audio} audioId={question.id} className="mb-6" />
       )}
 
-      {/* 'reading' and 'listening' are legacy aliases — render as multiple choice */}
-      {(['multiple_choice', 'reading', 'listening'] as const).includes(question.type as any) && (
+      {MULTIPLE_CHOICE_TYPES.includes(question.type) && (
         <MultipleChoice
           questionId={question.id}
           options={question.options}
