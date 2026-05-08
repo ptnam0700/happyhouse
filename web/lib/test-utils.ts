@@ -98,8 +98,8 @@ export function subgroupInstruction(type: string, startNum: number, endNum: numb
   const range = startNum === endNum ? `Câu ${startNum}` : `Câu ${startNum}–${endNum}`
   if (type === 'true_false') return `${range} — Các câu sau là True hay False?`
   if (type === 'fill_blank') return `${range} — Điền một từ hoặc số vào chỗ trống.`
-  if (type === 'multiple_choice') return `${range} — Chọn đáp án đúng.`
-  return range
+  // 'multiple_choice', 'reading', 'listening' all render as multiple choice
+  return `${range} — Chọn đáp án đúng.`
 }
 
 export async function loadQuestions(testType: TestType, supabase: ReturnType<typeof import('./supabase/client').createClient>): Promise<Question[]> {

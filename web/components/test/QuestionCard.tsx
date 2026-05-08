@@ -72,7 +72,8 @@ export function QuestionCard({
         <AudioPlayer src={question.audio} audioId={question.id} className="mb-6" />
       )}
 
-      {question.type === 'multiple_choice' && (
+      {/* 'reading' and 'listening' are legacy aliases — render as multiple choice */}
+      {(['multiple_choice', 'reading', 'listening'] as const).includes(question.type as any) && (
         <MultipleChoice
           questionId={question.id}
           options={question.options}

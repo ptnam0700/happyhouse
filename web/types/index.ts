@@ -1,5 +1,6 @@
 export type Section = 'grammar' | 'vocabulary' | 'reading' | 'listening'
-export type QuestionType = 'multiple_choice' | 'fill_blank' | 'true_false'
+// 'reading' and 'listening' are legacy aliases for multiple_choice with a passage
+export type QuestionType = 'multiple_choice' | 'fill_blank' | 'true_false' | 'reading' | 'listening'
 export type TestType = 'full' | 'mini'
 export type Answers = Record<string, string>
 
