@@ -128,11 +128,11 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    box-sizing: border-box;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
+  html, body {
+    @apply bg-background text-foreground font-sans;
+    overflow-x: hidden;
+    width: 100%;
   }
 }

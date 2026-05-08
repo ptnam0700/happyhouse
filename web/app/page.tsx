@@ -18,6 +18,9 @@ export default function LandingPage() {
   const handleRegister = (student: Student) => {
     setStudent(student)
     setShowTestSelect(true)
+    setTimeout(() => {
+      document.getElementById('test-select')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
   }
 
   const handleSelectType = (type: TestType) => {
@@ -31,39 +34,39 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="w-full min-h-screen">
       <Header />
 
       {/* Hero */}
-      <div className="bg-gradient-to-br from-[#1A2744] to-[#243461] px-4 sm:px-8 py-12 sm:py-20 text-center text-white">
-        <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-4">
+      <div className="w-full bg-gradient-to-br from-[#1A2744] to-[#243461] px-4 py-12 sm:py-20 text-center text-white">
+        <h1 className="text-[clamp(1.75rem,5vw,3.5rem)] font-bold leading-tight mb-3">
           Kiểm tra trình độ
           <br />
           <span className="text-[#F5A623]">IELTS</span> của bạn
         </h1>
-        <p className="text-base text-white/75 max-w-[560px] mx-auto">
+        <p className="text-sm sm:text-base text-white/75 max-w-[480px] mx-auto">
           Bài kiểm tra chuẩn hoá được thiết kế bởi đội ngũ 8.5+ IELTS của HappyHouse
         </p>
       </div>
 
       {/* Register card */}
-      <div className="px-4">
+      <div className="w-full px-4">
         <RegisterForm onSubmit={handleRegister} />
       </div>
 
       {/* Test type selection */}
       {showTestSelect && (
-        <div className="max-w-[860px] mx-auto px-4 mt-12 pb-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div id="test-select" className="w-full max-w-[860px] mx-auto px-4 mt-10 pb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <TestOptionCard type="full" selected={selectedType === 'full'} onSelect={handleSelectType} />
             <TestOptionCard type="mini" selected={selectedType === 'mini'} onSelect={handleSelectType} />
           </div>
 
           {selectedType && (
-            <div className="flex justify-center mt-8">
+            <div className="mt-6">
               <Button
                 onClick={handleStart}
-                className="bg-[#E8303A] hover:bg-[#C0222B] text-white font-bold text-base sm:text-lg px-8 sm:px-12 h-12 sm:h-14 rounded-xl tracking-wide border-0 w-full sm:w-auto"
+                className="w-full sm:w-auto sm:min-w-[240px] bg-[#E8303A] hover:bg-[#C0222B] text-white font-bold text-base sm:text-lg h-12 sm:h-14 rounded-xl tracking-wide border-0 block sm:mx-auto"
               >
                 BẮT ĐẦU LÀM BÀI →
               </Button>

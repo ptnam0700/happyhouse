@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react'
 import { Header } from '@/components/layout/Header'
 import { LoadingOverlay } from '@/components/layout/LoadingOverlay'
 import { QuestionNavigator } from '@/components/test/QuestionNavigator'
@@ -45,12 +46,10 @@ export default function TestPage() {
   const isLast     = groupEnd >= questions.length - 1
   const isSplitMode = !!currentQ?.passageId
 
-  // Redirect if no student info
   useEffect(() => {
     if (!student.name || !student.phone) router.replace('/')
   }, [student, router])
 
-  // Load questions once
   useEffect(() => {
     if (loadedRef.current || !student.name) return
     loadedRef.current = true
@@ -79,7 +78,6 @@ export default function TestPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Run timer
   useEffect(() => {
     if (!questions.length || submitted) return
     timerRef.current = setInterval(tickTimer, 1000)
@@ -117,7 +115,6 @@ export default function TestPage() {
     router.push('/result')
   }, [submitted, startTime, student, testType, answers, setResult, router])
 
-  // Auto-submit on timeout
   useEffect(() => {
     if (timeLeft === 0 && questions.length && !submitted && !submittingRef.current) {
       handleSubmit()
@@ -172,7 +169,7 @@ export default function TestPage() {
       const e = s + sg.qs.length - 1
       return (
         <div key={`${sg.type}-${sg.offset}`}>
-          <div className="text-sm italic text-gray-400 px-4 py-2.5 bg-[#F7F6F2] border-l-[3px] border-[#1A2744] rounded-r-xl mb-3 mt-1">
+          <div className="text-xs sm:text-sm italic text-gray-400 px-3 py-2 bg-[#F7F6F2] border-l-[3px] border-[#1A2744] rounded-r-xl mb-3 mt-1">
             {subgroupInstruction(sg.type, s, e)}
           </div>
           {sg.qs.map((q, i) => (
@@ -195,16 +192,18 @@ export default function TestPage() {
     return <LoadingOverlay show message={loadingMsg} />
   }
 
+  const answeredCount = Object.keys(answers).length
   const counterText = groupStart + 1 === groupEnd + 1
-    ? `Câu ${groupStart + 1} / ${questions.length}`
-    : `Câu ${groupStart + 1}–${groupEnd + 1} / ${questions.length}`
+    ? `${groupStart + 1} / ${questions.length}`
+    : `${groupStart + 1}–${groupEnd + 1} / ${questions.length}`
 
   return (
     <>
       <LoadingOverlay show={saving} message="Đang lưu kết quả..." />
       <Header timeLeft={timeLeft} />
 
-      <main className={`mx-auto px-4 py-8 ${isSplitMode ? 'max-w-[1240px]' : 'max-w-[860px]'}`}>
+      {/* Main content — bottom padding reserves space for the mobile sticky nav */}
+      <main className={`w-full mx-auto px-3 sm:px-4 pt-4 sm:pt-8 pb-24 sm:pb-10 ${isSplitMode ? 'max-w-[1240px]' : 'max-w-[860px]'}`}>
         <QuestionNavigator
           questions={questions}
           answers={answers}
@@ -213,10 +212,10 @@ export default function TestPage() {
           onJump={jumpToQuestion}
         />
 
-        <div className={isSplitMode ? 'flex gap-6 items-start' : 'block'}>
-          {/* Left: passage or listening panel */}
+        <div className={isSplitMode ? 'flex gap-4 sm:gap-6 items-start' : 'block'}>
+          {/* Left panel: desktop only */}
           {isSplitMode && currentQ && (
-            <div className="flex-[0_0_44%] sticky top-20 max-h-[calc(100vh-96px)] overflow-y-auto md:block hidden">
+            <div className="flex-[0_0_44%] sticky top-20 max-h-[calc(100vh-96px)] overflow-y-auto hidden md:block">
               {currentQ.section === 'reading' ? (
                 <ReadingPanel title={currentQ.passageTitle} content={currentQ.passageContent} />
               ) : (
@@ -229,13 +228,12 @@ export default function TestPage() {
             </div>
           )}
 
-          {/* Right: question(s) */}
-          <div className="flex-1 min-w-0">
-            {/* Mobile: show passage above questions */}
+          <div className="flex-1 min-w-0 w-full">
+            {/* Mobile: passage above questions */}
             {isSplitMode && currentQ && (
-              <div className="md:hidden mb-4">
+              <div className="md:hidden mb-3">
                 {currentQ.section === 'reading' ? (
-                  <div className="max-h-48 overflow-y-auto">
+                  <div className="max-h-52 overflow-y-auto rounded-2xl">
                     <ReadingPanel title={currentQ.passageTitle} content={currentQ.passageContent} />
                   </div>
                 ) : (
@@ -248,9 +246,7 @@ export default function TestPage() {
               </div>
             )}
 
-            {isSplitMode ? (
-              renderPassageQuestions()
-            ) : currentQ ? (
+            {isSplitMode ? renderPassageQuestions() : currentQ ? (
               <QuestionCard
                 question={currentQ}
                 questionNumber={currentIndex + 1}
@@ -260,27 +256,71 @@ export default function TestPage() {
               />
             ) : null}
 
-            {/* Navigation */}
-            <div className="flex justify-between items-center gap-2 mt-2">
+            {/* Desktop inline nav */}
+            <div className="hidden sm:flex justify-between items-center gap-3 mt-4">
               <Button
                 variant="outline"
                 disabled={groupStart === 0}
                 onClick={prevGroup}
-                className="px-4 sm:px-8 h-11 rounded-xl border-gray-200 text-[#1A2744] font-semibold hover:border-[#1A2744] disabled:opacity-40"
+                className="flex items-center gap-2 px-6 h-11 rounded-xl border-gray-200 text-[#1A2744] font-semibold hover:border-[#1A2744] disabled:opacity-40"
               >
-                ← Quay lại
+                <ChevronLeft size={18} />
+                Quay lại
               </Button>
-              <span className="text-xs sm:text-sm text-gray-400 text-center">{counterText}</span>
+              <span className="text-sm text-gray-400">
+                Câu {counterText} · {answeredCount}/{questions.length} đã trả lời
+              </span>
               <Button
                 onClick={nextGroup}
-                className="px-4 sm:px-8 h-11 rounded-xl bg-[#E8303A] hover:bg-[#C0222B] text-white font-semibold border-0"
+                className="flex items-center gap-2 px-6 h-11 rounded-xl bg-[#E8303A] hover:bg-[#C0222B] text-white font-semibold border-0"
               >
-                {isLast ? 'Nộp bài ✓' : 'Tiếp theo →'}
+                {isLast ? (
+                  <><CheckCircle size={18} /> Nộp bài</>
+                ) : (
+                  <>Tiếp theo <ChevronRight size={18} /></>
+                )}
               </Button>
             </div>
           </div>
         </div>
       </main>
+
+      {/* Mobile sticky bottom nav */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 shadow-[0_-4px_16px_rgba(26,39,68,0.10)] px-3 py-3">
+        {/* Progress bar */}
+        <div className="mb-2.5 flex items-center justify-between text-[0.7rem] text-gray-400 font-medium">
+          <span>Câu {counterText}</span>
+          <span>{answeredCount}/{questions.length} đã trả lời</span>
+        </div>
+        <div className="h-1 bg-gray-100 rounded-full mb-3 overflow-hidden">
+          <div
+            className="h-full bg-[#E8303A] rounded-full transition-all duration-300"
+            style={{ width: `${questions.length ? (answeredCount / questions.length) * 100 : 0}%` }}
+          />
+        </div>
+
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            disabled={groupStart === 0}
+            onClick={prevGroup}
+            className="flex items-center justify-center gap-1.5 flex-1 h-11 rounded-xl border-gray-200 text-[#1A2744] font-semibold text-sm disabled:opacity-40"
+          >
+            <ChevronLeft size={16} />
+            Quay lại
+          </Button>
+          <Button
+            onClick={nextGroup}
+            className="flex items-center justify-center gap-1.5 flex-[2] h-11 rounded-xl bg-[#E8303A] hover:bg-[#C0222B] text-white font-semibold text-sm border-0"
+          >
+            {isLast ? (
+              <><CheckCircle size={16} /> Nộp bài</>
+            ) : (
+              <>Tiếp theo <ChevronRight size={16} /></>
+            )}
+          </Button>
+        </div>
+      </div>
     </>
   )
 }

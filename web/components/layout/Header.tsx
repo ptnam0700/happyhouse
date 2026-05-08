@@ -22,32 +22,32 @@ export function Header({ timeLeft, className }: HeaderProps) {
   return (
     <header
       className={cn(
-        'sticky top-0 z-50 h-16 bg-[#1A2744] px-4 sm:px-8 flex items-center justify-between',
+        'sticky top-0 z-50 w-full h-16 bg-[#1A2744] flex items-center justify-between px-4 sm:px-8',
         className
       )}
     >
-      <div className="flex items-center gap-2 text-white font-bold text-lg sm:text-xl">
-        <div className="w-10 h-10 flex items-center justify-center">
+      <div className="flex items-center gap-2 text-white font-bold text-base sm:text-xl min-w-0">
+        <div className="w-9 h-9 shrink-0 flex items-center justify-center">
           <Image
             src="/happy_house_sun.png"
             alt="HappyHouse Logo"
-            width={40}
-            height={40}
+            width={36}
+            height={36}
             className="object-contain"
           />
         </div>
-        <span>HappyHouse IELTS</span>
+        <span className="truncate">HappyHouse IELTS</span>
       </div>
 
       {showTimer && (
         <div
           className={cn(
-            'flex items-center gap-1.5 font-semibold text-lg',
+            'flex items-center gap-1.5 font-semibold text-base sm:text-lg shrink-0 ml-2',
             isWarning ? 'text-[#E8303A]' : 'text-[#F5A623]'
           )}
         >
-          <Clock size={18} />
-          <span>{formatTime(timeLeft!)}</span>
+          <Clock size={16} className="sm:w-[18px] sm:h-[18px]" />
+          <span className="tabular-nums">{formatTime(timeLeft!)}</span>
         </div>
       )}
     </header>

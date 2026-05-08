@@ -32,18 +32,28 @@ export function RegisterForm({ onSubmit, className }: RegisterFormProps) {
   }
 
   return (
-    <div className={cn('bg-white rounded-[20px] p-6 sm:p-10 max-w-[480px] mx-auto shadow-[0_4px_24px_rgba(26,39,68,0.10)] -mt-8 relative z-10', className)}>
-      <h2 className="text-[1.4rem] font-bold text-[#1A2744] mb-1.5 text-center">Thông tin thí sinh</h2>
-      <p className="text-center text-gray-400 text-sm mb-8">Vui lòng điền thông tin để bắt đầu làm bài</p>
+    <div className={cn(
+      'bg-white rounded-2xl w-full max-w-[480px] mx-auto',
+      'p-5 sm:p-8',
+      '-mt-6 sm:-mt-8 relative z-10',
+      'shadow-[0_4px_24px_rgba(26,39,68,0.12)]',
+      className
+    )}>
+      <h2 className="text-xl sm:text-[1.4rem] font-bold text-[#1A2744] mb-1 text-center">
+        Thông tin thí sinh
+      </h2>
+      <p className="text-center text-gray-400 text-sm mb-6">
+        Vui lòng điền thông tin để bắt đầu làm bài
+      </p>
 
-      <div className="space-y-5">
+      <div className="space-y-4">
         <div className="space-y-1.5">
           <Label className="text-[0.85rem] font-semibold text-[#1A2744]">Họ và tên *</Label>
           <Input
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="Nguyễn Văn A"
-            className="border-[1.5px] border-gray-200 rounded-xl focus-visible:border-[#E8303A] focus-visible:ring-0 h-11"
+            className="border-[1.5px] border-gray-200 rounded-xl focus-visible:border-[#E8303A] focus-visible:ring-0 h-11 w-full"
           />
         </div>
         <div className="space-y-1.5">
@@ -53,7 +63,7 @@ export function RegisterForm({ onSubmit, className }: RegisterFormProps) {
             value={phone}
             onChange={e => setPhone(e.target.value)}
             placeholder="0901234567"
-            className="border-[1.5px] border-gray-200 rounded-xl focus-visible:border-[#E8303A] focus-visible:ring-0 h-11"
+            className="border-[1.5px] border-gray-200 rounded-xl focus-visible:border-[#E8303A] focus-visible:ring-0 h-11 w-full"
           />
         </div>
         <div className="space-y-1.5">
@@ -63,7 +73,7 @@ export function RegisterForm({ onSubmit, className }: RegisterFormProps) {
             value={email}
             onChange={e => setEmail(e.target.value)}
             placeholder="email@example.com"
-            className="border-[1.5px] border-gray-200 rounded-xl focus-visible:border-[#E8303A] focus-visible:ring-0 h-11"
+            className="border-[1.5px] border-gray-200 rounded-xl focus-visible:border-[#E8303A] focus-visible:ring-0 h-11 w-full"
           />
         </div>
 
