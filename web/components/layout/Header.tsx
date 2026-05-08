@@ -22,11 +22,11 @@ export function Header({ timeLeft, className }: HeaderProps) {
   return (
     <header
       className={cn(
-        'sticky top-0 z-50 h-16 bg-[#1A2744] px-8 flex items-center justify-between',
+        'sticky top-0 z-50 h-16 bg-[#1A2744] px-4 sm:px-8 flex items-center justify-between',
         className
       )}
     >
-      <div className="flex items-center gap-2.5 text-white font-bold text-xl">
+      <div className="flex items-center gap-2 text-white font-bold text-lg sm:text-xl">
         <div className="w-10 h-10 flex items-center justify-center">
           <Image
             src="/happy_house_sun.png"

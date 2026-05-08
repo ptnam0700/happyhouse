@@ -35,7 +35,7 @@ export default function ResultPage() {
     <div className="min-h-screen">
       <Header />
 
-      <div className="max-w-[700px] mx-auto px-4 py-12 text-center">
+      <div className="max-w-[700px] mx-auto px-4 py-8 sm:py-12 text-center">
         <BandCircle band={band} />
 
         <h1 className="text-2xl font-bold text-[#1A2744] mb-2">
@@ -63,7 +63,7 @@ export default function ResultPage() {
         </div>
 
         {/* Section scores */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-10">
           {Object.entries(sections).map(([key, val]) => (
             <ScoreCard
               key={key}
@@ -80,7 +80,7 @@ export default function ResultPage() {
         </div>
 
         {/* CTA */}
-        <div className="bg-[#1A2744] text-white rounded-2xl p-8 mb-6">
+        <div className="bg-[#1A2744] text-white rounded-2xl p-5 sm:p-8 mb-6">
           <h3 className="text-lg font-bold mb-2">Bạn muốn cải thiện trình độ?</h3>
           <p className="text-sm opacity-80 mb-5">
             Tư vấn viên HappyHouse sẽ liên hệ để tư vấn lộ trình học IELTS phù hợp với bạn

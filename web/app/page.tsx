@@ -35,7 +35,7 @@ export default function LandingPage() {
       <Header />
 
       {/* Hero */}
-      <div className="bg-gradient-to-br from-[#1A2744] to-[#243461] px-8 py-20 text-center text-white">
+      <div className="bg-gradient-to-br from-[#1A2744] to-[#243461] px-4 sm:px-8 py-12 sm:py-20 text-center text-white">
         <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-4">
           Kiểm tra trình độ
           <br />
@@ -63,7 +63,7 @@ export default function LandingPage() {
             <div className="flex justify-center mt-8">
               <Button
                 onClick={handleStart}
-                className="bg-[#E8303A] hover:bg-[#C0222B] text-white font-bold text-lg px-12 h-14 rounded-xl tracking-wide border-0"
+                className="bg-[#E8303A] hover:bg-[#C0222B] text-white font-bold text-base sm:text-lg px-8 sm:px-12 h-12 sm:h-14 rounded-xl tracking-wide border-0 w-full sm:w-auto"
               >
                 BẮT ĐẦU LÀM BÀI →
               </Button>

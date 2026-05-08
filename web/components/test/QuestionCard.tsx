@@ -46,7 +46,7 @@ export function QuestionCard({
       id={`q_${question.id}`}
       className={cn(
         'bg-white rounded-2xl shadow-[0_4px_24px_rgba(26,39,68,0.10)]',
-        compact ? 'px-7 py-6 mb-3.5' : 'px-10 py-10 mb-6',
+        compact ? 'px-4 py-5 sm:px-7 sm:py-6 mb-3.5' : 'px-4 py-6 sm:px-10 sm:py-10 mb-6',
         className
       )}
     >
@@ -63,7 +63,7 @@ export function QuestionCard({
       <div
         className={cn(
           'font-medium leading-relaxed text-[#1A2744]',
-          compact ? 'text-[0.98rem] mb-4' : 'text-lg mb-8'
+          compact ? 'text-[0.95rem] mb-4' : 'text-base sm:text-lg mb-6 sm:mb-8'
         )}
         dangerouslySetInnerHTML={{ __html: formatQuestionText(question.question, question.type) }}
       />

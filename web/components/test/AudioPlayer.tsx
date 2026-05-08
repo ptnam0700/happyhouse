@@ -71,7 +71,7 @@ export function AudioPlayer({ src, audioId, onPlay, className }: AudioPlayerProp
   return (
     <div
       className={cn(
-        'flex items-center gap-4 rounded-2xl border-2 p-5 transition-all',
+        'flex items-center gap-3 sm:gap-4 rounded-2xl border-2 p-3 sm:p-5 transition-all',
         playing
           ? 'bg-gradient-to-r from-red-50 to-red-100/50 border-[#E8303A]'
           : 'bg-gradient-to-r from-[#F0F4FF] to-[#E8F0FF] border-[#D1E3FF] hover:border-[#1A2744] hover:shadow-md',
@@ -134,7 +134,7 @@ export function AudioPlayer({ src, audioId, onPlay, className }: AudioPlayerProp
       </div>
 
       {/* Time */}
-      <div className="flex items-center gap-1.5 text-sm text-gray-400 font-semibold min-w-[80px] justify-end tabular-nums shrink-0">
+      <div className="flex items-center gap-1 text-xs sm:text-sm text-gray-400 font-semibold min-w-[60px] sm:min-w-[80px] justify-end tabular-nums shrink-0">
         <span>{formatTime(currentTime)}</span>
         <span className="opacity-50">/</span>
         <span>{formatTime(duration)}</span>

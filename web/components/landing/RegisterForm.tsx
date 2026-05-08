@@ -32,7 +32,7 @@ export function RegisterForm({ onSubmit, className }: RegisterFormProps) {
   }
 
   return (
-    <div className={cn('bg-white rounded-[20px] p-10 max-w-[480px] mx-auto shadow-[0_4px_24px_rgba(26,39,68,0.10)] -mt-8 relative z-10', className)}>
+    <div className={cn('bg-white rounded-[20px] p-6 sm:p-10 max-w-[480px] mx-auto shadow-[0_4px_24px_rgba(26,39,68,0.10)] -mt-8 relative z-10', className)}>
       <h2 className="text-[1.4rem] font-bold text-[#1A2744] mb-1.5 text-center">Thông tin thí sinh</h2>
       <p className="text-center text-gray-400 text-sm mb-8">Vui lòng điền thông tin để bắt đầu làm bài</p>
 

@@ -261,19 +261,19 @@ export default function TestPage() {
             ) : null}
 
             {/* Navigation */}
-            <div className="flex justify-between items-center gap-4 flex-wrap mt-2">
+            <div className="flex justify-between items-center gap-2 mt-2">
               <Button
                 variant="outline"
                 disabled={groupStart === 0}
                 onClick={prevGroup}
-                className="px-8 h-11 rounded-xl border-gray-200 text-[#1A2744] font-semibold hover:border-[#1A2744] disabled:opacity-40"
+                className="px-4 sm:px-8 h-11 rounded-xl border-gray-200 text-[#1A2744] font-semibold hover:border-[#1A2744] disabled:opacity-40"
               >
                 ← Quay lại
               </Button>
-              <span className="text-sm text-gray-400">{counterText}</span>
+              <span className="text-xs sm:text-sm text-gray-400 text-center">{counterText}</span>
               <Button
                 onClick={nextGroup}
-                className="px-8 h-11 rounded-xl bg-[#E8303A] hover:bg-[#C0222B] text-white font-semibold border-0"
+                className="px-4 sm:px-8 h-11 rounded-xl bg-[#E8303A] hover:bg-[#C0222B] text-white font-semibold border-0"
               >
                 {isLast ? 'Nộp bài ✓' : 'Tiếp theo →'}
               </Button>
