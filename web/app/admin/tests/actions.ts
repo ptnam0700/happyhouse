@@ -21,6 +21,32 @@ export async function createTest(_: unknown, formData: FormData) {
   redirect(`/admin/tests/${data.id}`)
 }
 
+export async function createTestWithQuestions(
+  data: { name: string; description: string; time_limit_sec: number; published: boolean },
+  questionIds: string[],
+): Promise<{ id: string }> {
+  const db = createServiceClient()
+
+  const { data: test, error } = await db.from('tests').insert({
+    name:           data.name.trim() || 'Bài test mới',
+    description:    data.description.trim() || null,
+    time_limit_sec: data.time_limit_sec,
+    published:      data.published,
+    active:         true,
+  }).select('id').single()
+
+  if (error) throw error
+
+  if (questionIds.length > 0) {
+    await db.from('test_questions').insert(
+      questionIds.map((qid, i) => ({ test_id: test.id, question_id: qid, order_index: i }))
+    )
+  }
+
+  revalidatePath('/admin/tests')
+  return { id: test.id }
+}
+
 export async function updateTest(id: string, formData: FormData) {
   const db = createServiceClient()
   const { error } = await db.from('tests').update({
