@@ -1,79 +1,136 @@
-'use client'
-
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import type { Metadata } from 'next'
 import { Header } from '@/components/layout/Header'
-import { RegisterForm } from '@/components/landing/RegisterForm'
-import { TestOptionCard } from '@/components/landing/TestOptionCard'
-import { Button } from '@/components/ui/button'
-import { useTest } from '@/lib/test-context'
-import type { Student, TestType } from '@/types'
+import { LandingClient } from '@/components/landing/LandingClient'
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://happyhouseielts.com'
+
+export const metadata: Metadata = {
+  title: 'Kiểm Tra Trình Độ IELTS Miễn Phí | HappyHouse IELTS',
+  description:
+    'Bài kiểm tra trình độ IELTS chuẩn hoá, hoàn toàn miễn phí. Được thiết kế bởi đội ngũ giáo viên 8.5+ IELTS tại HappyHouse. Nhận kết quả band score và lộ trình học ngay.',
+  keywords: [
+    'kiểm tra trình độ IELTS',
+    'placement test IELTS',
+    'bài thi IELTS miễn phí',
+    'HappyHouse IELTS',
+    'luyện thi IELTS',
+    'trung tâm tiếng Anh',
+    'band score IELTS',
+    'học IELTS',
+  ],
+  alternates: {
+    canonical: SITE_URL,
+  },
+  openGraph: {
+    type: 'website',
+    url: SITE_URL,
+    siteName: 'HappyHouse IELTS',
+    locale: 'vi_VN',
+    title: 'Kiểm Tra Trình Độ IELTS Miễn Phí | HappyHouse IELTS',
+    description:
+      'Bài kiểm tra trình độ IELTS chuẩn hoá do đội ngũ 8.5+ thiết kế. Nhận band score và lộ trình học IELTS phù hợp hoàn toàn miễn phí.',
+    images: [
+      {
+        url: `${SITE_URL}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: 'HappyHouse IELTS – Kiểm tra trình độ miễn phí',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Kiểm Tra Trình Độ IELTS Miễn Phí | HappyHouse IELTS',
+    description:
+      'Bài kiểm tra IELTS chuẩn hoá miễn phí. Nhận band score và lộ trình học phù hợp ngay hôm nay.',
+    images: [`${SITE_URL}/og-image.png`],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-snippet': -1, 'max-image-preview': 'large' },
+  },
+}
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'EducationalOrganization',
+      '@id': `${SITE_URL}/#organization`,
+      name: 'HappyHouse IELTS',
+      url: SITE_URL,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${SITE_URL}/happy_house_sun.png`,
+      },
+      description:
+        'Trung tâm luyện thi IELTS chuyên nghiệp với đội ngũ giáo viên đạt 8.5+ IELTS.',
+      sameAs: [],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: 'HappyHouse IELTS',
+      publisher: { '@id': `${SITE_URL}/#organization` },
+      inLanguage: 'vi-VN',
+    },
+    {
+      '@type': 'WebPage',
+      '@id': `${SITE_URL}/#webpage`,
+      url: SITE_URL,
+      name: 'Kiểm Tra Trình Độ IELTS Miễn Phí',
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      about: { '@id': `${SITE_URL}/#organization` },
+      description: 'Bài kiểm tra trình độ IELTS chuẩn hoá miễn phí tại HappyHouse.',
+      inLanguage: 'vi-VN',
+    },
+    {
+      '@type': 'Service',
+      '@id': `${SITE_URL}/#service`,
+      name: 'Bài Kiểm Tra Trình Độ IELTS',
+      provider: { '@id': `${SITE_URL}/#organization` },
+      description:
+        'Kiểm tra trình độ IELTS miễn phí gồm Ngữ pháp, Từ vựng, Đọc hiểu và Nghe hiểu. Nhận band score IELTS ước tính và tư vấn lộ trình học.',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'VND',
+        availability: 'https://schema.org/InStock',
+      },
+    },
+  ],
+}
 
 export default function LandingPage() {
-  const router = useRouter()
-  const { setStudent, setTestType } = useTest()
-  const [showTestSelect, setShowTestSelect] = useState(false)
-  const [selectedType, setSelectedType] = useState<TestType | null>(null)
-
-  const handleRegister = (student: Student) => {
-    setStudent(student)
-    setShowTestSelect(true)
-    setTimeout(() => {
-      document.getElementById('test-select')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 50)
-  }
-
-  const handleSelectType = (type: TestType) => {
-    setSelectedType(type)
-    setTestType(type)
-  }
-
-  const handleStart = () => {
-    if (!selectedType) return
-    router.push('/test')
-  }
-
   return (
     <div className="w-full min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <Header />
 
-      {/* Hero */}
-      <div className="w-full bg-gradient-to-br from-[#1A2744] to-[#243461] px-4 py-12 sm:py-20 text-center text-white">
+      {/* Hero — static, server-rendered for SEO */}
+      <section
+        aria-label="Giới thiệu"
+        className="w-full bg-gradient-to-br from-[#1A2744] to-[#243461] px-4 py-12 sm:py-20 text-center text-white"
+      >
         <h1 className="text-[clamp(1.75rem,5vw,3.5rem)] font-bold leading-tight mb-3">
           Kiểm tra trình độ
           <br />
           <span className="text-[#F5A623]">IELTS</span> của bạn
         </h1>
         <p className="text-sm sm:text-base text-white/75 max-w-[480px] mx-auto">
-          Bài kiểm tra chuẩn hoá được thiết kế bởi đội ngũ 8.5+ IELTS của HappyHouse
+          Bài kiểm tra chuẩn hoá được thiết kế bởi đội ngũ 8.5+ IELTS của HappyHouse.
+          Hoàn toàn miễn phí.
         </p>
-      </div>
+      </section>
 
-      {/* Register card */}
-      <div className="w-full px-4">
-        <RegisterForm onSubmit={handleRegister} />
-      </div>
-
-      {/* Test type selection */}
-      {showTestSelect && (
-        <div id="test-select" className="w-full max-w-[860px] mx-auto px-4 mt-10 pb-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            <TestOptionCard type="full" selected={selectedType === 'full'} onSelect={handleSelectType} />
-            <TestOptionCard type="mini" selected={selectedType === 'mini'} onSelect={handleSelectType} />
-          </div>
-
-          {selectedType && (
-            <div className="mt-6">
-              <Button
-                onClick={handleStart}
-                className="w-full sm:w-auto sm:min-w-[240px] bg-[#E8303A] hover:bg-[#C0222B] text-white font-bold text-base sm:text-lg h-12 sm:h-14 rounded-xl tracking-wide border-0 block sm:mx-auto"
-              >
-                BẮT ĐẦU LÀM BÀI →
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
+      {/* Interactive client section */}
+      <LandingClient />
     </div>
   )
 }

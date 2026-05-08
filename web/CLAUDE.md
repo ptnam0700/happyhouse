@@ -8,7 +8,7 @@
 - **Testing**: Jest + React Testing Library
 - **Linting**: ESLint with `@typescript-eslint`
 - **Formatting**: Prettier
-- **Package Manager**: `pnpm` (preferred)
+- **Package Manager**: `npm` (preferred)
 
 ## 📂 Recommended Project Structure
 

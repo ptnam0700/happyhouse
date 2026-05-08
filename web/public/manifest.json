@@ -1,0 +1,16 @@
+{
+  "name": "HappyHouse IELTS",
+  "short_name": "HappyHouse",
+  "description": "Kiểm tra trình độ IELTS miễn phí",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F6F2",
+  "theme_color": "#1A2744",
+  "icons": [
+    {
+      "src": "/happy_house_sun.png",
+      "sizes": "any",
+      "type": "image/png"
+    }
+  ]
+}
