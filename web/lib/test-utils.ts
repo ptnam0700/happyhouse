@@ -1,5 +1,38 @@
 import type { Question, TestType, TestResult, SectionScore } from '@/types'
 
+/**
+ * Ensures passage questions are contiguous — when we first encounter a
+ * passage question we insert the entire group at that position.
+ * Standalone questions keep their relative order.
+ */
+export function sortQuestionsForDisplay(questions: Question[]): Question[] {
+  if (!questions.length) return questions
+
+  // Build passage groups in the order they first appear
+  const groups: Record<string, Question[]> = {}
+  questions.forEach(q => {
+    if (q.passageId) {
+      if (!groups[q.passageId]) groups[q.passageId] = []
+      groups[q.passageId].push(q)
+    }
+  })
+
+  const inserted = new Set<string>()
+  const result: Question[] = []
+
+  for (const q of questions) {
+    if (!q.passageId) {
+      result.push(q)
+    } else if (!inserted.has(q.passageId)) {
+      inserted.add(q.passageId)
+      result.push(...groups[q.passageId])
+    }
+    // Already inserted as part of group — skip
+  }
+
+  return result
+}
+
 export const SECTION_LABELS: Record<string, string> = {
   grammar: 'NGỮ PHÁP',
   listening: 'NGHE HIỂU',

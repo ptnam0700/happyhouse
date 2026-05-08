@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createServiceClient } from '@/lib/supabase/service'
 import { CuratedTestClient } from './CuratedTestClient'
+import { sortQuestionsForDisplay } from '@/lib/test-utils'
 import type { Metadata } from 'next'
 import type { Question } from '@/types'
 
@@ -68,7 +69,7 @@ export default async function CuratedTestPage({ params }: { params: Promise<{ id
       testName={test.name}
       testDesc={test.description}
       timeLimitSec={test.time_limit_sec}
-      questions={questions}
+      questions={sortQuestionsForDisplay(questions)}
     />
   )
 }

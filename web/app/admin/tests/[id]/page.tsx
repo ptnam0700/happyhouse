@@ -18,7 +18,7 @@ export default async function TestEditPage({ params }: { params: Promise<{ id: s
       .eq('test_id', id)
       .order('order_index'),
     db.from('questions')
-      .select('id, section, type, level, question_text')
+      .select('id, section, type, level, question_text, passage_id, passages(id, title, type)')
       .eq('active', true)
       .order('section').order('created_at', { ascending: false }),
   ])
@@ -41,7 +41,19 @@ export default async function TestEditPage({ params }: { params: Promise<{ id: s
     <TestEditClient
       test={test as any}
       testQuestions={testQuestions}
-      allQuestions={allQ ?? []}
+      allQuestions={(allQ ?? []).map((q: any) => {
+      const p = Array.isArray(q.passages) ? q.passages[0] : q.passages
+      return {
+        id:            q.id,
+        section:       q.section,
+        type:          q.type,
+        level:         q.level,
+        question_text: q.question_text,
+        passage_id:    q.passage_id ?? null,
+        passage_title: p?.title ?? null,
+        passage_type:  p?.type ?? null,
+      }
+    })}
       siteUrl={SITE}
     />
   )

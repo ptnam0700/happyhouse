@@ -18,6 +18,7 @@ interface TestQuestion {
 }
 interface AllQuestion {
   id: string; section: string; type: string; level: string | null; question_text: string
+  passage_id: string | null; passage_title: string | null; passage_type: string | null
 }
 interface Test {
   id: string; name: string; description: string | null
@@ -98,15 +99,40 @@ export function TestEditClient({ test, testQuestions: initialTQ, allQuestions, s
   }
 
   // ── Question picker ────────────────────────────────────────────
-  const pickerFiltered = allQuestions.filter(q => {
+  const pickerAvailable = allQuestions.filter(q => {
     if (addedIds.has(q.id)) return false
-    if (pickerSection !== 'all' && q.section !== pickerSection) return false
+    if (pickerSection !== 'all') {
+      if (pickerSection === 'standalone' && q.passage_id) return false
+      if (pickerSection !== 'standalone' && q.section !== pickerSection) return false
+    }
     const term = pickerSearch.trim().toLowerCase()
-    return !term || q.question_text.toLowerCase().includes(term)
+    return !term || q.question_text.toLowerCase().includes(term) ||
+      (q.passage_title ?? '').toLowerCase().includes(term)
+  })
+
+  // Group picker items: passage groups first (by first appearance), then standalones
+  const passageGroupMap: Record<string, AllQuestion[]> = {}
+  const standaloneQs: AllQuestion[] = []
+  pickerAvailable.forEach(q => {
+    if (q.passage_id) {
+      if (!passageGroupMap[q.passage_id]) passageGroupMap[q.passage_id] = []
+      passageGroupMap[q.passage_id].push(q)
+    } else {
+      standaloneQs.push(q)
+    }
   })
 
   const toggleSelect = (id: string) =>
     setSelected(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s })
+
+  const toggleSelectGroup = (ids: string[]) => {
+    setSelected(prev => {
+      const s = new Set(prev)
+      const allSelected = ids.every(id => s.has(id))
+      ids.forEach(id => allSelected ? s.delete(id) : s.add(id))
+      return s
+    })
+  }
 
   const handleAddSelected = () => {
     if (!selected.size) return
@@ -273,43 +299,114 @@ export function TestEditClient({ test, testQuestions: initialTQ, allQuestions, s
 
               {/* Picker filters */}
               <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 flex-wrap">
-                {['all','grammar','vocabulary','reading','listening'].map(s => (
-                  <button key={s} onClick={() => setPickerSection(s)}
+                {[
+                  { v: 'all',        l: 'Tất cả'    },
+                  { v: 'reading',    l: '📖 Đọc'    },
+                  { v: 'listening',  l: '🎧 Nghe'   },
+                  { v: 'standalone', l: 'Độc lập'   },
+                  { v: 'grammar',    l: 'Ngữ pháp'  },
+                  { v: 'vocabulary', l: 'Từ vựng'   },
+                ].map(s => (
+                  <button key={s.v} onClick={() => setPickerSection(s.v)}
                     className={cn('text-xs font-semibold px-3 py-1.5 rounded-full transition-colors',
-                      pickerSection === s ? 'bg-[#1A2744] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200')}>
-                    {s === 'all' ? 'Tất cả' : SECTION_LABEL[s]?.label ?? s}
+                      pickerSection === s.v ? 'bg-[#1A2744] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200')}>
+                    {s.l}
                   </button>
                 ))}
                 <div className="relative ml-auto w-48">
                   <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input value={pickerSearch} onChange={e => setPickerSearch(e.target.value)}
-                    placeholder="Tìm câu hỏi..."
+                    placeholder="Tìm câu hỏi / bài đọc..."
                     className="w-full h-8 pl-7 pr-3 rounded-xl border border-gray-200 bg-gray-50 text-xs text-[#1A2744] placeholder:text-gray-300 focus:outline-none focus:border-[#E8303A]" />
                 </div>
               </div>
 
-              {/* Picker list */}
-              <div className="max-h-72 overflow-y-auto divide-y divide-gray-50">
-                {pickerFiltered.slice(0, 50).map(q => {
-                  const sec = SECTION_LABEL[q.section]
-                  const isSelected = selected.has(q.id)
+              {/* Picker list — grouped by passage */}
+              <div className="max-h-80 overflow-y-auto">
+                {/* Passage groups */}
+                {Object.entries(passageGroupMap).map(([pid, qs]) => {
+                  const sample = qs[0]
+                  const groupIds = qs.map(q => q.id)
+                  const allGroupSelected = groupIds.every(id => selected.has(id))
+                  const someGroupSelected = groupIds.some(id => selected.has(id))
                   return (
-                    <label key={q.id} className={cn('flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors',
-                      isSelected ? 'bg-red-50' : 'hover:bg-gray-50')}>
-                      <input type="checkbox" checked={isSelected} onChange={() => toggleSelect(q.id)}
-                        className="mt-0.5 accent-[#E8303A] shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          {sec && <span className={`text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full ${sec.color}`}>{sec.label}</span>}
-                          <span className="text-[0.6rem] text-gray-400">{TYPE_SHORT[q.type] ?? 'MC'} · {q.level}</span>
-                        </div>
-                        <p className="text-xs text-[#1A2744] line-clamp-1">{q.question_text}</p>
+                    <div key={pid} className="border-b border-gray-100">
+                      {/* Passage header */}
+                      <div className={cn('flex items-center gap-2 px-4 py-2.5',
+                        allGroupSelected ? 'bg-red-50' : someGroupSelected ? 'bg-orange-50/50' : 'bg-gray-50/80')}>
+                        <input type="checkbox"
+                          checked={allGroupSelected}
+                          ref={el => { if (el) el.indeterminate = someGroupSelected && !allGroupSelected }}
+                          onChange={() => toggleSelectGroup(groupIds)}
+                          className="accent-[#E8303A] shrink-0" />
+                        <span className={cn('text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full shrink-0',
+                          sample.passage_type === 'reading' ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700')}>
+                          {sample.passage_type === 'reading' ? '📖 Đọc' : '🎧 Nghe'}
+                        </span>
+                        <span className="text-xs font-semibold text-[#1A2744] truncate flex-1">
+                          {sample.passage_title ?? 'Bài không có tiêu đề'}
+                        </span>
+                        <span className="text-[0.65rem] text-gray-400 shrink-0">{qs.length} câu</span>
+                        <button onClick={() => toggleSelectGroup(groupIds)}
+                          className={cn('text-[0.65rem] font-semibold px-2 py-0.5 rounded-full shrink-0 transition-colors',
+                            allGroupSelected ? 'bg-red-100 text-red-600' : 'bg-[#1A2744]/10 text-[#1A2744] hover:bg-[#1A2744]/20')}>
+                          {allGroupSelected ? 'Bỏ chọn' : 'Chọn tất cả'}
+                        </button>
                       </div>
-                    </label>
+                      {/* Questions in group */}
+                      {qs.map(q => {
+                        const isSelected = selected.has(q.id)
+                        return (
+                          <label key={q.id} className={cn('flex items-start gap-3 pl-8 pr-4 py-2 cursor-pointer transition-colors',
+                            isSelected ? 'bg-red-50' : 'hover:bg-gray-50')}>
+                            <input type="checkbox" checked={isSelected} onChange={() => toggleSelect(q.id)}
+                              className="mt-0.5 accent-[#E8303A] shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className="text-[0.6rem] text-gray-400">{TYPE_SHORT[q.type] ?? 'MC'} · {q.level}</span>
+                              </div>
+                              <p className="text-xs text-[#1A2744] line-clamp-1">{q.question_text}</p>
+                            </div>
+                          </label>
+                        )
+                      })}
+                    </div>
                   )
                 })}
-                {pickerFiltered.length === 0 && (
-                  <p className="text-center py-8 text-xs text-gray-400">Không có câu hỏi nào {pickerSearch && `với "${pickerSearch}"`}</p>
+
+                {/* Standalone questions */}
+                {standaloneQs.length > 0 && (
+                  <div>
+                    {Object.entries(passageGroupMap).length > 0 && (
+                      <div className="px-4 py-2 bg-gray-50/80 border-b border-gray-100">
+                        <span className="text-[0.65rem] font-bold text-gray-400 uppercase tracking-wide">Câu hỏi độc lập</span>
+                      </div>
+                    )}
+                    {standaloneQs.slice(0, 30).map(q => {
+                      const sec = SECTION_LABEL[q.section]
+                      const isSelected = selected.has(q.id)
+                      return (
+                        <label key={q.id} className={cn('flex items-start gap-3 px-4 py-2.5 cursor-pointer transition-colors border-b border-gray-50',
+                          isSelected ? 'bg-red-50' : 'hover:bg-gray-50')}>
+                          <input type="checkbox" checked={isSelected} onChange={() => toggleSelect(q.id)}
+                            className="mt-0.5 accent-[#E8303A] shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              {sec && <span className={`text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full ${sec.color}`}>{sec.label}</span>}
+                              <span className="text-[0.6rem] text-gray-400">{TYPE_SHORT[q.type] ?? 'MC'} · {q.level}</span>
+                            </div>
+                            <p className="text-xs text-[#1A2744] line-clamp-1">{q.question_text}</p>
+                          </div>
+                        </label>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {Object.keys(passageGroupMap).length === 0 && standaloneQs.length === 0 && (
+                  <p className="text-center py-8 text-xs text-gray-400">
+                    Không có câu hỏi {pickerSearch && `với "${pickerSearch}"`}
+                  </p>
                 )}
               </div>
 
