@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, ClipboardList, BookOpen, FileText, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Users, ClipboardList, BookOpen, FileText, GraduationCap, HelpCircle, LogOut, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import { logoutAction } from '@/lib/admin-actions'
 import { cn } from '@/lib/utils'
@@ -11,9 +11,11 @@ import { cn } from '@/lib/utils'
 const NAV = [
   { href: '/admin/dashboard', label: 'Dashboard',     icon: LayoutDashboard },
   { href: '/admin/students',  label: 'Học viên',      icon: Users           },
-  { href: '/admin/sessions',  label: 'Bài thi',        icon: ClipboardList   },
-  { href: '/admin/questions', label: 'Câu hỏi',        icon: BookOpen        },
+  { href: '/admin/sessions',  label: 'Bài thi',       icon: ClipboardList   },
+  { href: '/admin/tests',     label: 'Bài kiểm tra',  icon: GraduationCap   },
+  { href: '/admin/questions', label: 'Câu hỏi',       icon: BookOpen        },
   { href: '/admin/passages',  label: 'Bài đọc / Nghe', icon: FileText        },
+  { href: '/admin/guide',     label: 'Hướng dẫn',      icon: HelpCircle      },
 ]
 
 function NavLinks({ onNav }: { onNav?: () => void }) {
