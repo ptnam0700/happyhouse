@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { Search, X, ChevronRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Search, X } from 'lucide-react'
 import { Pagination } from '@/components/admin/Pagination'
 import { cn } from '@/lib/utils'
 
@@ -22,6 +22,7 @@ const STATUS_LABEL: Record<string, string> = {
 }
 
 export function SchoolStudentsClient({ students, classes }: { students: Student[]; classes: Cls[] }) {
+  const router = useRouter()
   const [search,   setSearch]  = useState('')
   const [classF,   setClassF]  = useState('all')
   const [statusF,  setStatusF] = useState('all')
@@ -65,20 +66,21 @@ export function SchoolStudentsClient({ students, classes }: { students: Student[
               <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden md:table-cell">Lớp</th>
               <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden sm:table-cell">Nhập học</th>
               <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Trạng thái</th>
-              <th className="px-3 py-3" />
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-50">
             {paginated.map(s => (
-              <tr key={s.id} className="hover:bg-gray-50/50 transition-colors">
+              <tr key={s.id}
+                onClick={() => router.push(`/admin/school/students/${s.id}`)}
+                className="hover:bg-gray-50/50 transition-colors cursor-pointer">
                 <td className="px-5 py-3">
                   <div className="font-semibold text-[#1A2744]">{s.full_name}</div>
                   {s.phone && <div className="text-xs text-gray-400">{s.phone}</div>}
                 </td>
                 <td className="px-3 py-3 hidden md:table-cell">
-                  {s.class_name ? (
-                    <Link href={`/admin/school/classes/${s.class_id}`} className="text-xs text-[#1A2744] hover:text-[#E8303A] transition-colors">{s.class_name}</Link>
-                  ) : <span className="text-gray-300 text-xs">—</span>}
+                  {s.class_name
+                    ? <span className="text-xs text-[#1A2744]">{s.class_name}</span>
+                    : <span className="text-gray-300 text-xs">—</span>}
                 </td>
                 <td className="px-3 py-3 text-xs text-gray-400 hidden sm:table-cell">
                   {s.enrollment_date ? new Date(s.enrollment_date).toLocaleDateString('vi-VN') : '—'}
@@ -88,15 +90,10 @@ export function SchoolStudentsClient({ students, classes }: { students: Student[
                     {STATUS_LABEL[s.status] ?? s.status}
                   </span>
                 </td>
-                <td className="px-3 py-3">
-                  <Link href={`/admin/school/students/${s.id}`} className="p-1.5 rounded-lg text-gray-300 hover:text-[#1A2744] hover:bg-gray-100 transition-colors inline-flex">
-                    <ChevronRight size={14} />
-                  </Link>
-                </td>
               </tr>
             ))}
             {!paginated.length && (
-              <tr><td colSpan={5} className="px-5 py-16 text-center text-gray-400 text-sm">
+              <tr><td colSpan={4} className="px-5 py-16 text-center text-gray-400 text-sm">
                 {search || classF !== 'all' || statusF !== 'all' ? 'Không tìm thấy' : 'Chưa có học viên nào'}
               </td></tr>
             )}
