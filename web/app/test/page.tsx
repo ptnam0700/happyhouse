@@ -9,6 +9,8 @@ import { QuestionNavigator } from '@/components/test/QuestionNavigator'
 import { QuestionCard } from '@/components/test/QuestionCard'
 import { ReadingPanel } from '@/components/test/ReadingPanel'
 import { ListeningPanel } from '@/components/test/ListeningPanel'
+import { RegisterForm } from '@/components/landing/RegisterForm'
+import { TestOptionCard } from '@/components/landing/TestOptionCard'
 import { Button } from '@/components/ui/button'
 import { useTest } from '@/lib/test-context'
 import { createClient } from '@/lib/supabase/client'
@@ -19,7 +21,7 @@ import {
   mapServerScores,
   subgroupInstruction,
 } from '@/lib/test-utils'
-import type { Question } from '@/types'
+import type { Question, Student, TestType } from '@/types'
 
 const FULL_TIME = 90 * 60
 const MINI_TIME = 30 * 60
@@ -27,7 +29,7 @@ const LOADING_MSGS = ['Đang tải câu hỏi...', 'Đang chuẩn bị bài test
 
 export default function TestPage() {
   const router = useRouter()
-  const { state, setAnswer, removeAnswer, setCurrentIndex, startTest, tickTimer, setResult } = useTest()
+  const { state, setAnswer, removeAnswer, setCurrentIndex, startTest, tickTimer, setResult, setStudent, setTestType } = useTest()
 
   const [loadingMsg, setLoadingMsg] = useState(LOADING_MSGS[0])
   const [loading, setLoading] = useState(false)
@@ -40,6 +42,10 @@ export default function TestPage() {
 
   const { questions, answers, currentIndex, timeLeft, testType, student, submitted, startTime } = state
 
+  // Local state for the inline registration step
+  const [regDone,       setRegDone]       = useState(!!state.student.name)
+  const [selectedType,  setSelectedType]  = useState<TestType | null>(state.testType ?? null)
+
   const groupStart = questions.length ? getGroupStart(questions, currentIndex) : 0
   const groupEnd   = questions.length ? getGroupEnd(questions, currentIndex)   : 0
   const currentQ   = questions[currentIndex]
@@ -47,11 +53,7 @@ export default function TestPage() {
   const isSplitMode = !!currentQ?.passageId
 
   useEffect(() => {
-    if (!student.name || !student.phone) router.replace('/')
-  }, [student, router])
-
-  useEffect(() => {
-    if (loadedRef.current || !student.name) return
+    if (loadedRef.current || !student.name || !regDone) return
     loadedRef.current = true
 
     const supabase = createClient()
@@ -73,7 +75,8 @@ export default function TestPage() {
         setLoading(false)
         console.error('Failed to load questions:', err)
         alert('Không thể tải bài test. Vui lòng thử lại.')
-        router.replace('/')
+        loadedRef.current = false
+        setRegDone(false)
       })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -186,6 +189,59 @@ export default function TestPage() {
         </div>
       )
     })
+  }
+
+  // ── Inline registration (when arrived directly at /test) ──────────
+  if (!student.name || !student.phone) {
+    return (
+      <div className="w-full min-h-screen bg-[#F7F6F2]">
+        <Header />
+        <div className="w-full bg-gradient-to-br from-[#1A2744] to-[#243461] px-4 py-10 text-center text-white">
+          <h1 className="text-[clamp(1.75rem,5vw,3rem)] font-bold leading-tight mb-2">
+            Kiểm tra trình độ <span className="text-[#F5A623]">IELTS</span> miễn phí
+          </h1>
+          <p className="text-sm text-white/70 max-w-[420px] mx-auto">
+            Bài kiểm tra chuẩn hoá do đội ngũ 8.5+ HappyHouse thiết kế — nhận kết quả ngay.
+          </p>
+        </div>
+        <div className="w-full px-4">
+          <RegisterForm
+            onSubmit={(s: Student) => {
+              setStudent(s)
+            }}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // ── Test type selection (after registration, before loading) ───────
+  if (!regDone) {
+    return (
+      <div className="w-full min-h-screen bg-[#F7F6F2]">
+        <Header />
+        <div className="max-w-[860px] mx-auto px-4 py-10">
+          <h2 className="text-xl font-bold text-[#1A2744] text-center mb-2">
+            Xin chào, {student.name}!
+          </h2>
+          <p className="text-center text-gray-400 text-sm mb-8">Chọn loại bài kiểm tra phù hợp với bạn</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
+            <TestOptionCard type="full" selected={selectedType === 'full'} onSelect={t => { setSelectedType(t); setTestType(t) }} />
+            <TestOptionCard type="mini" selected={selectedType === 'mini'} onSelect={t => { setSelectedType(t); setTestType(t) }} />
+          </div>
+          {selectedType && (
+            <div className="flex justify-center">
+              <Button
+                onClick={() => setRegDone(true)}
+                className="w-full sm:w-auto sm:min-w-[240px] bg-[#E8303A] hover:bg-[#C0222B] text-white font-bold text-base sm:text-lg h-12 sm:h-14 rounded-xl tracking-wide border-0"
+              >
+                BẮT ĐẦU LÀM BÀI →
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    )
   }
 
   if (loading || (!questions.length && !saving)) {
