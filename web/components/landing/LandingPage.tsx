@@ -34,14 +34,22 @@ export function LandingPage() {
     return () => { observer.disconnect(); window.removeEventListener('scroll', handleScroll) }
   }, [])
 
-  const scrollToTest = (e: React.MouseEvent) => {
+  // Smooth scroll to any section, accounting for the 72px sticky header
+  const scrollTo = (id: string) => (e: React.MouseEvent) => {
     e.preventDefault()
-    document.getElementById('test-entry')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    const el = document.getElementById(id)
+    if (!el) return
+    const offset = 80 // sticky header height + breathing room
+    const top = el.getBoundingClientRect().top + window.scrollY - offset
+    window.scrollTo({ top, behavior: 'smooth' })
   }
+
+  const scrollToTest = scrollTo('test-entry')
 
   return (
     <>
       <style>{`
+        html { scroll-padding-top: 80px; }
         :root {
           --lp-red: #E8303A; --lp-red-dark: #C0222B;
           --lp-navy: #1A2744; --lp-gold: #F5A623;
@@ -336,11 +344,11 @@ export function LandingPage() {
             </a>
             <nav className="lp-nav">
               <a href="/" className="active">Trang chủ</a>
-              <a href="#courses">Khoá học <span className="lp-badge">HOT</span></a>
-              <a href="#teachers">Giáo viên</a>
-              <a href="#results">Kết quả</a>
+              <a href="#courses"   onClick={scrollTo('courses')}>Khoá học <span className="lp-badge">HOT</span></a>
+              <a href="#teachers"  onClick={scrollTo('teachers')}>Giáo viên</a>
+              <a href="#results"   onClick={scrollTo('results')}>Kết quả</a>
               <a href="/test">Thi thử IELTS</a>
-              <a href="#blog">Blog</a>
+              <a href="#blog"      onClick={scrollTo('blog')}>Blog</a>
             </nav>
             <div className="lp-hactions">
               <a className="lp-btn-outline" href="/test">Thi thử miễn phí</a>
