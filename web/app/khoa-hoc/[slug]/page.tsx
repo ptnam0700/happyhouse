@@ -273,8 +273,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                   </div>
                 ))}
                 <a href="/#test-entry" className="kh-btn-primary">Đăng ký tư vấn miễn phí →</a>
-                <a href="tel:0901234567" className="kh-btn-secondary">
-                  <Phone size={15} aria-hidden="true" /> Gọi ngay: 0901 234 567
+                <a href="tel:0845956888" className="kh-btn-secondary">
+                  <Phone size={15} aria-hidden="true" /> Gọi ngay: 0845 956 888
                 </a>
               </div>
             </div>

@@ -316,7 +316,7 @@ export function LandingPage() {
         <div className="lp-topbar">
           <div className="lp-topbar-inner">
             <div className="lp-topbar-left">
-              <span>📞 Hotline: <a href="tel:0901234567">0901 234 567</a></span>
+              <span>📞 Hotline: <a href="tel:0845956888">0845 956 888</a></span>
               <span>✉️ <a href="mailto:hello@happyhouseielts.com">hello@happyhouseielts.com</a></span>
               <span>⏰ Thứ 2 – Chủ nhật: 8:00 – 21:00</span>
             </div>
@@ -663,19 +663,19 @@ export function LandingPage() {
                   </div>
                 </a>
                 <div className="lp-footer-desc">Trung tâm Anh ngữ IELTS chuyên sâu. Đồng hành cùng học viên trên hành trình chinh phục mục tiêu quốc tế.</div>
-                <div className="lp-fci"><span>📍</span><span>Địa chỉ: [Thêm địa chỉ trung tâm]</span></div>
-                <div className="lp-fci"><span>📞</span><span>Hotline: 0901 234 567</span></div>
+                <div className="lp-fci"><span>📍</span><span>CS1: Số 2 Hàm Từ Quan, Hà Nội<br/>CS2: Số 4 Ngõ 35 Phúc Lợi, Hà Nội</span></div>
+                <div className="lp-fci"><span>📞</span><span>Hotline: 0845 956 888</span></div>
                 <div className="lp-fci"><span>✉️</span><span>hello@happyhouseielts.com</span></div>
               </div>
               <div className="lp-footer-col">
                 <h4>Khoá học</h4>
                 <div className="lp-flinks">
-                  <a href="#courses">IELTS Foundation</a>
-                  <a href="#courses">IELTS Intermediate</a>
-                  <a href="#courses">IELTS Advanced</a>
-                  <a href="#courses">Writing Intensive</a>
-                  <a href="#courses">Speaking Club</a>
-                  <a href="#courses">IELTS Online</a>
+                  <Link href="/khoa-hoc/cambridge-tieu-hoc">Cambridge Tiểu học</Link>
+                  <Link href="/khoa-hoc/tieng-anh-tieu-hoc">Tiếng Anh Tiểu học</Link>
+                  <Link href="/khoa-hoc/tieng-anh-thcs-thpt">Tiếng Anh THCS &amp; THPT</Link>
+                  <Link href="/khoa-hoc/on-thi-vao-10">Ôn thi Vào 10</Link>
+                  <Link href="/khoa-hoc/on-thi-dai-hoc">Ôn thi Đại học</Link>
+                  <Link href="/khoa-hoc/luyen-thi-ielts">Luyện thi IELTS</Link>
                 </div>
               </div>
               <div className="lp-footer-col">
@@ -714,7 +714,7 @@ export function LandingPage() {
         <div className="lp-sticky">
           <div className="lp-sticky-row">
             <div className="lp-sticky-label">Gọi ngay</div>
-            <a className="lp-sticky-btn ph" href="tel:0901234567">📞</a>
+            <a className="lp-sticky-btn ph" href="tel:0845956888">📞</a>
           </div>
           <div className="lp-sticky-row">
             <div className="lp-sticky-label">Chat Zalo</div>

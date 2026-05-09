@@ -53,7 +53,7 @@ export default function PortalLoginPage() {
               type="tel"
               value={phone}
               onChange={e => setPhone(e.target.value)}
-              placeholder="0901234567"
+              placeholder="0845956888"
               onKeyDown={e => e.key === 'Enter' && handleLogin()}
               className="h-11 border-[1.5px] border-gray-200 rounded-xl focus-visible:border-[#E8303A] focus-visible:ring-0"
             />

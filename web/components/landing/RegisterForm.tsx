@@ -61,7 +61,7 @@ export function RegisterForm({ onSubmit, className }: RegisterFormProps) {
             type="tel"
             value={phone}
             onChange={e => setPhone(e.target.value)}
-            placeholder="0901234567"
+            placeholder="0845956888"
             className="border-[1.5px] border-gray-200 rounded-xl focus-visible:border-[#E8303A] focus-visible:ring-0 h-11 w-full"
           />
         </div>
