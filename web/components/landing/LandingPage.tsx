@@ -680,7 +680,9 @@ export function LandingPage() {
               <h2 className="lp-sec-title">Bắt đầu hành trình IELTS<br />của bạn ngay hôm nay</h2>
               <p className="lp-sec-desc" style={{ marginBottom: 0 }}>Làm bài kiểm tra chuẩn hoá, nhận kết quả ngay và lộ trình học phù hợp nhất.</p>
             </div>
-            <LandingClient />
+            <div style={{ marginTop: 32 }}>
+              <LandingClient />
+            </div>
           </div>
         </section>
 

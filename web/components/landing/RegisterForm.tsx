@@ -35,7 +35,6 @@ export function RegisterForm({ onSubmit, className }: RegisterFormProps) {
     <div className={cn(
       'bg-white rounded-2xl w-full max-w-[480px] mx-auto',
       'p-5 sm:p-8',
-      '-mt-6 sm:-mt-8 relative z-10',
       'shadow-[0_4px_24px_rgba(26,39,68,0.12)]',
       className
     )}>
