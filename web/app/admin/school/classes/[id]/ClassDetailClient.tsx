@@ -17,7 +17,7 @@ interface Cls {
 interface Student { id: string; full_name: string; phone: string | null; status: string; enrollment_date: string | null }
 interface AssignedTest { test_id: string; test_name: string; due_date: string | null }
 interface AvailableTest { id: string; name: string }
-interface AvailableStudent { id: string; full_name: string; phone: string | null; class_id: string | null }
+interface AvailableStudent { id: string; full_name: string; phone: string | null }
 
 const LEVELS   = ['A1','A2','B1','B2','C1','C2','Starters','Movers','Flyers']
 const STATUSES = [
@@ -261,6 +261,8 @@ export function ClassDetailClient({ cls, students: initialStudents, assignedTest
                 <div className="max-h-60 overflow-y-auto divide-y divide-gray-50">
                   {availableStudents
                     .filter(s => {
+                      // exclude already enrolled in this class
+                      if (students.some(e => e.id === s.id)) return false
                       const term = stuSearch.trim().toLowerCase()
                       return !term || s.full_name.toLowerCase().includes(term) || (s.phone ?? '').includes(term)
                     })
@@ -270,7 +272,6 @@ export function ClassDetailClient({ cls, students: initialStudents, assignedTest
                         <div>
                           <div className="text-sm font-semibold text-[#1A2744]">{s.full_name}</div>
                           {s.phone && <div className="text-xs text-gray-400">{s.phone}</div>}
-                          {s.class_id && <div className="text-xs text-orange-400">Đang ở lớp khác</div>}
                         </div>
                         <button
                           onClick={() => {

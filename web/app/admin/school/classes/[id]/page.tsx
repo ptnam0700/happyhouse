@@ -22,15 +22,9 @@ export default async function ClassDetailPage({ params }: { params: Promise<{ id
 
   if (!cls) notFound()
 
-  // Students not enrolled in this class (for picker)
-  const enrolledIds = (enrollments ?? []).map((e: any) => {
-    const s = Array.isArray(e.school_students) ? e.school_students[0] : e.school_students
-    return s?.id
-  }).filter(Boolean)
-
+  // All students for the picker — client will exclude already-enrolled ones
   const { data: available } = await db.from('school_students')
     .select('id, full_name, phone')
-    .not('id', 'in', enrolledIds.length ? `(${enrolledIds.map((i: string) => `'${i}'`).join(',')})` : "('')")
     .in('status', ['active', 'paused'])
     .order('full_name')
 
@@ -51,7 +45,7 @@ export default async function ClassDetailPage({ params }: { params: Promise<{ id
       students={students as any}
       assignedTests={assignedTests}
       availableTests={allTests ?? []}
-      availableStudents={(available ?? []).map((s: any) => ({ id: s.id, full_name: s.full_name, phone: s.phone ?? null, class_id: null }))}
+      availableStudents={(available ?? []).map((s: any) => ({ id: s.id, full_name: s.full_name, phone: s.phone ?? null }))}
     />
   )
 }
