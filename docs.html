@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HappyHouse IELTS — Project Documentation</title>
+<style>
+  :root {
+    --red: #E8303A; --navy: #1A2744; --navy-light: #243461;
+    --gold: #F5A623; --bg: #F7F6F2; --white: #fff;
+    --border: #e5e7eb; --muted: #6b7280; --code-bg: #1e2435;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg); color: #111827; line-height: 1.65; font-size: 15px;
+  }
+
+  /* ── Layout ── */
+  .wrapper { display: flex; min-height: 100vh; }
+
+  nav {
+    width: 260px; shrink: 0; background: var(--navy); color: #fff;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    display: flex; flex-direction: column; padding: 0;
+    flex-shrink: 0;
+  }
+  .nav-logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+  }
+  .nav-logo h1 { font-size: 14px; font-weight: 700; color: #fff; }
+  .nav-logo p  { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 2px; }
+  .nav-section { padding: 16px 12px 4px; font-size: 10px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.3); }
+  nav a {
+    display: block; padding: 7px 16px; font-size: 13px; color: rgba(255,255,255,.65);
+    text-decoration: none; border-radius: 8px; margin: 1px 8px;
+    transition: background .15s, color .15s;
+  }
+  nav a:hover { background: rgba(255,255,255,.08); color: #fff; }
+  nav a.active { background: var(--red); color: #fff; }
+
+  main {
+    flex: 1; min-width: 0; max-width: 900px;
+    padding: 40px 48px; margin: 0 auto;
+  }
+
+  /* ── Typography ── */
+  h1 { font-size: 28px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+  h2 { font-size: 20px; font-weight: 700; color: var(--navy); margin: 40px 0 14px;
+    padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+  h3 { font-size: 15px; font-weight: 700; color: var(--navy); margin: 24px 0 10px; }
+  h4 { font-size: 13px; font-weight: 700; color: var(--muted); margin: 18px 0 8px;
+    text-transform: uppercase; letter-spacing: .5px; }
+  p  { margin-bottom: 12px; color: #374151; }
+  a  { color: var(--red); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+  ul, ol { padding-left: 20px; margin-bottom: 12px; }
+  li { margin-bottom: 5px; color: #374151; }
+  strong { color: var(--navy); }
+
+  /* ── Code ── */
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px;
+    background: #e5e7eb; color: var(--navy); padding: 2px 6px;
+    border-radius: 4px;
+  }
+  pre {
+    background: var(--code-bg); color: #e2e8f0; border-radius: 12px;
+    padding: 20px; overflow-x: auto; margin: 14px 0; line-height: 1.6;
+    font-size: 13px; font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  pre code { background: none; color: inherit; padding: 0; }
+
+  /* ── Tables ── */
+  .table-wrap { overflow-x: auto; margin: 14px 0; border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(26,39,68,.08); }
+  table { width: 100%; border-collapse: collapse; background: var(--white); }
+  th { background: #f9fafb; text-align: left; padding: 10px 14px;
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .5px;
+    border-bottom: 1px solid var(--border); }
+  td { padding: 9px 14px; border-bottom: 1px solid #f3f4f6;
+    font-size: 13.5px; color: #374151; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f9fafb; }
+  td code { font-size: 12px; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--white); border-radius: 16px; padding: 20px 24px;
+    box-shadow: 0 2px 8px rgba(26,39,68,.08); margin-bottom: 16px;
+  }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 12px; margin: 14px 0; }
+  .stat-card {
+    background: var(--white); border-radius: 12px; padding: 16px;
+    box-shadow: 0 2px 8px rgba(26,39,68,.08); text-align: center;
+  }
+  .stat-card .label { font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .5px; color: var(--muted); }
+  .stat-card .value { font-size: 22px; font-weight: 800; color: var(--navy); margin: 4px 0 2px; }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-block; padding: 2px 9px; border-radius: 999px;
+    font-size: 11px; font-weight: 700; margin-right: 4px;
+  }
+  .badge-red    { background: #fef2f2; color: var(--red); }
+  .badge-navy   { background: rgba(26,39,68,.1); color: var(--navy); }
+  .badge-green  { background: #ecfdf5; color: #065f46; }
+  .badge-orange { background: #fff7ed; color: #9a3412; }
+  .badge-blue   { background: #eff6ff; color: #1e40af; }
+
+  /* ── Callouts ── */
+  .callout {
+    border-radius: 12px; padding: 14px 18px; margin: 16px 0;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .callout-icon { font-size: 18px; line-height: 1; flex-shrink: 0; }
+  .callout-body { flex: 1; }
+  .callout-body strong { display: block; margin-bottom: 3px; }
+  .callout-body p { margin: 0; font-size: 13.5px; }
+  .callout-warn   { background: #fffbeb; border-left: 3px solid var(--gold); }
+  .callout-danger { background: #fef2f2; border-left: 3px solid var(--red); }
+  .callout-info   { background: #eff6ff; border-left: 3px solid #3b82f6; }
+  .callout-tip    { background: #f0fdf4; border-left: 3px solid #22c55e; }
+
+  /* ── DB diagram ── */
+  .db-box {
+    background: #1e2435; color: #e2e8f0; border-radius: 12px;
+    padding: 16px 20px; font-family: 'SF Mono', monospace; font-size: 12.5px;
+    line-height: 1.8; margin-bottom: 12px;
+  }
+  .db-box .table-name { color: #f5a623; font-weight: 700; font-size: 13px; }
+  .db-box .col-name   { color: #93c5fd; }
+  .db-box .col-type   { color: #86efac; }
+  .db-box .col-note   { color: rgba(255,255,255,.35); }
+  .db-box .arrow      { color: #f87171; }
+
+  /* ── Route tree ── */
+  .route { display: flex; align-items: baseline; gap: 10px; padding: 5px 0;
+    border-bottom: 1px solid #f3f4f6; }
+  .route:last-child { border-bottom: none; }
+  .route-path { font-family: 'SF Mono', monospace; font-size: 13px;
+    color: var(--navy); font-weight: 600; white-space: nowrap; min-width: 280px; }
+  .route-desc { font-size: 13px; color: var(--muted); }
+
+  /* ── Colour swatches ── */
+  .swatches { display: flex; gap: 10px; margin: 12px 0; flex-wrap: wrap; }
+  .swatch { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .swatch-dot { width: 22px; height: 22px; border-radius: 6px; }
+
+  /* ── Hero ── */
+  .hero {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    color: #fff; border-radius: 20px; padding: 32px 36px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 26px; margin-bottom: 6px; }
+  .hero p  { color: rgba(255,255,255,.7); margin: 0; }
+  .hero-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .hero-tag {
+    background: rgba(255,255,255,.12); color: rgba(255,255,255,.85);
+    padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    main { padding: 24px 20px; }
+    .route-path { min-width: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+<!-- ── Sidebar ── -->
+<nav id="sidebar">
+  <div class="nav-logo">
+    <h1>HappyHouse IELTS</h1>
+    <p>Project Documentation</p>
+  </div>
+  <div class="nav-section">Overview</div>
+  <a href="#overview">Project Overview</a>
+  <a href="#stack">Tech Stack</a>
+  <a href="#structure">Repo Structure</a>
+  <a href="#env">Environment Variables</a>
+  <div class="nav-section">Routing</div>
+  <a href="#public-routes">Public Routes</a>
+  <a href="#admin-routes">Admin Routes</a>
+  <a href="#portal-routes">Portal Routes</a>
+  <div class="nav-section">Database</div>
+  <a href="#core-tables">Core Tables</a>
+  <a href="#school-tables">School Tables</a>
+  <a href="#functions">Functions & Views</a>
+  <a href="#rls">RLS Policy</a>
+  <div class="nav-section">Architecture</div>
+  <a href="#auth">Authentication</a>
+  <a href="#supabase-clients">Supabase Clients</a>
+  <a href="#patterns">Key Patterns</a>
+  <div class="nav-section">Features</div>
+  <a href="#entry-test">Entry Test</a>
+  <a href="#curated-tests">Curated Tests</a>
+  <a href="#question-bank">Question Bank</a>
+  <a href="#school-mgmt">School Management</a>
+  <a href="#portal">Student Portal</a>
+  <div class="nav-section">Reference</div>
+  <a href="#terminology">Terminology</a>
+  <a href="#conventions">Conventions</a>
+  <a href="#gotchas">Common Gotchas</a>
+  <a href="#deploy">Deployment</a>
+</nav>
+
+<!-- ── Main ── -->
+<main>
+
+  <!-- Hero -->
+  <div class="hero" id="overview">
+    <h1>HappyHouse IELTS Platform</h1>
+    <p>Full-stack platform for HappyHouse English Center — public IELTS placement tests, school management (classes, students, attendance), and an authenticated student portal.</p>
+    <div class="hero-tags">
+      <span class="hero-tag">Next.js 16</span>
+      <span class="hero-tag">Supabase</span>
+      <span class="hero-tag">TypeScript</span>
+      <span class="hero-tag">Tailwind v4</span>
+      <span class="hero-tag">shadcn/ui</span>
+      <span class="hero-tag">Vercel</span>
+    </div>
+  </div>
+
+  <!-- Tech Stack -->
+  <h2 id="stack">Tech Stack</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Layer</th><th>Technology</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Framework</td><td><strong>Next.js 16.2.6</strong> (App Router)</td><td>React 19, server components, server actions</td></tr>
+        <tr><td>Language</td><td><strong>TypeScript 5</strong></td><td>Strict mode</td></tr>
+        <tr><td>Styling</td><td><strong>Tailwind CSS v4</strong> + shadcn/ui</td><td>CSS-based theme config (no tailwind.config.js)</td></tr>
+        <tr><td>Database</td><td><strong>Supabase</strong> (PostgreSQL + Auth + Storage)</td><td>RLS enabled on all tables</td></tr>
+        <tr><td>Admin auth</td><td>SHA-256 cookie hash</td><td>Password in env var</td></tr>
+        <tr><td>Portal auth</td><td>Supabase Auth (email/password)</td><td>Phone → fake email <code>phone@hh.local</code></td></tr>
+        <tr><td>Toast</td><td>sonner</td><td>Mounted in admin layout only</td></tr>
+        <tr><td>Deployment</td><td>Vercel</td><td>Root directory = <code>web/</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Brand</h3>
+  <div class="swatches">
+    <div class="swatch"><div class="swatch-dot" style="background:#E8303A"></div><code>#E8303A</code> Red (primary)</div>
+    <div class="swatch"><div class="swatch-dot" style="background:#1A2744"></div><code>#1A2744</code> Navy</div>
+    <div class="swatch"><div class="swatch-dot" style="background:#F5A623"></div><code>#F5A623</code> Gold (timer warning)</div>
+    <div class="swatch"><div class="swatch-dot" style="background:#F7F6F2; border:1px solid #e5e7eb"></div><code>#F7F6F2</code> Background</div>
+  </div>
+  <p><strong>Font:</strong> Be Vietnam Pro — latin + vietnamese subsets, weights 300–700.</p>
+
+  <!-- Repo Structure -->
+  <h2 id="structure">Repository Structure</h2>
+  <pre><code>happyhouse/
+├── web/                    ← Next.js app (Vercel root)
+│   ├── app/                ← App Router pages
+│   │   ├── (public)        page.tsx, test/, result/, t/[id]/
+│   │   ├── admin/          Full admin dashboard
+│   │   └── portal/         Authenticated student area
+│   ├── components/
+│   │   ├── admin/          AdminSidebar, QuestionForm, PassageEditClient…
+│   │   ├── landing/        RegisterForm, TestOptionCard, LandingClient
+│   │   ├── layout/         Header, LoadingOverlay
+│   │   ├── result/         ResultView, ScoreCard, BandCircle
+│   │   ├── test/           QuestionCard, AudioPlayer, QuestionNavigator…
+│   │   └── ui/             shadcn primitives (button, input, table…)
+│   ├── lib/
+│   │   ├── supabase/       client.ts · server.ts · service.ts
+│   │   ├── admin-auth.ts   Cookie hash helpers
+│   │   ├── admin-actions.ts login/logout server actions
+│   │   ├── test-context.tsx useReducer context for test state
+│   │   └── test-utils.ts   sortQuestionsForDisplay, loadQuestions, mapServerScores…
+│   ├── types/index.ts      All shared TypeScript interfaces
+│   ├── middleware.ts        Admin cookie check + portal Supabase session check
+│   └── public/             happy_house_sun.png, manifest.json
+├── supabase/               SQL schema + migrations
+└── index.html              Legacy static page (superseded)</code></pre>
+
+  <!-- Env vars -->
+  <h2 id="env">Environment Variables</h2>
+  <p>File: <code>web/.env.local</code></p>
+  <pre><code>NEXT_PUBLIC_SUPABASE_URL=https://wvfbmfbfpqkqyeoirvpq.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...   # public/anon key
+SUPABASE_SERVICE_ROLE_KEY=eyJ...       # service_role — server only, NEVER expose
+ADMIN_PASSWORD=happyhouse2025          # admin panel login
+NEXT_PUBLIC_SITE_URL=https://domain    # sitemap + OG tags — update after first Vercel deploy</code></pre>
+
+  <!-- Public Routes -->
+  <h2 id="public-routes">Public Routes</h2>
+  <div class="card">
+    <div class="route"><span class="route-path">/</span><span class="route-desc">Landing page — hero, student registration (name + phone), test type selection (mini/full)</span></div>
+    <div class="route"><span class="route-path">/test</span><span class="route-desc">Anonymous test engine — timer, question navigator, split-pane for reading/listening</span></div>
+    <div class="route"><span class="route-path">/result</span><span class="route-desc">Results after anonymous test — score, section bars, wrong-answer review</span></div>
+    <div class="route"><span class="route-path">/t/[testId]</span><span class="route-desc">Curated shareable test — student registers then takes this specific test</span></div>
+  </div>
+
+  <!-- Admin Routes -->
+  <h2 id="admin-routes">Admin Routes <span class="badge badge-red">password protected</span></h2>
+  <h3>CRM &amp; Entry Test</h3>
+  <div class="card">
+    <div class="route"><span class="route-path">/admin/login</span><span class="route-desc">Admin login form (ADMIN_PASSWORD env var)</span></div>
+    <div class="route"><span class="route-path">/admin/dashboard</span><span class="route-desc">Stats: total ứng viên, sessions this week, band distribution, 10 recent results</span></div>
+    <div class="route"><span class="route-path">/admin/students</span><span class="route-desc">Ứng viên list (entry-test takers / prospects) — search, filter by band, inline edit, delete</span></div>
+    <div class="route"><span class="route-path">/admin/students/[id]</span><span class="route-desc">Prospect detail + full session history</span></div>
+    <div class="route"><span class="route-path">/admin/sessions</span><span class="route-desc">All test submissions — filter by type, band; delete</span></div>
+    <div class="route"><span class="route-path">/admin/tests</span><span class="route-desc">Curated test list — search, filter published/draft, publish toggle, delete</span></div>
+    <div class="route"><span class="route-path">/admin/tests/new</span><span class="route-desc">Full create form — name, description, time limit, question picker (grouped by passage)</span></div>
+    <div class="route"><span class="route-path">/admin/tests/[id]</span><span class="route-desc">Edit test, question picker, reorder with ↑↓, publish → get shareable link</span></div>
+    <div class="route"><span class="route-path">/admin/questions</span><span class="route-desc">Question bank — search, filter by section, active toggle, edit, delete</span></div>
+    <div class="route"><span class="route-path">/admin/questions/new</span><span class="route-desc">Create standalone grammar/vocab question (MC, T/F, Fill blank)</span></div>
+    <div class="route"><span class="route-path">/admin/questions/[id]</span><span class="route-desc">Edit question, delete</span></div>
+    <div class="route"><span class="route-path">/admin/passages</span><span class="route-desc">Reading &amp; listening passages — search, filter type/level/active, active toggle, delete</span></div>
+    <div class="route"><span class="route-path">/admin/passages/new</span><span class="route-desc">Full passage editor (deferred save) — no DB write until admin clicks "Tạo bài →"</span></div>
+    <div class="route"><span class="route-path">/admin/passages/[id]</span><span class="route-desc">Edit passage + inline question builder (add/edit/delete questions)</span></div>
+    <div class="route"><span class="route-path">/admin/guide</span><span class="route-desc">8-step workflow guide: create questions → build test → publish → share with students</span></div>
+  </div>
+
+  <h3>School Management</h3>
+  <div class="card">
+    <div class="route"><span class="route-path">/admin/school/classes</span><span class="route-desc">Class cards with enrollment bar (turns red when &gt;90% full)</span></div>
+    <div class="route"><span class="route-path">/admin/school/classes/new</span><span class="route-desc">Create class (name, level, teacher, schedule, room, dates)</span></div>
+    <div class="route"><span class="route-path">/admin/school/classes/[id]</span><span class="route-desc">Edit class, add students from list (picker), assign tests with due date, manage enrolled students</span></div>
+    <div class="route"><span class="route-path">/admin/school/students</span><span class="route-desc">Enrolled học viên — filter by status/class, shows multiple class badges per student</span></div>
+    <div class="route"><span class="route-path">/admin/school/students/new</span><span class="route-desc">Add new enrolled student (name, phone, DOB, parent info, initial class)</span></div>
+    <div class="route"><span class="route-path">/admin/school/students/[id]</span><span class="route-desc">Student profile: edit info, manage class enrollments, attendance history, create portal account</span></div>
+    <div class="route"><span class="route-path">/admin/school/attendance</span><span class="route-desc">Mark attendance per class per date — class picker, date navigator, bulk-mark all buttons</span></div>
+  </div>
+
+  <!-- Portal Routes -->
+  <h2 id="portal-routes">Portal Routes <span class="badge badge-green">Supabase Auth</span></h2>
+  <div class="card">
+    <div class="route"><span class="route-path">/portal/login</span><span class="route-desc">Phone + password login (phone converted to phone@hh.local for Supabase Auth)</span></div>
+    <div class="route"><span class="route-path">/portal</span><span class="route-desc">Student dashboard — enrolled classes, pending tests (with due dates), results table</span></div>
+    <div class="route"><span class="route-path">/portal/test/[testId]</span><span class="route-desc">Full test engine — same UI as public test, result saved with school_student_id</span></div>
+  </div>
+
+  <!-- Database -->
+  <h2 id="core-tables">Core Tables</h2>
+
+  <div class="db-box">
+    <div><span class="table-name">questions</span></div>
+    <div><span class="col-name">  id</span>               <span class="col-type">UUID PK</span></div>
+    <div><span class="col-name">  section</span>          <span class="col-type">TEXT</span>        <span class="col-note">grammar | vocabulary | reading | listening</span></div>
+    <div><span class="col-name">  type</span>             <span class="col-type">TEXT</span>        <span class="col-note">multiple_choice | fill_blank | true_false | reading* | listening*</span></div>
+    <div><span class="col-name">  level</span>            <span class="col-type">TEXT</span>        <span class="col-note">A1–C2</span></div>
+    <div><span class="col-name">  question_text</span>    <span class="col-type">TEXT</span></div>
+    <div><span class="col-name">  passage_id</span>       <span class="col-type">UUID FK</span>     <span class="col-note">→ passages.id (nullable)</span></div>
+    <div><span class="col-name">  audio_url</span>        <span class="col-type">TEXT</span>        <span class="col-note">per-question audio (standalone)</span></div>
+    <div><span class="col-name">  option_a-d</span>       <span class="col-type">TEXT</span>        <span class="col-note">nullable for T/F and fill_blank</span></div>
+    <div><span class="col-name">  correct_answer</span>   <span class="col-type">CHAR(1)</span>     <span class="col-note">A|B|C|D — hidden from public_questions view</span></div>
+    <div><span class="col-name">  fill_answer</span>      <span class="col-type">TEXT</span>        <span class="col-note">correct text for fill_blank type</span></div>
+    <div><span class="col-name">  active</span>           <span class="col-type">BOOL</span>        <span class="col-note">toggled by admin, false = excluded from tests</span></div>
+    <div style="margin-top:4px;font-size:11px;color:rgba(255,255,255,.3)">  * 'reading'/'listening' are legacy type values — treated as multiple_choice in UI (MULTIPLE_CHOICE_TYPES constant)</div>
+  </div>
+
+  <div class="db-box">
+    <div><span class="table-name">passages</span></div>
+    <div><span class="col-name">  type</span>     <span class="col-type">TEXT</span>   <span class="col-note">reading | listening</span></div>
+    <div><span class="col-name">  content</span>  <span class="col-type">TEXT</span>   <span class="col-note">full article for reading</span></div>
+    <div><span class="col-name">  audio_url</span><span class="col-type">TEXT</span>   <span class="col-note">Supabase Storage URL for listening (bucket: 'audio', max 50 MB)</span></div>
+    <div><span class="col-name">  transcript</span><span class="col-type">TEXT</span>  <span class="col-note">optional listening transcript</span></div>
+    <div><span class="col-name">  active</span>   <span class="col-type">BOOL</span></div>
+  </div>
+
+  <div class="db-box">
+    <div><span class="table-name">students</span>  <span class="col-note">← entry-test takers / prospects (NOT enrolled school students)</span></div>
+    <div><span class="col-name">  phone</span>          <span class="col-type">TEXT UNIQUE</span>  <span class="col-note">upsert key — same person retaking test updates same row</span></div>
+    <div><span class="col-name">  latest_band</span>    <span class="col-type">TEXT</span></div>
+    <div><span class="col-name">  test_count</span>     <span class="col-type">INT</span></div>
+    <div><span class="col-name">  last_test_at</span>   <span class="col-type">TIMESTAMPTZ</span></div>
+  </div>
+
+  <div class="db-box">
+    <div><span class="table-name">test_sessions</span></div>
+    <div><span class="col-name">  student_id</span>          <span class="col-type">UUID FK</span>    <span class="col-note">→ students (prospect)</span></div>
+    <div><span class="col-name">  school_student_id</span>   <span class="col-type">UUID FK</span>    <span class="col-note">→ school_students (enrolled) — set when portal student takes test</span></div>
+    <div><span class="col-name">  test_id</span>             <span class="col-type">UUID FK</span>    <span class="col-note">→ tests — set for curated tests</span></div>
+    <div><span class="col-name">  test_type</span>           <span class="col-type">TEXT</span>       <span class="col-note">mini | full</span></div>
+    <div><span class="col-name">  band_score</span>          <span class="col-type">TEXT</span></div>
+    <div><span class="col-name">  section_scores</span>      <span class="col-type">JSONB</span>      <span class="col-note">{"grammar":{"correct":3,"total":5},...}</span></div>
+    <div><span class="col-name">  answers</span>             <span class="col-type">JSONB</span>      <span class="col-note">{"questionId":"A",...} — stored but correct_answer not exposed</span></div>
+  </div>
+
+  <div class="db-box">
+    <div><span class="table-name">tests</span>  <span class="col-note">← curated tests built by admin</span></div>
+    <div><span class="col-name">  time_limit_sec</span>  <span class="col-type">INT</span>     <span class="col-note">default 5400 (90 min)</span></div>
+    <div><span class="col-name">  published</span>       <span class="col-type">BOOL</span>    <span class="col-note">false = draft, true = accessible at /t/[id]</span></div>
+  </div>
+
+  <div class="db-box">
+    <div><span class="table-name">test_questions</span>  <span class="col-note">← many-to-many: tests ↔ questions</span></div>
+    <div><span class="col-name">  test_id, question_id</span>  <span class="col-type">UUID composite PK</span></div>
+    <div><span class="col-name">  order_index</span>           <span class="col-type">INT</span>  <span class="col-note">admin-controlled display order</span></div>
+  </div>
+
+  <h2 id="school-tables">School Management Tables</h2>
+
+  <div class="db-box">
+    <div><span class="table-name">classes</span></div>
+    <div><span class="col-name">  status</span>    <span class="col-type">TEXT</span>   <span class="col-note">upcoming | active | completed | cancelled</span></div>
+    <div><span class="col-name">  schedule</span>  <span class="col-type">TEXT</span>   <span class="col-note">free text, e.g. "T2-T4-T6 18:00–20:00"</span></div>
+  </div>
+
+  <div class="db-box">
+    <div><span class="table-name">school_students</span>  <span class="col-note">← enrolled học viên (DIFFERENT from prospects in `students` table)</span></div>
+    <div><span class="col-name">  auth_user_id</span>      <span class="col-type">UUID FK</span>    <span class="col-note">→ auth.users — set when admin creates portal account</span></div>
+    <div><span class="col-name">  status</span>            <span class="col-type">TEXT</span>       <span class="col-note">active | paused | graduated | dropped</span></div>
+    <div><span class="col-name">  parent_name/phone</span> <span class="col-type">TEXT</span>       <span class="col-note">for young learners</span></div>
+  </div>
+
+  <div class="db-box">
+    <div><span class="table-name">student_classes</span>  <span class="col-note">← many-to-many junction: one student CAN attend multiple classes</span></div>
+    <div><span class="col-name">  student_id, class_id</span>  <span class="col-type">UUID composite PK</span></div>
+    <div><span class="col-name">  enrolled_at</span>           <span class="col-type">DATE</span></div>
+    <div><span class="col-name">  status</span>               <span class="col-type">TEXT</span>   <span class="col-note">active | completed | dropped</span></div>
+  </div>
+
+  <div class="db-box">
+    <div><span class="table-name">attendance</span></div>
+    <div><span class="col-name">  class_id, student_id, session_date</span>  <span class="col-type">composite UNIQUE</span></div>
+    <div><span class="col-name">  status</span>  <span class="col-type">TEXT</span>  <span class="col-note">present | absent | late | excused</span></div>
+  </div>
+
+  <div class="db-box">
+    <div><span class="table-name">class_tests</span>  <span class="col-note">← admin assigns tests to a class (portal students see them)</span></div>
+    <div><span class="col-name">  class_id, test_id</span>  <span class="col-type">composite PK</span></div>
+    <div><span class="col-name">  due_date</span>           <span class="col-type">DATE</span>   <span class="col-note">optional deadline shown in portal</span></div>
+  </div>
+
+  <h2 id="functions">Database Functions &amp; Views</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>public_questions</code></td><td>VIEW</td><td>Joins questions + passages. Hides <code>correct_answer</code> and <code>fill_answer</code>. Safe for anon clients.</td></tr>
+        <tr><td><code>calculate_band(correct, total)</code></td><td>FUNCTION</td><td>Maps score ratio to IELTS band string (≥27/30 → "6.5–7.0", etc.)</td></tr>
+        <tr><td><code>submit_test(...)</code></td><td>FUNCTION SECURITY DEFINER</td><td>Scores answers server-side, upserts student, inserts test_session, updates student stats. Returns per-question results (correct answer revealed post-submission). Accepts optional <code>p_test_id</code> and <code>p_school_student_id</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="rls">Row Level Security</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Table</th><th>Anon (public)</th><th>Authenticated</th></tr></thead>
+      <tbody>
+        <tr><td><code>questions</code></td><td>SELECT (active=true only)</td><td>ALL</td></tr>
+        <tr><td><code>passages</code></td><td>SELECT (active=true only)</td><td>ALL</td></tr>
+        <tr><td><code>public_questions</code> (view)</td><td>SELECT</td><td>SELECT</td></tr>
+        <tr><td><code>students</code></td><td>INSERT only</td><td>ALL</td></tr>
+        <tr><td><code>test_sessions</code></td><td>INSERT only</td><td>ALL</td></tr>
+        <tr><td><code>tests</code></td><td>SELECT (published+active)</td><td>ALL</td></tr>
+        <tr><td><code>test_questions</code></td><td>SELECT (if test published)</td><td>ALL</td></tr>
+        <tr><td><code>classes</code>, <code>school_students</code>, <code>student_classes</code>, <code>attendance</code>, <code>class_tests</code></td><td>❌ blocked</td><td>ALL</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-danger">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-body">
+      <strong>Critical:</strong>
+      <p>All school management tables have RLS that blocks anon. Always use <code>createServiceClient()</code> in server actions/components when reading these. Using the anon browser client silently returns empty arrays.</p>
+    </div>
+  </div>
+
+  <!-- Auth -->
+  <h2 id="auth">Authentication</h2>
+
+  <h3>Admin Panel (<code>/admin/*</code>)</h3>
+  <div class="card">
+    <p><strong>Mechanism:</strong> SHA-256( <code>ADMIN_PASSWORD</code> + <code>"happyhouse-admin-2025"</code> ) stored in <code>admin_session</code> cookie (httpOnly, 7 days).</p>
+    <p><strong>Checked in:</strong> <code>middleware.ts</code> using Web Crypto API (Edge-compatible).</p>
+    <p><strong>Login page:</strong> <code>/admin/login</code> → server action <code>loginAction()</code> → sets cookie → redirect.</p>
+  </div>
+
+  <h3>Student Portal (<code>/portal/*</code>)</h3>
+  <div class="card">
+    <p><strong>Mechanism:</strong> Supabase Auth session (JWT in cookie, managed by <code>@supabase/ssr</code>).</p>
+    <p><strong>Login:</strong> Student enters phone number (e.g. <code>0901234567</code>) → converted to <code>0901234567@hh.local</code> → <code>supabase.auth.signInWithPassword()</code>.</p>
+    <p><strong>Account creation:</strong> Admin goes to <code>/admin/school/students/[id]</code> → enters password → server action calls <code>supabase.auth.admin.createUser()</code> → links <code>school_students.auth_user_id</code>.</p>
+    <p><strong>Checked in:</strong> <code>middleware.ts</code> — <code>supabase.auth.getUser()</code> on every <code>/portal/*</code> request.</p>
+  </div>
+
+  <h3>Public Tests (<code>/test</code>, <code>/t/[id]</code>)</h3>
+  <div class="card">
+    <p>No authentication. Student fills name + phone before starting. Results saved to <code>students</code> (upsert by phone) and <code>test_sessions</code>.</p>
+  </div>
+
+  <!-- Supabase clients -->
+  <h2 id="supabase-clients">Supabase Clients — 3 Variants</h2>
+  <pre><code>// 1. Browser client — client components, portal pages (uses session cookie)
+import { createClient } from '@/lib/supabase/client'
+
+// 2. Server client — server components, server actions that read auth session
+import { createClient } from '@/lib/supabase/server'
+
+// 3. Service client — bypasses ALL RLS (admin server actions only, NEVER in browser)
+import { createServiceClient } from '@/lib/supabase/service'</code></pre>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Client</th><th>Use for</th><th>Auth</th></tr></thead>
+      <tbody>
+        <tr><td><code>createClient()</code> (browser)</td><td>Portal client components, portal login</td><td>Uses Supabase session cookie</td></tr>
+        <tr><td><code>createClient()</code> (server)</td><td>Portal server components, <code>getUser()</code></td><td>Reads session from Next.js cookies()</td></tr>
+        <tr><td><code>createServiceClient()</code></td><td>ALL admin server actions, school data fetching</td><td>Service role — bypasses RLS</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Patterns -->
+  <h2 id="patterns">Key Architectural Patterns</h2>
+
+  <h3>Server/Client split</h3>
+  <pre><code>// page.tsx (server component)
+const data = await createServiceClient().from('...').select()
+return &lt;FooClient data={data} /&gt;
+
+// FooClient.tsx ('use client')
+// handles interactivity, calls server actions on mutation
+async function handleSave() { await serverAction(id, formData) }</code></pre>
+
+  <h3>Test state management</h3>
+  <div class="card">
+    <p>The anonymous test flow (<code>/test</code>, <code>/t/[id]</code>) uses <strong>React context + useReducer</strong> (<code>lib/test-context.tsx</code>) to share state across landing → test → result pages.</p>
+    <p>Portal tests (<code>/portal/test/[id]</code>) are <strong>self-contained</strong> in <code>PortalTestClient</code> — no shared context needed since student identity comes from Supabase Auth.</p>
+  </div>
+
+  <h3>Question grouping rule</h3>
+  <div class="callout callout-warn">
+    <div class="callout-icon">💡</div>
+    <div class="callout-body">
+      <strong>Always call <code>sortQuestionsForDisplay(questions)</code> before rendering a test.</strong>
+      <p>Questions with the same <code>passage_id</code> must be contiguous for split-pane to work (passage left, questions right). The admin may add passage questions out of order; this function re-groups them by first appearance.</p>
+    </div>
+  </div>
+
+  <h3>Admin layout</h3>
+  <div class="card">
+    <p>All <code>/admin/*</code> pages use <code>h-screen overflow-hidden</code> on the root. Each page is <code>flex flex-col h-full</code> with:</p>
+    <ul>
+      <li><strong>Fixed toolbar</strong> (shrink-0) — title, filters, search</li>
+      <li><strong>Scrollable body</strong> (flex-1 min-h-0 overflow-y-auto) — table or card list</li>
+      <li><strong>Fixed footer</strong> (shrink-0) — <code>&lt;Pagination /&gt;</code></li>
+    </ul>
+    <p>Tables use <code>sticky top-0 z-10</code> on <code>&lt;thead&gt;</code> so headers remain visible while body scrolls.</p>
+  </div>
+
+  <h3>Optimistic updates</h3>
+  <div class="card">
+    <p>Active/inactive toggles, student add/remove, publish toggles — all use <code>useState</code> to flip the UI <em>before</em> the server responds. On server error the state reverts and <code>toast.error()</code> is shown (sonner).</p>
+  </div>
+
+  <!-- Features -->
+  <h2 id="entry-test">Feature: Entry Test (public)</h2>
+  <div class="card">
+    <p><strong>Mini:</strong> 30 questions (grammar + vocab), 30 min. <strong>Full:</strong> 95 questions (all sections), 90 min.</p>
+    <p>Questions are shuffled server-side via <code>loadQuestions()</code> in <code>lib/test-utils.ts</code>: standalone (grammar/vocab) first in random order, then passage groups in random group order but internally stable.</p>
+    <p>Scoring happens 100% server-side via <code>submit_test()</code> Postgres function — correct answers are never sent to the browser.</p>
+    <p><strong>Result:</strong> total score circle, per-section progress bars (green ≥70%, yellow ≥50%, red below), collapsible "Xem lại câu sai" with each wrong question showing student answer (red) vs correct answer (green).</p>
+  </div>
+
+  <h2 id="curated-tests">Feature: Curated Tests</h2>
+  <div class="card">
+    <p>Admin creates a test at <code>/admin/tests/new</code> (deferred save — nothing goes to DB until "Lưu nháp" or "Lưu &amp; Publish" is clicked).</p>
+    <p>Question picker groups by passage with a "Chọn tất cả" button per group. Admin can reorder questions with ↑↓ arrows.</p>
+    <p>Publishing creates a shareable link: <code>/t/[testId]</code>. Tests can also be assigned to school classes via <code>class_tests</code> table — enrolled students then see the test in their portal.</p>
+  </div>
+
+  <h2 id="question-bank">Feature: Question Bank</h2>
+  <div class="card">
+    <p><strong>Sections:</strong> grammar, vocabulary, reading, listening.</p>
+    <p><strong>Types:</strong> multiple_choice, true_false, fill_blank. Legacy DB values <code>reading</code>/<code>listening</code> treated as multiple_choice — see <code>MULTIPLE_CHOICE_TYPES</code> constant in <code>types/index.ts</code>.</p>
+    <p><strong>Passages</strong> are separate entities. Reading passage = text content. Listening passage = audio URL from Supabase Storage bucket <code>audio</code> (public, max 50 MB, allowed: mp3/m4a/ogg/wav).</p>
+    <p>Audio upload validates file type by extension (browser <code>file.type</code> can be empty), sanitises filename, and returns the public URL.</p>
+  </div>
+
+  <h2 id="school-mgmt">Feature: School Management</h2>
+  <div class="card">
+    <p><strong>Terminology distinction:</strong> <code>students</code> = entry-test prospects. <code>school_students</code> = enrolled học viên. Completely separate tables.</p>
+    <p><strong>Many-to-many classes:</strong> A student can be enrolled in multiple classes simultaneously via <code>student_classes</code> junction table. Admin adds from existing list (picker with search) or creates new on the class detail page.</p>
+    <p><strong>Attendance:</strong> Marked per class per date. Server actions <code>getStudentsForClass()</code> and <code>getAttendanceForDate()</code> use service client (RLS would block anon).</p>
+    <p><strong>Portal accounts:</strong> Admin sets phone + password → <code>supabase.auth.admin.createUser({ email: phone@hh.local, password })</code> → links <code>auth_user_id</code>. Student logs in with phone number.</p>
+  </div>
+
+  <h2 id="portal">Feature: Student Portal</h2>
+  <div class="card">
+    <p>After login, portal page:</p>
+    <ol>
+      <li>Gets all <code>student_classes</code> enrollments for this student</li>
+      <li>Gets <code>class_tests</code> for all enrolled class IDs</li>
+      <li>Deduplicates (same test assigned to multiple classes)</li>
+      <li>Shows pending (not yet submitted) vs completed tests</li>
+    </ol>
+    <p>Test submission calls <code>submit_test()</code> with <code>p_school_student_id</code> so results are trackable per enrolled student (not just by phone number).</p>
+  </div>
+
+  <!-- Terminology -->
+  <h2 id="terminology">Vietnamese Terminology</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Vietnamese</th><th>English meaning</th></tr></thead>
+      <tbody>
+        <tr><td>Ứng viên</td><td>Prospects / entry-test takers (<strong>not</strong> enrolled)</td></tr>
+        <tr><td>Học viên</td><td>Enrolled students</td></tr>
+        <tr><td>Lớp học</td><td>Class</td></tr>
+        <tr><td>Bài kiểm tra</td><td>Curated test</td></tr>
+        <tr><td>Bài đọc / Nghe</td><td>Reading / Listening passage</td></tr>
+        <tr><td>Câu hỏi</td><td>Question</td></tr>
+        <tr><td>Điểm danh</td><td>Attendance</td></tr>
+        <tr><td>Ngân hàng câu hỏi</td><td>Question bank</td></tr>
+        <tr><td>Kết quả</td><td>Results</td></tr>
+        <tr><td>Band IELTS</td><td>IELTS band score</td></tr>
+        <tr><td>Có mặt / Vắng / Muộn / Phép</td><td>Present / Absent / Late / Excused</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Conventions -->
+  <h2 id="conventions">File &amp; Code Conventions</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Pattern</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>page.tsx</code></td><td>Server component — data fetching via service client</td></tr>
+        <tr><td><code>*Client.tsx</code></td><td>Client component (<code>'use client'</code>) — interactivity only</td></tr>
+        <tr><td><code>actions.ts</code></td><td>Server actions (<code>'use server'</code>) for that feature area</td></tr>
+        <tr><td><code>layout.tsx</code></td><td>Layout wrapper — metadata, shared UI</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Server actions used with <code>useActionState</code> must accept <code>(_: unknown, formData: FormData)</code> — first param is previous state (often unused but required by React's API).</p>
+
+  <!-- Gotchas -->
+  <h2 id="gotchas">Common Gotchas</h2>
+
+  <div class="callout callout-danger">
+    <div class="callout-icon">🚫</div>
+    <div class="callout-body">
+      <strong>1. RLS silently blocks school tables for anon client</strong>
+      <p>Using <code>createClient()</code> (browser/anon) to read <code>school_students</code>, <code>classes</code>, <code>student_classes</code>, <code>attendance</code> returns empty arrays silently — no error. Always use <code>createServiceClient()</code> in server actions/components for these tables.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-body">
+      <strong>2. <code>useActionState</code> signature</strong>
+      <p>Server actions used with <code>useActionState</code> need <code>(_: unknown, formData: FormData)</code> — the state param must be first even if unused. Missing this causes a TypeScript overload error.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-body">
+      <strong>3. Passage questions must be sorted before rendering</strong>
+      <p>Call <code>sortQuestionsForDisplay(questions)</code> from <code>lib/test-utils.ts</code> before passing questions to the test engine. Without it, passage questions can be interleaved with standalone questions and the split-pane UI breaks.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-icon">ℹ️</div>
+    <div class="callout-body">
+      <strong>4. Phone → email for portal auth</strong>
+      <p>Student portal login internally maps phone <code>0901234567</code> → email <code>0901234567@hh.local</code> for Supabase Auth. This is invisible to users but must be consistent between account creation and login. See <code>phoneToEmail()</code> in <code>app/admin/school/actions.ts</code>.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-body">
+      <strong>5. Optimistic toggles — don't add disabled</strong>
+      <p>Active/inactive toggles flip visually <em>before</em> the server responds. The pattern is <code>useState(initial)</code> → flip immediately → revert on error. Adding <code>disabled</code> during <code>pending</code> breaks the instant visual feedback that makes the UI feel fast.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-icon">ℹ️</div>
+    <div class="callout-body">
+      <strong>6. Student picker exclusion is client-side</strong>
+      <p>The class detail student picker fetches ALL students from server, then filters out already-enrolled ones client-side using <code>students.some(e =&gt; e.id === s.id)</code>. Server-side PostgREST <code>.not('id', 'in', ...)</code> with UUID arrays was unreliable.</p>
+    </div>
+  </div>
+
+  <!-- Deploy -->
+  <h2 id="deploy">Deployment</h2>
+  <div class="card">
+    <ol>
+      <li>Connect <code>github.com/ptnam0700/happyhouse</code> to Vercel</li>
+      <li>Set <strong>Root Directory = <code>web</code></strong> in Vercel project settings → General</li>
+      <li>Add all 5 environment variables in Vercel → Settings → Environment Variables (Production + Preview + Development)</li>
+      <li>Deploy → get URL (e.g. <code>happyhouse-xyz.vercel.app</code>)</li>
+      <li>Update <code>NEXT_PUBLIC_SITE_URL</code> to the actual domain → Redeploy (fixes sitemap, OG tags, test share links)</li>
+    </ol>
+    <p style="margin-top:12px"><strong>Static pre-rendering:</strong> public pages and admin list pages are statically generated where possible. Detail/edit pages are dynamic (server-rendered per request).</p>
+  </div>
+
+</main>
+</div>
+
+<script>
+// Highlight active nav link on scroll
+const sections = document.querySelectorAll('h2[id], h3[id]')
+const links = document.querySelectorAll('nav a[href^="#"]')
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'))
+      const match = document.querySelector(`nav a[href="#${e.target.id}"]`)
+      if (match) match.classList.add('active')
+    }
+  })
+}, { rootMargin: '-20% 0px -70% 0px' })
+sections.forEach(s => observer.observe(s))
+</script>
+</body>
+</html>
