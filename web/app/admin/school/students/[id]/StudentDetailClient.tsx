@@ -7,13 +7,14 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { updateSchoolStudent, deleteSchoolStudent } from '../../actions'
+import { updateSchoolStudent, deleteSchoolStudent, createStudentAccount, resetStudentPassword, deleteStudentAccount } from '../../actions'
 import { cn } from '@/lib/utils'
 
 interface Student {
   id: string; full_name: string; phone: string | null; email: string | null
   date_of_birth: string | null; parent_name: string | null; parent_phone: string | null
   class_id: string | null; enrollment_date: string | null; status: string; notes: string | null
+  auth_user_id: string | null
 }
 interface AttRecord { session_date: string; status: string; notes: string | null; class_name: string | null }
 interface Cls { id: string; name: string }
@@ -34,8 +35,10 @@ export function StudentDetailClient({ student, attendance, classes }: {
   student: Student; attendance: AttRecord[]; classes: Cls[]
 }) {
   const router = useRouter()
-  const [saving, setSaving]   = useState(false)
-  const [, startTransition]   = useTransition()
+  const [saving,         setSaving]         = useState(false)
+  const [newPassword,    setNewPassword]    = useState('')
+  const [accountSaving,  setAccountSaving]  = useState(false)
+  const [, startTransition]                 = useTransition()
 
   const [fullName,       setFullName]       = useState(student.full_name)
   const [phone,          setPhone]          = useState(student.phone ?? '')
@@ -152,6 +155,69 @@ export function StudentDetailClient({ student, attendance, classes }: {
                 <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
                   className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm resize-none focus:outline-none focus:border-[#E8303A]" />
               </div>
+            </div>
+          {/* Account card */}
+            <div className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(26,39,68,0.08)] space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide">Tài khoản học viên</h2>
+                {student.auth_user_id
+                  ? <span className="text-xs font-semibold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">✓ Đã có tài khoản</span>
+                  : <span className="text-xs font-semibold bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full">Chưa có tài khoản</span>}
+              </div>
+
+              {student.phone && (
+                <div className="text-xs text-gray-500">
+                  Đăng nhập bằng: <span className="font-mono font-semibold text-[#1A2744]">{student.phone.replace(/\s/g,'').replace(/^\+84/,'0')}</span>
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-500">
+                  {student.auth_user_id ? 'Đặt lại mật khẩu mới' : 'Mật khẩu (để tạo tài khoản)'}
+                </label>
+                <div className="flex gap-2">
+                  <Input value={newPassword} onChange={e => setNewPassword(e.target.value)}
+                    type="text" placeholder="Nhập mật khẩu mới..."
+                    className="h-9 border-gray-200 rounded-xl text-sm focus-visible:border-[#E8303A] focus-visible:ring-0 flex-1" />
+                  <Button
+                    onClick={async () => {
+                      if (!newPassword.trim()) { toast.error('Nhập mật khẩu'); return }
+                      if (!student.phone) { toast.error('Học viên chưa có số điện thoại'); return }
+                      setAccountSaving(true)
+                      try {
+                        if (student.auth_user_id) {
+                          await resetStudentPassword(student.auth_user_id, newPassword)
+                          toast.success('Đã đặt lại mật khẩu')
+                        } else {
+                          await createStudentAccount(student.id, student.phone, newPassword)
+                          toast.success('Đã tạo tài khoản thành công')
+                          window.location.reload()
+                        }
+                        setNewPassword('')
+                      } catch (e: any) { toast.error(e.message) }
+                      setAccountSaving(false)
+                    }}
+                    disabled={accountSaving}
+                    className="h-9 px-3 rounded-xl bg-[#1A2744] hover:bg-[#243461] text-white border-0 text-xs shrink-0">
+                    {accountSaving ? '...' : student.auth_user_id ? 'Đặt lại' : 'Tạo TK'}
+                  </Button>
+                </div>
+              </div>
+
+              {student.auth_user_id && (
+                <button
+                  onClick={async () => {
+                    if (!confirm('Xoá tài khoản này? Học viên sẽ không thể đăng nhập.')) return
+                    try {
+                      await deleteStudentAccount(student.auth_user_id!, student.id)
+                      toast.success('Đã xoá tài khoản')
+                      window.location.reload()
+                    } catch (e: any) { toast.error(e.message) }
+                  }}
+                  className="text-xs text-red-400 hover:text-red-600 transition-colors">
+                  Xoá tài khoản
+                </button>
+              )}
             </div>
           </div>
 

@@ -2,11 +2,11 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, Trash2, UserPlus } from 'lucide-react'
+import { ChevronLeft, Trash2, UserPlus, ClipboardList, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { updateClass, deleteClass } from '../../actions'
+import { updateClass, deleteClass, assignTestToClass, removeTestFromClass } from '../../actions'
 import { cn } from '@/lib/utils'
 
 interface Cls {
@@ -15,6 +15,8 @@ interface Cls {
   start_date: string | null; end_date: string | null; status: string; notes: string | null
 }
 interface Student { id: string; full_name: string; phone: string | null; status: string; enrollment_date: string | null }
+interface AssignedTest { test_id: string; test_name: string; due_date: string | null }
+interface AvailableTest { id: string; name: string }
 
 const LEVELS   = ['A1','A2','B1','B2','C1','C2','Starters','Movers','Flyers']
 const STATUSES = [
@@ -33,9 +35,15 @@ const STU_STYLE: Record<string, string> = {
   graduated: 'bg-blue-100 text-blue-700',    dropped: 'bg-gray-100 text-gray-500',
 }
 
-export function ClassDetailClient({ cls, students }: { cls: Cls; students: Student[] }) {
-  const [saving, setSaving]   = useState(false)
-  const [, startTransition]   = useTransition()
+export function ClassDetailClient({ cls, students, assignedTests: initialAssigned, availableTests }: {
+  cls: Cls; students: Student[]
+  assignedTests: AssignedTest[]; availableTests: AvailableTest[]
+}) {
+  const [saving,        setSaving]        = useState(false)
+  const [assigned,      setAssigned]      = useState(initialAssigned)
+  const [pickTestId,    setPickTestId]    = useState('')
+  const [pickDueDate,   setPickDueDate]   = useState('')
+  const [, startTransition]              = useTransition()
 
   const [name,        setName]        = useState(cls.name)
   const [level,       setLevel]       = useState(cls.level ?? '')
@@ -145,6 +153,56 @@ export function ClassDetailClient({ cls, students }: { cls: Cls; students: Stude
                 <label className="text-xs font-semibold text-gray-500">Ghi chú</label>
                 <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
                   className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm resize-none focus:outline-none focus:border-[#E8303A]" />
+              </div>
+            </div>
+
+            {/* Test assignment */}
+            <div className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(26,39,68,0.08)] space-y-3">
+              <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide flex items-center gap-1.5">
+                <ClipboardList size={13} /> Bài test được giao
+              </h2>
+
+              {/* Assigned list */}
+              {assigned.map(t => (
+                <div key={t.test_id} className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2">
+                  <span className="flex-1 text-xs font-medium text-[#1A2744] truncate">{t.test_name}</span>
+                  {t.due_date && <span className="text-[0.65rem] text-gray-400 shrink-0">{new Date(t.due_date+'T00:00:00').toLocaleDateString('vi-VN')}</span>}
+                  <button onClick={() => {
+                    startTransition(async () => {
+                      await removeTestFromClass(cls.id, t.test_id)
+                      setAssigned(prev => prev.filter(x => x.test_id !== t.test_id))
+                      toast.info('Đã gỡ bài test')
+                    })
+                  }} className="text-gray-300 hover:text-red-400 transition-colors shrink-0">
+                    <X size={13} />
+                  </button>
+                </div>
+              ))}
+
+              {/* Assign new */}
+              <div className="flex gap-2 flex-wrap">
+                <select value={pickTestId} onChange={e => setPickTestId(e.target.value)}
+                  className="flex-1 min-w-[140px] h-8 rounded-xl border border-gray-200 bg-white px-2.5 text-xs text-[#1A2744] focus:outline-none focus:border-[#E8303A]">
+                  <option value="">— Chọn bài test —</option>
+                  {availableTests.filter(t => !assigned.find(a => a.test_id === t.id)).map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+                <Input value={pickDueDate} onChange={e => setPickDueDate(e.target.value)}
+                  type="date" placeholder="Hạn nộp"
+                  className="w-32 h-8 border-gray-200 rounded-xl text-xs focus-visible:border-[#E8303A] focus-visible:ring-0" />
+                <Button onClick={() => {
+                  if (!pickTestId) { toast.error('Chọn bài test'); return }
+                  const test = availableTests.find(t => t.id === pickTestId)!
+                  startTransition(async () => {
+                    await assignTestToClass(cls.id, pickTestId, pickDueDate)
+                    setAssigned(prev => [...prev, { test_id: pickTestId, test_name: test.name, due_date: pickDueDate || null }])
+                    setPickTestId(''); setPickDueDate('')
+                    toast.success('Đã giao bài test')
+                  })
+                }} className="h-8 px-3 rounded-xl bg-[#E8303A] hover:bg-[#C0222B] text-white border-0 text-xs">
+                  Giao bài
+                </Button>
               </div>
             </div>
 

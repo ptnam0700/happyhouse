@@ -121,3 +121,75 @@ export async function upsertAttendance(
   revalidatePath('/admin/school/attendance')
   revalidatePath(`/admin/school/classes/${classId}`)
 }
+
+// ── Student portal accounts ──────────────────────────────────────────
+
+function cleanPhone(phone: string) {
+  return phone.replace(/\s/g, '').replace(/^\+84/, '0')
+}
+
+function phoneToEmail(phone: string) {
+  return `${cleanPhone(phone)}@hh.local`
+}
+
+export async function createStudentAccount(
+  studentId: string,
+  phone: string,
+  password: string,
+) {
+  const db = createServiceClient()
+  const email = phoneToEmail(phone)
+
+  // Delete existing auth user if any (re-create)
+  const { data: existing } = await db.from('school_students')
+    .select('auth_user_id').eq('id', studentId).single()
+  if (existing?.auth_user_id) {
+    await db.auth.admin.deleteUser(existing.auth_user_id)
+  }
+
+  const { data: authUser, error } = await db.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+  })
+  if (error) throw error
+
+  await db.from('school_students')
+    .update({ auth_user_id: authUser.user.id, updated_at: new Date().toISOString() })
+    .eq('id', studentId)
+
+  revalidatePath(`/admin/school/students/${studentId}`)
+  return { email }
+}
+
+export async function resetStudentPassword(authUserId: string, newPassword: string) {
+  const db = createServiceClient()
+  const { error } = await db.auth.admin.updateUserById(authUserId, { password: newPassword })
+  if (error) throw error
+}
+
+export async function deleteStudentAccount(authUserId: string, studentId: string) {
+  const db = createServiceClient()
+  await db.auth.admin.deleteUser(authUserId)
+  await db.from('school_students')
+    .update({ auth_user_id: null, updated_at: new Date().toISOString() })
+    .eq('id', studentId)
+  revalidatePath(`/admin/school/students/${studentId}`)
+}
+
+// ── Class test assignments ────────────────────────────────────────────
+
+export async function assignTestToClass(classId: string, testId: string, dueDate: string) {
+  const db = createServiceClient()
+  await db.from('class_tests').upsert(
+    { class_id: classId, test_id: testId, due_date: dueDate || null, active: true },
+    { onConflict: 'class_id,test_id' }
+  )
+  revalidatePath(`/admin/school/classes/${classId}`)
+}
+
+export async function removeTestFromClass(classId: string, testId: string) {
+  const db = createServiceClient()
+  await db.from('class_tests').delete().eq('class_id', classId).eq('test_id', testId)
+  revalidatePath(`/admin/school/classes/${classId}`)
+}
