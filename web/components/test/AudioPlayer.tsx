@@ -26,6 +26,18 @@ export function AudioPlayer({ src, audioId, onPlay, className }: AudioPlayerProp
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
 
+  // When src changes (different passage), reload the audio element
+  useEffect(() => {
+    const el = audioRef.current
+    if (!el) return
+    el.pause()
+    el.load()           // picks up the new <source src> child
+    setPlaying(false)
+    setCurrentTime(0)
+    setDuration(0)
+    setError(false)
+  }, [src])
+
   const toggle = useCallback(async () => {
     const el = audioRef.current
     if (!el) return

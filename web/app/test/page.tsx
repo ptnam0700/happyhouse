@@ -217,9 +217,10 @@ export default function TestPage() {
           {isSplitMode && currentQ && (
             <div className="flex-[0_0_44%] sticky top-20 max-h-[calc(100vh-96px)] overflow-y-auto hidden md:block">
               {currentQ.section === 'reading' ? (
-                <ReadingPanel title={currentQ.passageTitle} content={currentQ.passageContent} />
+                <ReadingPanel key={currentQ.passageId} title={currentQ.passageTitle} content={currentQ.passageContent} />
               ) : (
                 <ListeningPanel
+                  key={currentQ.passageId}
                   title={currentQ.passageTitle}
                   audioSrc={currentQ.passageAudio}
                   passageId={currentQ.passageId!}
@@ -234,10 +235,11 @@ export default function TestPage() {
               <div className="md:hidden mb-3">
                 {currentQ.section === 'reading' ? (
                   <div className="max-h-52 overflow-y-auto rounded-2xl">
-                    <ReadingPanel title={currentQ.passageTitle} content={currentQ.passageContent} />
+                    <ReadingPanel key={currentQ.passageId} title={currentQ.passageTitle} content={currentQ.passageContent} />
                   </div>
                 ) : (
                   <ListeningPanel
+                    key={currentQ.passageId}
                     title={currentQ.passageTitle}
                     audioSrc={currentQ.passageAudio}
                     passageId={currentQ.passageId!}

@@ -34,9 +34,9 @@ export function QuestionCard({
   className,
 }: QuestionCardProps) {
   const handleFillChange = (qid: string, value: string) => {
-    const trimmed = value.trim()
-    if (trimmed) {
-      onAnswer(qid, trimmed)
+    // Store raw value so spaces work mid-word; server trims before scoring
+    if (value.length > 0) {
+      onAnswer(qid, value)
     } else {
       onRemoveAnswer?.(qid)
     }
