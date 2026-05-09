@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { LandingClient } from './LandingClient'
+import { CoursesSection } from './CoursesSection'
 
 export function LandingPage() {
   // Scroll reveal + tab switcher
@@ -467,57 +468,8 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* Courses */}
-        <section className="lp-section" id="courses">
-          <div className="lp-container">
-            <div className="lp-sec-head">
-              <div className="lp-sec-tag">Khoá học</div>
-              <h2 className="lp-sec-title">Lựa chọn khoá học<br />phù hợp với bạn</h2>
-              <p className="lp-sec-desc">Từ người mới bắt đầu đến mục tiêu 8.0+, HappyHouse có lộ trình phù hợp cho mọi trình độ.</p>
-            </div>
-            <div className="lp-tabs">
-              {['Tất cả', 'Tổng hợp', 'Luyện kỹ năng', 'Online', 'Offline'].map((t, i) => (
-                <button key={t} className={`lp-tab${i === 0 ? ' on' : ''}`}
-                  onClick={e => { document.querySelectorAll('.lp-tab').forEach(b => b.classList.remove('on')); (e.target as HTMLElement).classList.add('on') }}>
-                  {t}
-                </button>
-              ))}
-            </div>
-            <div className="lp-courses-grid">
-              {[
-                { emoji: '🚀', bg: 'linear-gradient(135deg,#FEF2F2,#FECACA)', badge: 'HOT', badgeCls: 'lp-badge-hot', level: '4.5 → 6.5+', cat: 'Khoá tổng hợp', name: 'IELTS Foundation – Nền tảng vững chắc', desc: 'Xây dựng nền tảng ngữ pháp, từ vựng và 4 kỹ năng từ đầu. Phù hợp học viên band 4.0–5.0.', info: ['📅 3 buổi/tuần', '⏱ 4 tháng', '👥 Max 12 HV'], old: '6.500.000đ', price: '5.200.000đ' },
-                { emoji: '🎯', bg: 'linear-gradient(135deg,#EFF6FF,#BFDBFE)', badge: 'NEW', badgeCls: 'lp-badge-new', level: '5.5 → 7.0+', cat: 'Khoá tổng hợp', name: 'IELTS Intermediate – Nâng cao hiệu quả', desc: 'Chiến lược làm bài thực tế, luyện đề theo format Cambridge mới nhất, phân tích chi tiết.', info: ['📅 3 buổi/tuần', '⏱ 5 tháng', '👥 Max 10 HV'], old: '7.800.000đ', price: '6.500.000đ' },
-                { emoji: '🏆', bg: 'linear-gradient(135deg,#F0FDF4,#BBF7D0)', badge: '7.5+', badgeCls: 'lp-badge-sale', level: '6.5 → 8.5', cat: 'Khoá chuyên sâu', name: 'IELTS Advanced – Chinh phục band cao', desc: 'Chiến lược chuyên biệt cho 7.5–8.5. Lớp học nhỏ, feedback cá nhân hoá mỗi buổi.', info: ['📅 4 buổi/tuần', '⏱ 3 tháng', '👥 Max 8 HV'], old: '9.500.000đ', price: '8.200.000đ' },
-                { emoji: '✍️', bg: 'linear-gradient(135deg,#FFFBEB,#FDE68A)', badge: 'HOT', badgeCls: 'lp-badge-hot', level: 'Writing', cat: 'Luyện kỹ năng', name: 'IELTS Writing Intensive – Task 1 & 2', desc: 'Tập trung Writing với framework riêng, chấm chữa chi tiết từng bài, feedback âm thanh.', info: ['📅 2 buổi/tuần', '⏱ 2 tháng', '👥 Max 10 HV'], old: '4.500.000đ', price: '3.800.000đ' },
-                { emoji: '🗣️', bg: 'linear-gradient(135deg,#F5F3FF,#DDD6FE)', badge: 'NEW', badgeCls: 'lp-badge-new', level: 'Speaking', cat: 'Luyện kỹ năng', name: 'IELTS Speaking Club – Luyện nói thực chiến', desc: 'Luyện Speaking cùng giáo viên IELTS 8.0+, sửa lỗi phát âm, vocabulary và fluency.', info: ['📅 Linh hoạt', '⏱ Theo buổi', '👥 1-1 hoặc nhóm'], old: '450.000đ/buổi', price: '350.000đ' },
-                { emoji: '💻', bg: 'linear-gradient(135deg,#FFF1F2,#FFE4E6)', badge: 'ONLINE', badgeCls: 'lp-badge-sale', level: 'Mọi trình độ', cat: 'Khoá online', name: 'IELTS Online – Học mọi lúc mọi nơi', desc: 'Chất lượng như học offline. Live class, video ghi lại, chữa bài và mock test định kỳ.', info: ['📅 Linh hoạt', '⏱ 6 tháng', '👥 Toàn quốc'], old: '5.500.000đ', price: '4.200.000đ' },
-              ].map((c, i) => (
-                <div key={i} className="lp-course-card lp-reveal">
-                  <div className="lp-course-thumb" style={{ background: c.bg }}>
-                    {c.emoji}
-                    <div className={`lp-cbadge ${c.badgeCls}`}>{c.badge}</div>
-                    <div className="lp-clevel">{c.level}</div>
-                  </div>
-                  <div className="lp-cbody">
-                    <div className="lp-ccategory">{c.cat}</div>
-                    <div className="lp-cname">{c.name}</div>
-                    <div className="lp-cdesc">{c.desc}</div>
-                    <div className="lp-cinfo">{c.info.map(x => <div key={x} className="lp-ci">{x}</div>)}</div>
-                    <div className="lp-cfooter">
-                      <div><div className="lp-cprice-old">{c.old}</div><div className="lp-cprice">{c.price}</div></div>
-                      <button className="lp-enroll-sm" onClick={scrollToTest}>Đăng ký</button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div style={{ textAlign: 'center', marginTop: 40 }}>
-              <a className="lp-btn-primary" href="#test-entry" onClick={scrollToTest} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '13px 28px', fontSize: 14, borderRadius: 10 }}>
-                Tư vấn khoá học phù hợp →
-              </a>
-            </div>
-          </div>
-        </section>
+        {/* Courses — new horizontal card layout */}
+        <CoursesSection onEnroll={scrollToTest} />
 
         {/* Teachers */}
         <section className="lp-section lp-teachers" id="teachers">
