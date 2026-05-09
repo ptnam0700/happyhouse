@@ -193,3 +193,23 @@ export async function removeTestFromClass(classId: string, testId: string) {
   await db.from('class_tests').delete().eq('class_id', classId).eq('test_id', testId)
   revalidatePath(`/admin/school/classes/${classId}`)
 }
+
+// ── Student ↔ Class assignment ────────────────────────────────────────
+
+export async function addStudentToClass(studentId: string, classId: string) {
+  const db = createServiceClient()
+  await db.from('school_students')
+    .update({ class_id: classId, updated_at: new Date().toISOString() })
+    .eq('id', studentId)
+  revalidatePath(`/admin/school/classes/${classId}`)
+  revalidatePath('/admin/school/students')
+}
+
+export async function removeStudentFromClass(studentId: string, classId: string) {
+  const db = createServiceClient()
+  await db.from('school_students')
+    .update({ class_id: null, updated_at: new Date().toISOString() })
+    .eq('id', studentId)
+  revalidatePath(`/admin/school/classes/${classId}`)
+  revalidatePath('/admin/school/students')
+}

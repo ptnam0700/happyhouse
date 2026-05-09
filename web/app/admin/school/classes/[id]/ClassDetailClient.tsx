@@ -2,11 +2,11 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, Trash2, UserPlus, ClipboardList, X } from 'lucide-react'
+import { ChevronLeft, Trash2, UserPlus, ClipboardList, X, Search, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { updateClass, deleteClass, assignTestToClass, removeTestFromClass } from '../../actions'
+import { updateClass, deleteClass, assignTestToClass, removeTestFromClass, addStudentToClass, removeStudentFromClass } from '../../actions'
 import { cn } from '@/lib/utils'
 
 interface Cls {
@@ -17,6 +17,7 @@ interface Cls {
 interface Student { id: string; full_name: string; phone: string | null; status: string; enrollment_date: string | null }
 interface AssignedTest { test_id: string; test_name: string; due_date: string | null }
 interface AvailableTest { id: string; name: string }
+interface AvailableStudent { id: string; full_name: string; phone: string | null; class_id: string | null }
 
 const LEVELS   = ['A1','A2','B1','B2','C1','C2','Starters','Movers','Flyers']
 const STATUSES = [
@@ -35,15 +36,19 @@ const STU_STYLE: Record<string, string> = {
   graduated: 'bg-blue-100 text-blue-700',    dropped: 'bg-gray-100 text-gray-500',
 }
 
-export function ClassDetailClient({ cls, students, assignedTests: initialAssigned, availableTests }: {
+export function ClassDetailClient({ cls, students: initialStudents, assignedTests: initialAssigned, availableTests, availableStudents }: {
   cls: Cls; students: Student[]
   assignedTests: AssignedTest[]; availableTests: AvailableTest[]
+  availableStudents: AvailableStudent[]
 }) {
-  const [saving,        setSaving]        = useState(false)
-  const [assigned,      setAssigned]      = useState(initialAssigned)
-  const [pickTestId,    setPickTestId]    = useState('')
-  const [pickDueDate,   setPickDueDate]   = useState('')
-  const [, startTransition]              = useTransition()
+  const [saving,         setSaving]         = useState(false)
+  const [students,       setStudents]       = useState(initialStudents)
+  const [assigned,       setAssigned]       = useState(initialAssigned)
+  const [pickTestId,     setPickTestId]     = useState('')
+  const [pickDueDate,    setPickDueDate]    = useState('')
+  const [stuPickerOpen,  setStuPickerOpen]  = useState(false)
+  const [stuSearch,      setStuSearch]      = useState('')
+  const [, startTransition]                = useTransition()
 
   const [name,        setName]        = useState(cls.name)
   const [level,       setLevel]       = useState(cls.level ?? '')
@@ -225,26 +230,93 @@ export function ClassDetailClient({ cls, students, assignedTests: initialAssigne
               <h2 className="text-sm font-bold text-[#1A2744]">
                 Học viên <span className="text-gray-400 font-normal">({students.length})</span>
               </h2>
-              <Link href={`/admin/school/students/new?class_id=${cls.id}`}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-[#E8303A] hover:bg-[#C0222B] text-white text-xs font-semibold transition-colors">
-                <UserPlus size={13} /> Thêm học viên
-              </Link>
+              <div className="flex gap-2">
+                <button onClick={() => setStuPickerOpen(v => !v)}
+                  className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-[#1A2744] hover:bg-[#243461] text-white text-xs font-semibold transition-colors">
+                  <Users size={13} /> Từ danh sách
+                </button>
+                <Link href={`/admin/school/students/new?class_id=${cls.id}`}
+                  className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-[#E8303A] hover:bg-[#C0222B] text-white text-xs font-semibold transition-colors">
+                  <UserPlus size={13} /> Tạo mới
+                </Link>
+              </div>
             </div>
+
+            {/* Student picker */}
+            {stuPickerOpen && (
+              <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(26,39,68,0.12)] mb-4 overflow-hidden border border-gray-100">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                  <span className="text-sm font-bold text-[#1A2744]">Thêm học viên vào lớp</span>
+                  <button onClick={() => { setStuPickerOpen(false); setStuSearch('') }}
+                    className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
+                </div>
+                <div className="px-4 py-2.5 border-b border-gray-100">
+                  <div className="relative">
+                    <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input value={stuSearch} onChange={e => setStuSearch(e.target.value)}
+                      placeholder="Tìm theo tên hoặc số điện thoại..."
+                      className="w-full h-8 pl-7 pr-3 rounded-xl border border-gray-200 bg-gray-50 text-xs placeholder:text-gray-300 focus:outline-none focus:border-[#E8303A]" />
+                  </div>
+                </div>
+                <div className="max-h-60 overflow-y-auto divide-y divide-gray-50">
+                  {availableStudents
+                    .filter(s => {
+                      const term = stuSearch.trim().toLowerCase()
+                      return !term || s.full_name.toLowerCase().includes(term) || (s.phone ?? '').includes(term)
+                    })
+                    .slice(0, 40)
+                    .map(s => (
+                      <div key={s.id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                        <div>
+                          <div className="text-sm font-semibold text-[#1A2744]">{s.full_name}</div>
+                          {s.phone && <div className="text-xs text-gray-400">{s.phone}</div>}
+                          {s.class_id && <div className="text-xs text-orange-400">Đang ở lớp khác</div>}
+                        </div>
+                        <button
+                          onClick={() => {
+                            startTransition(async () => {
+                              try {
+                                await addStudentToClass(s.id, cls.id)
+                                setStudents(prev => [...prev, {
+                                  id: s.id, full_name: s.full_name, phone: s.phone,
+                                  status: 'active', enrollment_date: new Date().toISOString().slice(0, 10),
+                                }])
+                                toast.success(`Đã thêm ${s.full_name} vào lớp`)
+                              } catch { toast.error('Không thể thêm học viên') }
+                            })
+                          }}
+                          className="text-xs font-semibold text-[#E8303A] hover:text-[#C0222B] bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl transition-colors shrink-0">
+                          + Thêm
+                        </button>
+                      </div>
+                    ))}
+                  {availableStudents.filter(s => {
+                    const term = stuSearch.trim().toLowerCase()
+                    return !term || s.full_name.toLowerCase().includes(term) || (s.phone ?? '').includes(term)
+                  }).length === 0 && (
+                    <p className="text-center py-8 text-xs text-gray-400">
+                      {stuSearch ? `Không tìm thấy "${stuSearch}"` : 'Không có học viên nào có thể thêm'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Students table */}
             <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(26,39,68,0.08)] overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50/80 border-b border-gray-100">
                   <tr>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Học viên</th>
-                    <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden sm:table-cell">Ngày nhập học</th>
+                    <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden sm:table-cell">Nhập học</th>
                     <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Trạng thái</th>
+                    <th className="px-3 py-3" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {students.map(s => (
-                    <tr key={s.id}
-                      onClick={() => window.location.href = `/admin/school/students/${s.id}`}
-                      className="hover:bg-gray-50/50 cursor-pointer transition-colors">
-                      <td className="px-5 py-3">
+                    <tr key={s.id} className="hover:bg-gray-50/50 transition-colors group">
+                      <td className="px-5 py-3 cursor-pointer" onClick={() => window.location.href = `/admin/school/students/${s.id}`}>
                         <div className="font-semibold text-[#1A2744]">{s.full_name}</div>
                         {s.phone && <div className="text-xs text-gray-400">{s.phone}</div>}
                       </td>
@@ -256,10 +328,26 @@ export function ClassDetailClient({ cls, students, assignedTests: initialAssigne
                           {STU_STATUS[s.status] ?? s.status}
                         </span>
                       </td>
+                      <td className="px-3 py-3 text-right">
+                        <button
+                          onClick={() => {
+                            if (!confirm(`Xoá ${s.full_name} khỏi lớp này?`)) return
+                            startTransition(async () => {
+                              try {
+                                await removeStudentFromClass(s.id, cls.id)
+                                setStudents(prev => prev.filter(x => x.id !== s.id))
+                                toast.info(`Đã xoá ${s.full_name} khỏi lớp`)
+                              } catch { toast.error('Không thể xoá') }
+                            })
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all">
+                          <X size={13} />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                   {!students.length && (
-                    <tr><td colSpan={3} className="px-5 py-12 text-center text-gray-400 text-sm">
+                    <tr><td colSpan={4} className="px-5 py-12 text-center text-gray-400 text-sm">
                       Chưa có học viên trong lớp này
                     </td></tr>
                   )}
