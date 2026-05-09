@@ -74,12 +74,12 @@ export default function TestPage() {
         clearInterval(msgInterval)
         setLoading(false)
         console.error('Failed to load questions:', err)
-        alert('Không thể tải bài test. Vui lòng thử lại.')
         loadedRef.current = false
         setRegDone(false)
       })
+  // re-run when regDone flips true (direct /test flow) or student.name is set (landing page flow)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [regDone, student.name])
 
   useEffect(() => {
     if (!questions.length || submitted) return
