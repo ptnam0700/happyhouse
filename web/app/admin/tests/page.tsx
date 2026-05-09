@@ -14,19 +14,17 @@ export default async function TestsPage() {
     db.from('tests').select('id, name, description, time_limit_sec, published, active, created_at').order('created_at', { ascending: false }),
     db.from('test_questions').select('test_id'),
   ])
-
   const countMap: Record<string, number> = {}
   qCounts?.forEach(r => { countMap[r.test_id] = (countMap[r.test_id] ?? 0) + 1 })
-
   const data = (tests ?? []).map(t => ({ ...t, qCount: countMap[t.id] ?? 0 }))
 
   return (
-    <div className="p-4 sm:p-8 max-w-4xl">
-      <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
-        <h1 className="text-xl sm:text-2xl font-bold text-[#1A2744]">Bài kiểm tra</h1>
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="shrink-0 px-4 sm:px-6 py-3 border-b border-gray-100 bg-white flex items-center gap-2">
+        <span className="text-base font-bold text-[#1A2744] mr-auto">Bài kiểm tra</span>
         <Link href="/admin/tests/new"
-          className="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[#E8303A] hover:bg-[#C0222B] text-white text-sm font-semibold transition-colors">
-          <Plus size={15} /> Tạo bài test
+          className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-[#E8303A] hover:bg-[#C0222B] text-white text-xs font-semibold transition-colors">
+          <Plus size={13} /> Tạo bài test
         </Link>
       </div>
       <TestsClient tests={data} siteUrl={SITE} />

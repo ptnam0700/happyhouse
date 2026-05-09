@@ -12,20 +12,8 @@ export default async function SessionsPage() {
     .order('submitted_at', { ascending: false })
 
   const sessions = (data ?? []).map(s => ({
-    id:             s.id,
-    test_type:      s.test_type,
-    band_score:     s.band_score,
-    total_correct:  s.total_correct,
-    total_questions:s.total_questions,
-    duration_sec:   s.duration_sec,
-    submitted_at:   s.submitted_at,
+    ...s,
     student: Array.isArray(s.students) ? (s.students[0] ?? null) : (s.students ?? null),
   }))
-
-  return (
-    <div className="p-4 sm:p-8 max-w-6xl">
-      <h1 className="text-xl sm:text-2xl font-bold text-[#1A2744] mb-6">Bài thi</h1>
-      <SessionsClient sessions={sessions} />
-    </div>
-  )
+  return <SessionsClient sessions={sessions} />
 }

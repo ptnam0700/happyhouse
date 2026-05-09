@@ -9,9 +9,10 @@ export const metadata: Metadata = {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-[#F7F6F2]">
+    <div className="flex h-screen overflow-hidden bg-[#F7F6F2]">
       <AdminSidebar />
-      <main className="flex-1 min-w-0 pt-14 md:pt-0">
+      {/* pt-14 reserves space for the mobile fixed top bar */}
+      <main className="flex-1 min-w-0 min-h-0 overflow-hidden pt-14 md:pt-0 flex flex-col">
         {children}
       </main>
       <Toaster
