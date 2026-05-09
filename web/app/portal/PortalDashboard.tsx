@@ -113,7 +113,7 @@ export function PortalDashboard({ student, classes, tests, allResults }: Props) 
           </div>
         )}
 
-        {/* Completed tests */}
+        {/* Completed tests — with all attempts per test */}
         {completed.length > 0 && (
           <div>
             <h2 className="text-sm font-bold text-[#1A2744] mb-3 flex items-center gap-2">
@@ -122,10 +122,15 @@ export function PortalDashboard({ student, classes, tests, allResults }: Props) 
             </h2>
             <div className="space-y-3">
               {completed.map(t => {
-                const p = t.latest_total_questions ? pct(t.latest_total_correct!, t.latest_total_questions) : 0
+                // All attempts for this test, newest first
+                const attempts = sortedResults.filter(r => r.test_id === t.test_id)
+                const latest = attempts[0]
+                const p = latest ? pct(latest.total_correct, latest.total_questions) : 0
+
                 return (
-                  <div key={t.test_id} className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(26,39,68,0.08)]">
-                    <div className="flex items-start justify-between gap-3">
+                  <div key={t.test_id} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(26,39,68,0.08)] overflow-hidden">
+                    {/* Main row */}
+                    <div className="flex items-start justify-between gap-3 p-5">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <CheckCircle size={14} className="text-emerald-500 shrink-0" />
@@ -135,27 +140,28 @@ export function PortalDashboard({ student, classes, tests, allResults }: Props) 
                               {t.latest_band}
                             </span>
                           )}
+                          {attempts.length > 1 && (
+                            <span className="text-xs text-gray-400">{attempts.length} lần làm</span>
+                          )}
                         </div>
-                        {t.latest_total_questions && (
+                        {latest && (
                           <div className="flex items-center gap-3 mt-2 text-sm">
                             <span className="font-semibold text-[#1A2744]">
-                              {t.latest_total_correct}/{t.latest_total_questions}
+                              {latest.total_correct}/{latest.total_questions}
                             </span>
                             <span className={cn('text-xs font-bold px-2 py-0.5 rounded-full',
                               p >= 70 ? 'bg-emerald-100 text-emerald-700' : p >= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-600')}>
                               {p}%
                             </span>
-                            {t.latest_submitted_at && (
-                              <span className="text-xs text-gray-400">
-                                {new Date(t.latest_submitted_at).toLocaleDateString('vi-VN')}
-                              </span>
-                            )}
+                            <span className="text-xs text-gray-400">
+                              {new Date(latest.submitted_at).toLocaleDateString('vi-VN')}
+                            </span>
                           </div>
                         )}
                       </div>
                       <div className="flex flex-col gap-2 shrink-0">
-                        {t.latest_session_id && (
-                          <Link href={`/portal/result/${t.latest_session_id}`}
+                        {latest && (
+                          <Link href={`/portal/result/${latest.id}`}
                             className="flex items-center gap-1.5 text-xs font-semibold text-[#1A2744] bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-xl transition-colors">
                             <Eye size={13} /> Xem kết quả
                           </Link>
@@ -166,57 +172,34 @@ export function PortalDashboard({ student, classes, tests, allResults }: Props) 
                         </Link>
                       </div>
                     </div>
+
+                    {/* Previous attempts (if retaken) */}
+                    {attempts.length > 1 && (
+                      <div className="border-t border-gray-100 divide-y divide-gray-50">
+                        {attempts.slice(1).map((r, i) => {
+                          const rp = pct(r.total_correct, r.total_questions)
+                          return (
+                            <div key={r.id} className="flex items-center gap-3 px-5 py-2.5 bg-gray-50/50">
+                              <span className="text-xs text-gray-400 w-16 shrink-0">Lần {attempts.length - i - 1}</span>
+                              <span className="text-xs font-semibold text-[#1A2744] tabular-nums">
+                                {r.total_correct}/{r.total_questions}
+                                <span className={cn('ml-1.5 font-bold', rp >= 70 ? 'text-emerald-600' : rp >= 50 ? 'text-yellow-600' : 'text-red-500')}>
+                                  ({rp}%)
+                                </span>
+                              </span>
+                              <span className="text-xs text-gray-400 ml-auto">{new Date(r.submitted_at).toLocaleDateString('vi-VN')}</span>
+                              <Link href={`/portal/result/${r.id}`}
+                                className="text-xs font-semibold text-gray-400 hover:text-[#E8303A] transition-colors flex items-center gap-1">
+                                <Eye size={11} /> Xem
+                              </Link>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 )
               })}
-            </div>
-          </div>
-        )}
-
-        {/* Full history */}
-        {sortedResults.length > 0 && (
-          <div>
-            <h2 className="text-sm font-bold text-[#1A2744] mb-3">Lịch sử làm bài</h2>
-            <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(26,39,68,0.08)] overflow-hidden">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50/80 border-b border-gray-100">
-                  <tr>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Bài test</th>
-                    <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Điểm</th>
-                    <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden sm:table-cell">Ngày</th>
-                    <th className="px-3 py-3" />
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {sortedResults.map(r => {
-                    const p = pct(r.total_correct, r.total_questions)
-                    const testInfo = tests.find(t => t.test_id === r.test_id)
-                    return (
-                      <tr key={r.id} className="hover:bg-gray-50/50">
-                        <td className="px-5 py-3 font-medium text-[#1A2744] text-sm">{testInfo?.name ?? 'Bài test'}</td>
-                        <td className="px-3 py-3">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-[#1A2744] tabular-nums">{r.total_correct}/{r.total_questions}</span>
-                            <span className={cn('text-xs font-semibold px-2 py-0.5 rounded-full',
-                              p >= 70 ? 'bg-emerald-100 text-emerald-700' : p >= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-600')}>
-                              {p}%
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-3 py-3 text-xs text-gray-400 hidden sm:table-cell">
-                          {new Date(r.submitted_at).toLocaleDateString('vi-VN')}
-                        </td>
-                        <td className="px-3 py-3 text-right">
-                          <Link href={`/portal/result/${r.id}`}
-                            className="text-xs font-semibold text-[#1A2744] hover:text-[#E8303A] transition-colors flex items-center gap-1 justify-end">
-                            <Eye size={12} /> Xem
-                          </Link>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
             </div>
           </div>
         )}
