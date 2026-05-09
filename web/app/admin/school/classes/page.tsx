@@ -19,11 +19,11 @@ export default async function ClassesPage() {
   const db = createServiceClient()
   const [{ data: classes }, { data: studentCounts }] = await Promise.all([
     db.from('classes').select('id, name, level, teacher, schedule, room, max_students, start_date, end_date, status').order('created_at', { ascending: false }),
-    db.from('school_students').select('class_id').eq('status', 'active'),
+    db.from('student_classes').select('class_id').eq('status', 'active'),
   ])
 
   const countMap: Record<string, number> = {}
-  studentCounts?.forEach(s => { if (s.class_id) countMap[s.class_id] = (countMap[s.class_id] ?? 0) + 1 })
+  studentCounts?.forEach((s: any) => { countMap[s.class_id] = (countMap[s.class_id] ?? 0) + 1 })
 
   return (
     <div className="flex flex-col h-full overflow-hidden">

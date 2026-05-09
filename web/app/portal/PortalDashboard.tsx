@@ -8,10 +8,8 @@ import { Clock, CheckCircle, BookOpen, LogOut, Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Props {
-  student:       { id: string; full_name: string }
-  className:     string | null
-  classSchedule: string | null
-  classTeacher:  string | null
+  student: { id: string; full_name: string }
+  classes: { id: string; name: string; schedule: string | null; teacher: string | null }[]
   tests: {
     test_id: string; name: string; description: string | null
     time_limit_sec: number; due_date: string | null; done: boolean
@@ -24,7 +22,7 @@ interface Props {
 function fmt(sec: number) { return `${Math.round(sec / 60)} phút` }
 function pct(c: number, t: number) { return t > 0 ? Math.round(c / t * 100) : 0 }
 
-export function PortalDashboard({ student, className, classSchedule, classTeacher, tests, results }: Props) {
+export function PortalDashboard({ student, classes, tests, results }: Props) {
   const router = useRouter()
 
   const handleLogout = async () => {
@@ -55,11 +53,15 @@ export function PortalDashboard({ student, className, classSchedule, classTeache
         <div className="bg-[#1A2744] rounded-2xl p-5 text-white">
           <p className="text-white/60 text-sm mb-0.5">Xin chào,</p>
           <h1 className="text-xl font-bold mb-3">{student.full_name}</h1>
-          {className && (
-            <div className="flex flex-wrap gap-3 text-sm text-white/80">
-              <span className="flex items-center gap-1.5"><BookOpen size={14} /> {className}</span>
-              {classSchedule && <span className="flex items-center gap-1.5"><Clock size={14} /> {classSchedule}</span>}
-              {classTeacher  && <span className="flex items-center gap-1.5">👨‍🏫 {classTeacher}</span>}
+          {classes.length > 0 && (
+            <div className="space-y-1.5">
+              {classes.map(c => (
+                <div key={c.id} className="flex flex-wrap gap-3 text-sm text-white/80">
+                  <span className="flex items-center gap-1.5"><BookOpen size={14} /> {c.name}</span>
+                  {c.schedule && <span className="flex items-center gap-1.5"><Clock size={14} /> {c.schedule}</span>}
+                  {c.teacher  && <span className="flex items-center gap-1.5">👨‍🏫 {c.teacher}</span>}
+                </div>
+              ))}
             </div>
           )}
         </div>

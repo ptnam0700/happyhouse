@@ -9,24 +9,35 @@ export default async function ClassDetailPage({ params }: { params: Promise<{ id
   const { id } = await params
   const db = createServiceClient()
 
-  const [{ data: cls }, { data: students }, { data: classTests }, { data: allTests }, { data: allStudents }] = await Promise.all([
+  const [{ data: cls }, { data: enrollments }, { data: classTests }, { data: allTests }] = await Promise.all([
     db.from('classes').select('*').eq('id', id).single(),
-    db.from('school_students')
-      .select('id, full_name, phone, status, enrollment_date')
-      .eq('class_id', id).order('full_name'),
-    db.from('class_tests')
-      .select('test_id, due_date, tests(name)')
-      .eq('class_id', id).eq('active', true),
+    // Students via junction
+    db.from('student_classes')
+      .select('enrolled_at, status, school_students(id, full_name, phone, status)')
+      .eq('class_id', id)
+      .order('enrolled_at'),
+    db.from('class_tests').select('test_id, due_date, tests(name)').eq('class_id', id).eq('active', true),
     db.from('tests').select('id, name').eq('published', true).order('name'),
-    // All students not in this class (for the picker)
-    db.from('school_students')
-      .select('id, full_name, phone, class_id')
-      .neq('class_id', id)
-      .in('status', ['active', 'paused'])
-      .order('full_name'),
   ])
 
   if (!cls) notFound()
+
+  // Students not enrolled in this class (for picker)
+  const enrolledIds = (enrollments ?? []).map((e: any) => {
+    const s = Array.isArray(e.school_students) ? e.school_students[0] : e.school_students
+    return s?.id
+  }).filter(Boolean)
+
+  const { data: available } = await db.from('school_students')
+    .select('id, full_name, phone')
+    .not('id', 'in', enrolledIds.length ? `(${enrolledIds.map((i: string) => `'${i}'`).join(',')})` : "('')")
+    .in('status', ['active', 'paused'])
+    .order('full_name')
+
+  const students = (enrollments ?? []).map((e: any) => {
+    const s = Array.isArray(e.school_students) ? e.school_students[0] : e.school_students
+    return { id: s?.id, full_name: s?.full_name, phone: s?.phone ?? null, status: s?.status ?? 'active', enrollment_date: e.enrolled_at }
+  }).filter((s: any) => s.id)
 
   const assignedTests = (classTests ?? []).map((r: any) => ({
     test_id:   r.test_id,
@@ -34,23 +45,13 @@ export default async function ClassDetailPage({ params }: { params: Promise<{ id
     due_date:  r.due_date,
   }))
 
-  // Also include students with no class at all (neq excludes nulls in Supabase)
-  const { data: unassigned } = await db
-    .from('school_students')
-    .select('id, full_name, phone, class_id')
-    .is('class_id', null)
-    .in('status', ['active', 'paused'])
-    .order('full_name')
-
-  const availableStudents = [...(unassigned ?? []), ...(allStudents ?? [])]
-
   return (
     <ClassDetailClient
       cls={cls as any}
-      students={students ?? []}
+      students={students as any}
       assignedTests={assignedTests}
       availableTests={allTests ?? []}
-      availableStudents={availableStudents}
+      availableStudents={(available ?? []).map((s: any) => ({ id: s.id, full_name: s.full_name, phone: s.phone ?? null, class_id: null }))}
     />
   )
 }

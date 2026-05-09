@@ -7,15 +7,16 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { updateSchoolStudent, deleteSchoolStudent, createStudentAccount, resetStudentPassword, deleteStudentAccount } from '../../actions'
+import { updateSchoolStudent, deleteSchoolStudent, createStudentAccount, resetStudentPassword, deleteStudentAccount, addStudentToClass, removeStudentFromClass } from '../../actions'
 import { cn } from '@/lib/utils'
 
 interface Student {
   id: string; full_name: string; phone: string | null; email: string | null
   date_of_birth: string | null; parent_name: string | null; parent_phone: string | null
-  class_id: string | null; enrollment_date: string | null; status: string; notes: string | null
+  enrollment_date: string | null; status: string; notes: string | null
   auth_user_id: string | null
 }
+interface StudentClass { class_id: string; class_name: string | null; enrolled_at: string | null; status: string }
 interface AttRecord { session_date: string; status: string; notes: string | null; class_name: string | null }
 interface Cls { id: string; name: string }
 
@@ -31,8 +32,8 @@ const ATT_LABEL: Record<string, string> = {
   present: 'Có mặt', late: 'Muộn', excused: 'Phép', absent: 'Vắng',
 }
 
-export function StudentDetailClient({ student, attendance, classes }: {
-  student: Student; attendance: AttRecord[]; classes: Cls[]
+export function StudentDetailClient({ student, studentClasses: initialClasses, attendance, allClasses }: {
+  student: Student; studentClasses: StudentClass[]; attendance: AttRecord[]; allClasses: Cls[]
 }) {
   const router = useRouter()
   const [saving,         setSaving]         = useState(false)
@@ -46,10 +47,11 @@ export function StudentDetailClient({ student, attendance, classes }: {
   const [dob,            setDob]            = useState(student.date_of_birth ?? '')
   const [parentName,     setParentName]     = useState(student.parent_name ?? '')
   const [parentPhone,    setParentPhone]    = useState(student.parent_phone ?? '')
-  const [classId,        setClassId]        = useState(student.class_id ?? '')
   const [enrollmentDate, setEnrollmentDate] = useState(student.enrollment_date ?? '')
   const [status,         setStatus]         = useState(student.status)
   const [notes,          setNotes]          = useState(student.notes ?? '')
+  const [classes,        setClasses]        = useState(initialClasses)
+  const [addClassId,     setAddClassId]     = useState('')
 
   const handleSave = async () => {
     if (!fullName.trim()) { toast.error('Họ tên không được để trống'); return }
@@ -57,8 +59,7 @@ export function StudentDetailClient({ student, attendance, classes }: {
     const fd = new FormData()
     fd.set('full_name', fullName); fd.set('phone', phone); fd.set('email', email)
     fd.set('date_of_birth', dob); fd.set('parent_name', parentName); fd.set('parent_phone', parentPhone)
-    fd.set('class_id', classId); fd.set('enrollment_date', enrollmentDate)
-    fd.set('status', status); fd.set('notes', notes)
+    fd.set('enrollment_date', enrollmentDate); fd.set('status', status); fd.set('notes', notes)
     try { await updateSchoolStudent(student.id, fd); toast.success('Đã lưu thông tin') }
     catch (e: any) { toast.error(e.message) }
     setSaving(false)
@@ -128,13 +129,47 @@ export function StudentDetailClient({ student, attendance, classes }: {
                   {STATUS_OPTIONS.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
                 </select>
               </div>
-              <div className="space-y-1">
+              {/* Multi-class enrollment */}
+              <div className="space-y-2">
                 <label className="text-xs font-semibold text-gray-500">Lớp học</label>
-                <select value={classId} onChange={e => setClassId(e.target.value)}
-                  className="w-full h-9 rounded-xl border border-gray-200 bg-white px-2.5 text-sm focus:outline-none focus:border-[#E8303A]">
-                  <option value="">— Chưa xếp lớp —</option>
-                  {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                {classes.length === 0 && <p className="text-xs text-gray-300 italic">Chưa xếp lớp nào</p>}
+                {classes.map(c => (
+                  <div key={c.class_id} className="flex items-center gap-2 bg-blue-50 rounded-xl px-3 py-2">
+                    <span className="flex-1 text-xs font-medium text-[#1A2744] truncate">{c.class_name}</span>
+                    <button onClick={() => {
+                      if (!confirm(`Xoá khỏi lớp "${c.class_name}"?`)) return
+                      startTransition(async () => {
+                        try {
+                          await removeStudentFromClass(student.id, c.class_id)
+                          setClasses(prev => prev.filter(x => x.class_id !== c.class_id))
+                          toast.info('Đã xoá khỏi lớp')
+                        } catch { toast.error('Không thể xoá') }
+                      })
+                    }} className="text-gray-400 hover:text-red-500 transition-colors shrink-0">✕</button>
+                  </div>
+                ))}
+                <div className="flex gap-2">
+                  <select value={addClassId} onChange={e => setAddClassId(e.target.value)}
+                    className="flex-1 h-8 rounded-xl border border-gray-200 bg-white px-2.5 text-xs text-[#1A2744] focus:outline-none focus:border-[#E8303A]">
+                    <option value="">+ Thêm vào lớp...</option>
+                    {allClasses.filter(c => !classes.find(ec => ec.class_id === c.id)).map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                  <button disabled={!addClassId} onClick={() => {
+                    const cls = allClasses.find(c => c.id === addClassId)!
+                    startTransition(async () => {
+                      try {
+                        await addStudentToClass(student.id, addClassId)
+                        setClasses(prev => [...prev, { class_id: addClassId, class_name: cls.name, enrolled_at: null, status: 'active' }])
+                        setAddClassId('')
+                        toast.success(`Đã thêm vào ${cls.name}`)
+                      } catch { toast.error('Không thể thêm') }
+                    })
+                  }} className="h-8 px-3 rounded-xl bg-[#1A2744] hover:bg-[#243461] text-white text-xs font-semibold transition-colors disabled:opacity-40">
+                    Thêm
+                  </button>
+                </div>
               </div>
             </div>
 

@@ -6,16 +6,17 @@ import { Search, X } from 'lucide-react'
 import { Pagination } from '@/components/admin/Pagination'
 import { cn } from '@/lib/utils'
 
+interface StudentClass { class_id: string; class_name: string | null }
 interface Student {
   id: string; full_name: string; phone: string | null; email: string | null
-  status: string; enrollment_date: string | null; class_id: string | null; class_name: string | null
+  status: string; enrollment_date: string | null; classes: StudentClass[]
 }
 interface Cls { id: string; name: string }
 
 const PAGE_SIZE = 25
 const STATUS_STYLE: Record<string, string> = {
   active: 'bg-emerald-100 text-emerald-700', paused: 'bg-yellow-100 text-yellow-700',
-  graduated: 'bg-blue-100 text-blue-700', dropped: 'bg-gray-100 text-gray-500',
+  graduated: 'bg-blue-100 text-blue-700',    dropped: 'bg-gray-100 text-gray-500',
 }
 const STATUS_LABEL: Record<string, string> = {
   active: 'Đang học', paused: 'Tạm dừng', graduated: 'Tốt nghiệp', dropped: 'Nghỉ học',
@@ -30,9 +31,10 @@ export function SchoolStudentsClient({ students, classes }: { students: Student[
 
   const filtered = students.filter(s => {
     const term = search.trim().toLowerCase()
-    return (!term || s.full_name.toLowerCase().includes(term) || (s.phone ?? '').includes(term)) &&
-      (classF  === 'all' || s.class_id === classF) &&
-      (statusF === 'all' || s.status   === statusF)
+    const matchSearch = !term || s.full_name.toLowerCase().includes(term) || (s.phone ?? '').includes(term)
+    const matchClass  = classF === 'all' || s.classes.some(c => c.class_id === classF)
+    const matchStatus = statusF === 'all' || s.status === statusF
+    return matchSearch && matchClass && matchStatus
   })
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
   const onFilter = (fn: () => void) => { fn(); setPage(1) }
@@ -63,24 +65,27 @@ export function SchoolStudentsClient({ students, classes }: { students: Student[
           <thead className="sticky top-0 z-10 bg-white shadow-[0_1px_0_0_#e5e7eb]">
             <tr>
               <th className="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Học viên</th>
-              <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden md:table-cell">Lớp</th>
+              <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden md:table-cell">Lớp đang học</th>
               <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden sm:table-cell">Nhập học</th>
               <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Trạng thái</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-50">
             {paginated.map(s => (
-              <tr key={s.id}
-                onClick={() => router.push(`/admin/school/students/${s.id}`)}
+              <tr key={s.id} onClick={() => router.push(`/admin/school/students/${s.id}`)}
                 className="hover:bg-gray-50/50 transition-colors cursor-pointer">
                 <td className="px-5 py-3">
                   <div className="font-semibold text-[#1A2744]">{s.full_name}</div>
                   {s.phone && <div className="text-xs text-gray-400">{s.phone}</div>}
                 </td>
                 <td className="px-3 py-3 hidden md:table-cell">
-                  {s.class_name
-                    ? <span className="text-xs text-[#1A2744]">{s.class_name}</span>
-                    : <span className="text-gray-300 text-xs">—</span>}
+                  {s.classes.length > 0
+                    ? <div className="flex flex-wrap gap-1">
+                        {s.classes.map(c => (
+                          <span key={c.class_id} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{c.class_name}</span>
+                        ))}
+                      </div>
+                    : <span className="text-gray-300 text-xs">Chưa xếp lớp</span>}
                 </td>
                 <td className="px-3 py-3 text-xs text-gray-400 hidden sm:table-cell">
                   {s.enrollment_date ? new Date(s.enrollment_date).toLocaleDateString('vi-VN') : '—'}

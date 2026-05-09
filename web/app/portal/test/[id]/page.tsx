@@ -17,21 +17,30 @@ export default async function PortalTestPage({ params }: { params: Promise<{ id:
   // Get student
   const { data: student } = await db
     .from('school_students')
-    .select('id, full_name, phone, class_id')
+    .select('id, full_name, phone')
     .eq('auth_user_id', user.id)
     .single()
 
   if (!student) redirect('/portal')
 
-  // Verify this test is assigned to the student's class
-  if (student.class_id) {
+  // Verify this test is assigned to any of the student's classes
+  const { data: classIds } = await db
+    .from('student_classes')
+    .select('class_id')
+    .eq('student_id', student.id)
+    .eq('status', 'active')
+
+  const ids = (classIds ?? []).map((r: any) => r.class_id)
+  if (ids.length > 0) {
     const { data: ct } = await db
       .from('class_tests')
       .select('test_id')
-      .eq('class_id', student.class_id)
+      .in('class_id', ids)
       .eq('test_id', testId)
       .single()
     if (!ct) notFound()
+  } else {
+    notFound()
   }
 
   // Fetch test + questions

@@ -9,7 +9,7 @@ export default async function StudentDetailPage({ params }: { params: Promise<{ 
   const { id } = await params
   const db = createServiceClient()
 
-  const [{ data: student }, { data: attendance }, { data: classes }] = await Promise.all([
+  const [{ data: student }, { data: attendance }, { data: allClasses }, { data: enrollments }] = await Promise.all([
     db.from('school_students').select('*').eq('id', id).single(),
     db.from('attendance')
       .select('session_date, status, notes, classes(name)')
@@ -17,20 +17,28 @@ export default async function StudentDetailPage({ params }: { params: Promise<{ 
       .order('session_date', { ascending: false })
       .limit(60),
     db.from('classes').select('id, name').in('status', ['upcoming', 'active']).order('name'),
+    // Classes this student is enrolled in
+    db.from('student_classes')
+      .select('class_id, enrolled_at, status, classes(id, name)')
+      .eq('student_id', id),
   ])
 
   if (!student) notFound()
 
+  const studentClasses = (enrollments ?? []).map((e: any) => {
+    const cls = Array.isArray(e.classes) ? e.classes[0] : e.classes
+    return { class_id: e.class_id, class_name: cls?.name ?? null, enrolled_at: e.enrolled_at, status: e.status }
+  })
+
   return (
     <StudentDetailClient
       student={student as any}
+      studentClasses={studentClasses}
       attendance={(attendance ?? []).map((a: any) => ({
-        session_date: a.session_date,
-        status:       a.status,
-        notes:        a.notes,
-        class_name:   Array.isArray(a.classes) ? a.classes[0]?.name : a.classes?.name ?? null,
+        session_date: a.session_date, status: a.status, notes: a.notes,
+        class_name: Array.isArray(a.classes) ? a.classes[0]?.name : a.classes?.name ?? null,
       }))}
-      classes={classes ?? []}
+      allClasses={allClasses ?? []}
     />
   )
 }

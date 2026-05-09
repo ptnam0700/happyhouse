@@ -9,13 +9,26 @@ export const metadata: Metadata = { title: 'Học viên' }
 export default async function SchoolStudentsPage() {
   const db = createServiceClient()
   const [{ data: students }, { data: classes }] = await Promise.all([
-    db.from('school_students').select('id, full_name, phone, email, date_of_birth, status, enrollment_date, class_id, classes(name)').order('full_name'),
+    // Join through student_classes to get all enrolled classes per student
+    db.from('school_students')
+      .select('id, full_name, phone, email, status, enrollment_date, student_classes(class_id, status, classes(id, name))')
+      .order('full_name'),
     db.from('classes').select('id, name').eq('status', 'active').order('name'),
   ])
 
   const data = (students ?? []).map((s: any) => ({
-    ...s,
-    class_name: Array.isArray(s.classes) ? (s.classes[0]?.name ?? null) : s.classes?.name ?? null,
+    id:              s.id,
+    full_name:       s.full_name,
+    phone:           s.phone,
+    email:           s.email,
+    status:          s.status,
+    enrollment_date: s.enrollment_date,
+    classes: (s.student_classes ?? [])
+      .filter((sc: any) => sc.status === 'active')
+      .map((sc: any) => {
+        const cls = Array.isArray(sc.classes) ? sc.classes[0] : sc.classes
+        return { class_id: sc.class_id, class_name: cls?.name ?? null }
+      }),
   }))
 
   return (
