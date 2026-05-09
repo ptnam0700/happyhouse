@@ -204,7 +204,7 @@ export default function TestPage() {
             Bài kiểm tra chuẩn hoá do đội ngũ 8.5+ HappyHouse thiết kế — nhận kết quả ngay.
           </p>
         </div>
-        <div className="w-full px-4">
+        <div className="w-full px-4 pt-8 pb-12">
           <RegisterForm
             onSubmit={(s: Student) => {
               setStudent(s)
