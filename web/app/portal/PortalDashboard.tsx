@@ -4,40 +4,52 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Clock, CheckCircle, BookOpen, LogOut, Calendar } from 'lucide-react'
+import { Clock, BookOpen, LogOut, Calendar, CheckCircle, RotateCcw, Eye } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+interface TestItem {
+  test_id: string; name: string; description: string | null
+  time_limit_sec: number; due_date: string | null; done: boolean
+  latest_session_id: string | null
+  latest_total_correct: number | null; latest_total_questions: number | null
+  latest_band: string | null; latest_submitted_at: string | null
+}
+interface ResultItem { id: string; test_id: string; total_correct: number; total_questions: number; submitted_at: string }
+interface ClassItem  { id: string; name: string; schedule: string | null; teacher: string | null }
+
 interface Props {
-  student: { id: string; full_name: string }
-  classes: { id: string; name: string; schedule: string | null; teacher: string | null }[]
-  tests: {
-    test_id: string; name: string; description: string | null
-    time_limit_sec: number; due_date: string | null; done: boolean
-  }[]
-  results: {
-    test_id: string; total_correct: number; total_questions: number; submitted_at: string
-  }[]
+  student:    { id: string; full_name: string }
+  classes:    ClassItem[]
+  tests:      TestItem[]
+  allResults: ResultItem[]
 }
 
 function fmt(sec: number) { return `${Math.round(sec / 60)} phút` }
 function pct(c: number, t: number) { return t > 0 ? Math.round(c / t * 100) : 0 }
 
-export function PortalDashboard({ student, classes, tests, results }: Props) {
+const BAND_COLOR: Record<string, string> = {
+  '6.5 – 7.0': 'bg-emerald-100 text-emerald-700', '5.5 – 6.0': 'bg-blue-100 text-blue-700',
+  '4.5 – 5.0': 'bg-yellow-100 text-yellow-700',   '3.5 – 4.0': 'bg-orange-100 text-orange-700',
+  'Below 3.5': 'bg-red-100 text-red-700',
+}
+
+export function PortalDashboard({ student, classes, tests, allResults }: Props) {
   const router = useRouter()
 
   const handleLogout = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/portal/login')
-    router.refresh()
+    router.push('/portal/login'); router.refresh()
   }
 
-  const pending  = tests.filter(t => !t.done)
+  const pending   = tests.filter(t => !t.done)
   const completed = tests.filter(t => t.done)
+  const sortedResults = [...allResults].sort((a, b) =>
+    new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime()
+  )
 
   return (
     <div className="min-h-screen bg-[#F7F6F2]">
-      {/* Header */}
       <header className="bg-[#1A2744] px-4 sm:px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <Image src="/happy_house_sun.png" alt="logo" width={32} height={32} className="object-contain" />
@@ -48,7 +60,8 @@ export function PortalDashboard({ student, classes, tests, results }: Props) {
         </button>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+
         {/* Welcome */}
         <div className="bg-[#1A2744] rounded-2xl p-5 text-white">
           <p className="text-white/60 text-sm mb-0.5">Xin chào,</p>
@@ -83,8 +96,8 @@ export function PortalDashboard({ student, classes, tests, results }: Props) {
                       <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
                         <span className="flex items-center gap-1"><Clock size={11} /> {fmt(t.time_limit_sec)}</span>
                         {t.due_date && (
-                          <span className="flex items-center gap-1"><Calendar size={11} />
-                            Hạn: {new Date(t.due_date + 'T00:00:00').toLocaleDateString('vi-VN')}
+                          <span className="flex items-center gap-1 text-orange-500 font-medium">
+                            <Calendar size={11} /> Hạn: {new Date(t.due_date + 'T00:00:00').toLocaleDateString('vi-VN')}
                           </span>
                         )}
                       </div>
@@ -100,10 +113,70 @@ export function PortalDashboard({ student, classes, tests, results }: Props) {
           </div>
         )}
 
-        {/* Results */}
-        {results.length > 0 && (
+        {/* Completed tests */}
+        {completed.length > 0 && (
           <div>
-            <h2 className="text-sm font-bold text-[#1A2744] mb-3">Kết quả của tôi</h2>
+            <h2 className="text-sm font-bold text-[#1A2744] mb-3 flex items-center gap-2">
+              <CheckCircle size={16} className="text-emerald-500" />
+              Đã hoàn thành ({completed.length})
+            </h2>
+            <div className="space-y-3">
+              {completed.map(t => {
+                const p = t.latest_total_questions ? pct(t.latest_total_correct!, t.latest_total_questions) : 0
+                return (
+                  <div key={t.test_id} className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(26,39,68,0.08)]">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <CheckCircle size={14} className="text-emerald-500 shrink-0" />
+                          <h3 className="font-bold text-[#1A2744] truncate">{t.name}</h3>
+                          {t.latest_band && (
+                            <span className={cn('text-xs font-bold px-2 py-0.5 rounded-full', BAND_COLOR[t.latest_band] ?? 'bg-gray-100 text-gray-500')}>
+                              {t.latest_band}
+                            </span>
+                          )}
+                        </div>
+                        {t.latest_total_questions && (
+                          <div className="flex items-center gap-3 mt-2 text-sm">
+                            <span className="font-semibold text-[#1A2744]">
+                              {t.latest_total_correct}/{t.latest_total_questions}
+                            </span>
+                            <span className={cn('text-xs font-bold px-2 py-0.5 rounded-full',
+                              p >= 70 ? 'bg-emerald-100 text-emerald-700' : p >= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-600')}>
+                              {p}%
+                            </span>
+                            {t.latest_submitted_at && (
+                              <span className="text-xs text-gray-400">
+                                {new Date(t.latest_submitted_at).toLocaleDateString('vi-VN')}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-2 shrink-0">
+                        {t.latest_session_id && (
+                          <Link href={`/portal/result/${t.latest_session_id}`}
+                            className="flex items-center gap-1.5 text-xs font-semibold text-[#1A2744] bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-xl transition-colors">
+                            <Eye size={13} /> Xem kết quả
+                          </Link>
+                        )}
+                        <Link href={`/portal/test/${t.test_id}`}
+                          className="flex items-center gap-1.5 text-xs font-semibold text-[#E8303A] bg-red-50 hover:bg-red-100 px-3 py-2 rounded-xl transition-colors">
+                          <RotateCcw size={13} /> Làm lại
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Full history */}
+        {sortedResults.length > 0 && (
+          <div>
+            <h2 className="text-sm font-bold text-[#1A2744] mb-3">Lịch sử làm bài</h2>
             <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(26,39,68,0.08)] overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50/80 border-b border-gray-100">
@@ -111,29 +184,33 @@ export function PortalDashboard({ student, classes, tests, results }: Props) {
                     <th className="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Bài test</th>
                     <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Điểm</th>
                     <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden sm:table-cell">Ngày</th>
+                    <th className="px-3 py-3" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {results.map((r, i) => {
+                  {sortedResults.map(r => {
                     const p = pct(r.total_correct, r.total_questions)
                     const testInfo = tests.find(t => t.test_id === r.test_id)
                     return (
-                      <tr key={i} className="hover:bg-gray-50/50">
-                        <td className="px-5 py-3 font-medium text-[#1A2744]">
-                          {testInfo?.name ?? 'Bài test'}
-                        </td>
+                      <tr key={r.id} className="hover:bg-gray-50/50">
+                        <td className="px-5 py-3 font-medium text-[#1A2744] text-sm">{testInfo?.name ?? 'Bài test'}</td>
                         <td className="px-3 py-3">
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-[#1A2744] tabular-nums">{r.total_correct}/{r.total_questions}</span>
                             <span className={cn('text-xs font-semibold px-2 py-0.5 rounded-full',
-                              p >= 70 ? 'bg-emerald-100 text-emerald-700' :
-                              p >= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-600')}>
+                              p >= 70 ? 'bg-emerald-100 text-emerald-700' : p >= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-600')}>
                               {p}%
                             </span>
                           </div>
                         </td>
                         <td className="px-3 py-3 text-xs text-gray-400 hidden sm:table-cell">
                           {new Date(r.submitted_at).toLocaleDateString('vi-VN')}
+                        </td>
+                        <td className="px-3 py-3 text-right">
+                          <Link href={`/portal/result/${r.id}`}
+                            className="text-xs font-semibold text-[#1A2744] hover:text-[#E8303A] transition-colors flex items-center gap-1 justify-end">
+                            <Eye size={12} /> Xem
+                          </Link>
                         </td>
                       </tr>
                     )
@@ -144,7 +221,7 @@ export function PortalDashboard({ student, classes, tests, results }: Props) {
           </div>
         )}
 
-        {tests.length === 0 && results.length === 0 && (
+        {tests.length === 0 && allResults.length === 0 && (
           <div className="text-center py-16 text-gray-400">
             <BookOpen size={32} className="mx-auto mb-3 opacity-30" />
             <p className="text-sm">Chưa có bài test nào được giao.</p>
