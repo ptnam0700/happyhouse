@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { ChevronLeft, Globe, Lock, Trash2, ChevronUp, ChevronDown, Search, Plus, X, Copy, Check } from 'lucide-react'
+import { ChevronLeft, Globe, Lock, Trash2, ChevronUp, ChevronDown, Search, Plus, X, Copy, Check, Users, BarChart2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -25,10 +25,16 @@ interface Test {
   time_limit_sec: number; published: boolean
 }
 
+interface Session {
+  id: string; full_name: string; phone: string | null; is_portal: boolean
+  total_correct: number; total_questions: number; band_score: string | null; submitted_at: string
+}
+
 interface Props {
   test: Test
   testQuestions: TestQuestion[]
   allQuestions: AllQuestion[]
+  sessions: Session[]
   siteUrl: string
 }
 
@@ -49,7 +55,13 @@ const TIME_PRESETS = [
   { label: '90 min', value: 5400 },
 ]
 
-export function TestEditClient({ test, testQuestions: initialTQ, allQuestions, siteUrl }: Props) {
+const BAND_COLOR: Record<string, string> = {
+  '6.5 – 7.0': 'bg-emerald-100 text-emerald-700', '5.5 – 6.0': 'bg-blue-100 text-blue-700',
+  '4.5 – 5.0': 'bg-yellow-100 text-yellow-700',   '3.5 – 4.0': 'bg-orange-100 text-orange-700',
+  'Below 3.5': 'bg-red-100 text-red-700',
+}
+
+export function TestEditClient({ test, testQuestions: initialTQ, allQuestions, sessions, siteUrl }: Props) {
   const [name, setName]           = useState(test.name)
   const [desc, setDesc]           = useState(test.description ?? '')
   const [timeLimit, setTimeLimit] = useState(test.time_limit_sec)
@@ -467,6 +479,67 @@ export function TestEditClient({ test, testQuestions: initialTQ, allQuestions, s
             )}
           </div>
         </div>
+
+        {/* ── Results panel ── */}
+        {sessions.length > 0 && (
+          <div className="mt-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Users size={16} className="text-[#1A2744]" />
+              <h2 className="text-sm font-bold text-[#1A2744]">
+                Kết quả <span className="text-gray-400 font-normal">({sessions.length} lượt nộp)</span>
+              </h2>
+              <div className="ml-auto flex items-center gap-3 text-xs text-gray-400">
+                <span className="flex items-center gap-1"><BarChart2 size={12} />
+                  TB: {Math.round(sessions.reduce((a, s) => a + (s.total_questions ? s.total_correct / s.total_questions * 100 : 0), 0) / sessions.length)}%
+                </span>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(26,39,68,0.08)] overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50/80 border-b border-gray-100">
+                  <tr>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Học viên</th>
+                    <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Band</th>
+                    <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Điểm</th>
+                    <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden sm:table-cell">Ngày</th>
+                    <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden sm:table-cell">Nguồn</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {sessions.map(s => {
+                    const pct = s.total_questions ? Math.round(s.total_correct / s.total_questions * 100) : 0
+                    return (
+                      <tr key={s.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-5 py-3">
+                          <div className="font-semibold text-[#1A2744]">{s.full_name}</div>
+                          {s.phone && <div className="text-xs text-gray-400">{s.phone}</div>}
+                        </td>
+                        <td className="px-3 py-3">
+                          {s.band_score
+                            ? <span className={cn('text-xs font-bold px-2 py-0.5 rounded-full', BAND_COLOR[s.band_score] ?? 'bg-gray-100 text-gray-500')}>{s.band_score}</span>
+                            : <span className="text-gray-300 text-xs">—</span>}
+                        </td>
+                        <td className="px-3 py-3 tabular-nums">
+                          <span className="font-semibold text-[#1A2744]">{s.total_correct}</span>
+                          <span className="text-gray-400">/{s.total_questions}</span>
+                          <span className="text-xs text-gray-400 ml-1">({pct}%)</span>
+                        </td>
+                        <td className="px-3 py-3 text-xs text-gray-400 hidden sm:table-cell">
+                          {new Date(s.submitted_at).toLocaleDateString('vi-VN')}
+                        </td>
+                        <td className="px-3 py-3 hidden sm:table-cell">
+                          <span className={cn('text-xs font-semibold px-2 py-0.5 rounded-full', s.is_portal ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500')}>
+                            {s.is_portal ? 'Portal' : 'Public'}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

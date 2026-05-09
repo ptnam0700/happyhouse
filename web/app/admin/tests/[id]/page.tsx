@@ -11,29 +11,41 @@ export default async function TestEditPage({ params }: { params: Promise<{ id: s
   const { id } = await params
   const db = createServiceClient()
 
-  const [{ data: test }, { data: tq }, { data: allQ }] = await Promise.all([
+  const [{ data: test }, { data: tq }, { data: allQ }, { data: rawSessions }] = await Promise.all([
     db.from('tests').select('id, name, description, time_limit_sec, published').eq('id', id).single(),
     db.from('test_questions')
       .select('question_id, order_index, questions(id, section, type, level, question_text)')
-      .eq('test_id', id)
-      .order('order_index'),
+      .eq('test_id', id).order('order_index'),
     db.from('questions')
       .select('id, section, type, level, question_text, passage_id, passages(id, title, type)')
-      .eq('active', true)
-      .order('section').order('created_at', { ascending: false }),
+      .eq('active', true).order('section').order('created_at', { ascending: false }),
+    // Sessions for this test — include both portal (school_student_id) and anon (students)
+    db.from('test_sessions')
+      .select('id, total_correct, total_questions, band_score, submitted_at, school_student_id, students(full_name, phone), school_students(full_name, phone)')
+      .eq('test_id', id)
+      .order('submitted_at', { ascending: false }),
   ])
 
   if (!test) notFound()
 
-  const testQuestions = (tq ?? []).map(r => {
+  const testQuestions = (tq ?? []).map((r: any) => {
     const q = Array.isArray(r.questions) ? r.questions[0] : r.questions
+    return { question_id: r.question_id, order_index: r.order_index, question_text: q?.question_text ?? '', section: q?.section ?? '', type: q?.type ?? 'multiple_choice', level: q?.level ?? null }
+  })
+
+  const sessions = (rawSessions ?? []).map((s: any) => {
+    const portal  = Array.isArray(s.school_students) ? s.school_students[0] : s.school_students
+    const anon    = Array.isArray(s.students) ? s.students[0] : s.students
+    const person  = portal ?? anon
     return {
-      question_id:   r.question_id,
-      order_index:   r.order_index,
-      question_text: q?.question_text ?? '',
-      section:       q?.section ?? '',
-      type:          q?.type ?? 'multiple_choice',
-      level:         q?.level ?? null,
+      id:              s.id,
+      full_name:       person?.full_name ?? '—',
+      phone:           person?.phone ?? null,
+      is_portal:       !!s.school_student_id,
+      total_correct:   s.total_correct,
+      total_questions: s.total_questions,
+      band_score:      s.band_score,
+      submitted_at:    s.submitted_at,
     }
   })
 
@@ -42,18 +54,10 @@ export default async function TestEditPage({ params }: { params: Promise<{ id: s
       test={test as any}
       testQuestions={testQuestions}
       allQuestions={(allQ ?? []).map((q: any) => {
-      const p = Array.isArray(q.passages) ? q.passages[0] : q.passages
-      return {
-        id:            q.id,
-        section:       q.section,
-        type:          q.type,
-        level:         q.level,
-        question_text: q.question_text,
-        passage_id:    q.passage_id ?? null,
-        passage_title: p?.title ?? null,
-        passage_type:  p?.type ?? null,
-      }
-    })}
+        const p = Array.isArray(q.passages) ? q.passages[0] : q.passages
+        return { id: q.id, section: q.section, type: q.type, level: q.level, question_text: q.question_text, passage_id: q.passage_id ?? null, passage_title: p?.title ?? null, passage_type: p?.type ?? null }
+      })}
+      sessions={sessions}
       siteUrl={SITE}
     />
   )

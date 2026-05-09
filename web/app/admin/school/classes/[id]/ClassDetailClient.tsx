@@ -18,6 +18,7 @@ interface Student { id: string; full_name: string; phone: string | null; status:
 interface AssignedTest { test_id: string; test_name: string; due_date: string | null }
 interface AvailableTest { id: string; name: string }
 interface AvailableStudent { id: string; full_name: string; phone: string | null }
+interface HomeworkSession { test_id: string; school_student_id: string; total_correct: number; total_questions: number; submitted_at: string; band_score: string | null }
 
 const LEVELS   = ['A1','A2','B1','B2','C1','C2','Starters','Movers','Flyers']
 const STATUSES = [
@@ -36,10 +37,10 @@ const STU_STYLE: Record<string, string> = {
   graduated: 'bg-blue-100 text-blue-700',    dropped: 'bg-gray-100 text-gray-500',
 }
 
-export function ClassDetailClient({ cls, students: initialStudents, assignedTests: initialAssigned, availableTests, availableStudents }: {
+export function ClassDetailClient({ cls, students: initialStudents, assignedTests: initialAssigned, availableTests, availableStudents, homeworkSessions }: {
   cls: Cls; students: Student[]
   assignedTests: AssignedTest[]; availableTests: AvailableTest[]
-  availableStudents: AvailableStudent[]
+  availableStudents: AvailableStudent[]; homeworkSessions: HomeworkSession[]
 }) {
   const [saving,         setSaving]         = useState(false)
   const [students,       setStudents]       = useState(initialStudents)
@@ -356,6 +357,82 @@ export function ClassDetailClient({ cls, students: initialStudents, assignedTest
               </table>
             </div>
           </div>
+
+          {/* ── Homework tracker ── */}
+          {assigned.length > 0 && (
+            <div className="mt-6">
+              <h2 className="text-sm font-bold text-[#1A2744] mb-3 flex items-center gap-2">
+                📋 Theo dõi bài tập
+              </h2>
+              <div className="space-y-3">
+                {assigned.map(t => {
+                  const testSessions = homeworkSessions.filter(s => s.test_id === t.test_id)
+                  const doneIds = new Set(testSessions.map(s => s.school_student_id))
+                  const activeStudents = students.filter(s => s.status === 'active')
+                  const done    = activeStudents.filter(s => doneIds.has(s.id))
+                  const pending = activeStudents.filter(s => !doneIds.has(s.id))
+                  const pct     = activeStudents.length ? Math.round((done.length / activeStudents.length) * 100) : 0
+
+                  return (
+                    <div key={t.test_id} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(26,39,68,0.08)] overflow-hidden">
+                      {/* Test header */}
+                      <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-100 bg-gray-50/50">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold text-[#1A2744] text-sm truncate">{t.test_name}</span>
+                            {t.due_date && (
+                              <span className="text-xs text-gray-400">Hạn: {new Date(t.due_date + 'T00:00:00').toLocaleDateString('vi-VN')}</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="text-xs font-semibold text-emerald-600">{done.length} nộp</span>
+                          <span className="text-xs text-gray-400">/</span>
+                          <span className="text-xs font-semibold text-gray-500">{activeStudents.length} HV</span>
+                          <div className="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                            <div className={cn('h-full rounded-full', pct === 100 ? 'bg-emerald-500' : pct >= 50 ? 'bg-yellow-400' : 'bg-[#E8303A]')}
+                              style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="text-xs font-bold text-gray-500 w-8 text-right">{pct}%</span>
+                        </div>
+                      </div>
+
+                      {/* Student rows */}
+                      <div className="divide-y divide-gray-50">
+                        {activeStudents.map(s => {
+                          const session = testSessions.find(ts => ts.school_student_id === s.id)
+                          const p = session?.total_questions ? Math.round(session.total_correct / session.total_questions * 100) : 0
+                          return (
+                            <div key={s.id} className="flex items-center gap-3 px-5 py-2.5">
+                              <div className={cn('w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0',
+                                session ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400')}>
+                                {session ? '✓' : '…'}
+                              </div>
+                              <span className="flex-1 text-sm text-[#1A2744] truncate">{s.full_name}</span>
+                              {session ? (
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <span className="text-xs font-semibold text-[#1A2744] tabular-nums">
+                                    {session.total_correct}/{session.total_questions}
+                                    <span className="text-gray-400 ml-1">({p}%)</span>
+                                  </span>
+                                  <span className="text-xs text-gray-400">{new Date(session.submitted_at).toLocaleDateString('vi-VN')}</span>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-gray-300 shrink-0">Chưa nộp</span>
+                              )}
+                            </div>
+                          )
+                        })}
+                        {activeStudents.length === 0 && (
+                          <div className="px-5 py-3 text-xs text-gray-400">Lớp chưa có học viên active</div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

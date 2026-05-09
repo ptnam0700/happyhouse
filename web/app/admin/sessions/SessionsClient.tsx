@@ -2,18 +2,19 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { Search, X, Trash2 } from 'lucide-react'
+import { Search, X, Trash2, ClipboardList } from 'lucide-react'
 import { toast } from 'sonner'
 import { Pagination } from '@/components/admin/Pagination'
 import { deleteSession } from './actions'
 import { cn } from '@/lib/utils'
 
 interface Session {
-  id: string; test_type: string; band_score: string | null
-  total_correct: number | null; total_questions: number | null
+  id: string; test_type: string; test_id: string | null; test_name: string | null
+  band_score: string | null; total_correct: number | null; total_questions: number | null
   duration_sec: number | null; submitted_at: string | null
   student: { id: string; full_name: string; phone: string } | null
 }
+interface TestOption { id: string; name: string }
 
 const PAGE_SIZE = 20
 const BAND_COLOR: Record<string, string> = {
@@ -30,18 +31,25 @@ function fmt(sec: number | null) {
   return `${Math.floor(sec / 60)}:${(sec % 60).toString().padStart(2, '0')}`
 }
 
-export function SessionsClient({ sessions: initial }: { sessions: Session[] }) {
+export function SessionsClient({ sessions: initial, allTests }: { sessions: Session[]; allTests: TestOption[] }) {
   const [sessions, setSessions] = useState(initial)
   const [search,   setSearch]   = useState('')
   const [band,     setBand]     = useState('all')
   const [testType, setTestType] = useState('all')
+  const [testId,   setTestId]   = useState('all')
   const [page,     setPage]     = useState(1)
   const [, startTransition]     = useTransition()
 
   const filtered = sessions.filter(s => {
     const term = search.trim().toLowerCase()
-    const matchSearch = !term || (s.student?.full_name ?? '').toLowerCase().includes(term) || (s.student?.phone ?? '').includes(term)
-    return matchSearch && (band === 'all' || s.band_score === band) && (testType === 'all' || s.test_type === testType)
+    const matchSearch = !term ||
+      (s.student?.full_name ?? '').toLowerCase().includes(term) ||
+      (s.student?.phone ?? '').includes(term) ||
+      (s.test_name ?? '').toLowerCase().includes(term)
+    return matchSearch &&
+      (band     === 'all' || s.band_score === band) &&
+      (testType === 'all' || s.test_type === testType) &&
+      (testId   === 'all' || s.test_id   === testId)
   })
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
@@ -54,30 +62,50 @@ export function SessionsClient({ sessions: initial }: { sessions: Session[] }) {
   }
   const onFilter = (fn: () => void) => { fn(); setPage(1) }
 
+  // Unique tests that actually have sessions
+  const testsWithSessions = allTests.filter(t => sessions.some(s => s.test_id === t.id))
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Toolbar */}
       <div className="shrink-0 px-4 sm:px-6 py-3 border-b border-gray-100 bg-white flex flex-wrap gap-2 items-center">
         <h1 className="text-base font-bold text-[#1A2744] mr-2">Bài thi</h1>
+
+        {/* Test type */}
         {[{ v: 'all', l: 'Tất cả' }, { v: 'full', l: 'Full' }, { v: 'mini', l: 'Mini' }].map(o => (
           <button key={o.v} onClick={() => onFilter(() => setTestType(o.v))}
             className={cn('text-xs font-semibold px-2.5 py-1 rounded-full transition-colors',
               testType === o.v ? 'bg-[#1A2744] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200')}>{o.l}</button>
         ))}
+
         <div className="w-px h-4 bg-gray-200" />
+
+        {/* Band */}
         <button onClick={() => onFilter(() => setBand('all'))}
-          className={cn('text-xs font-semibold px-2.5 py-1 rounded-full transition-colors', band === 'all' ? 'bg-[#E8303A] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200')}>
-          Band
-        </button>
+          className={cn('text-xs font-semibold px-2.5 py-1 rounded-full transition-colors',
+            band === 'all' ? 'bg-[#E8303A] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200')}>Band</button>
         {BANDS.map(b => (
           <button key={b} onClick={() => onFilter(() => setBand(b === band ? 'all' : b))}
             className={cn('text-xs font-semibold px-2.5 py-1 rounded-full transition-colors',
               band === b ? 'bg-[#E8303A] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200')}>{b}</button>
         ))}
+
+        {/* Test filter */}
+        {testsWithSessions.length > 0 && (
+          <>
+            <div className="w-px h-4 bg-gray-200" />
+            <select value={testId} onChange={e => onFilter(() => setTestId(e.target.value))}
+              className="h-8 rounded-xl border border-gray-200 bg-white px-2.5 text-xs text-gray-600 focus:outline-none focus:border-[#E8303A] max-w-[200px]">
+              <option value="all">Tất cả bài test</option>
+              {testsWithSessions.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+          </>
+        )}
+
         <div className="relative ml-auto w-52">
           <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input value={search} onChange={e => onFilter(() => setSearch(e.target.value))} placeholder="Tên hoặc SĐT..."
-            className="w-full h-8 pl-7 pr-7 rounded-xl border border-gray-200 bg-gray-50 text-xs placeholder:text-gray-300 focus:outline-none focus:border-[#E8303A]" />
+          <input value={search} onChange={e => onFilter(() => setSearch(e.target.value))} placeholder="Tên, SĐT, tên bài test..."
+            className="w-full h-8 pl-7 pr-7 rounded-xl border border-gray-200 bg-white text-xs placeholder:text-gray-300 focus:outline-none focus:border-[#E8303A]" />
           {search && <button onClick={() => onFilter(() => setSearch(''))} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X size={12} /></button>}
         </div>
       </div>
@@ -88,6 +116,7 @@ export function SessionsClient({ sessions: initial }: { sessions: Session[] }) {
           <thead className="sticky top-0 z-10 bg-white shadow-[0_1px_0_0_#e5e7eb]">
             <tr>
               <th className="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Học viên</th>
+              <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide hidden lg:table-cell">Bài test</th>
               <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Loại</th>
               <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Band</th>
               <th className="text-left px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Điểm</th>
@@ -109,18 +138,28 @@ export function SessionsClient({ sessions: initial }: { sessions: Session[] }) {
                       </Link>
                     ) : <span className="text-gray-300">—</span>}
                   </td>
+                  <td className="px-3 py-3 hidden lg:table-cell">
+                    {s.test_name ? (
+                      <div className="flex items-center gap-1.5 max-w-[200px]">
+                        <ClipboardList size={12} className="text-gray-400 shrink-0" />
+                        <span className="text-xs font-medium text-[#1A2744] truncate">{s.test_name}</span>
+                      </div>
+                    ) : <span className="text-gray-300 text-xs">—</span>}
+                  </td>
                   <td className="px-3 py-3">
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${s.test_type === 'full' ? 'bg-[#1A2744]/10 text-[#1A2744]' : 'bg-gray-100 text-gray-500'}`}>{s.test_type}</span>
                   </td>
                   <td className="px-3 py-3">
-                    {s.band_score ? <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${BAND_COLOR[s.band_score] ?? 'bg-gray-100 text-gray-500'}`}>{s.band_score}</span>
+                    {s.band_score
+                      ? <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${BAND_COLOR[s.band_score] ?? 'bg-gray-100 text-gray-500'}`}>{s.band_score}</span>
                       : <span className="text-gray-300">—</span>}
                   </td>
                   <td className="px-3 py-3 tabular-nums">
-                    <span className="font-semibold text-[#1A2744]">{s.total_correct}</span><span className="text-gray-400">/{s.total_questions}</span>
+                    <span className="font-semibold text-[#1A2744]">{s.total_correct}</span>
+                    <span className="text-gray-400">/{s.total_questions}</span>
                     <span className="text-gray-400 text-xs ml-1">({pct}%)</span>
                   </td>
-                  <td className="px-3 py-3 text-gray-400 hidden sm:table-cell tabular-nums text-xs">{fmt(s.duration_sec)}</td>
+                  <td className="px-3 py-3 text-xs text-gray-400 hidden sm:table-cell tabular-nums">{fmt(s.duration_sec)}</td>
                   <td className="px-3 py-3 text-xs text-gray-400 whitespace-nowrap">
                     {s.submitted_at ? new Date(s.submitted_at).toLocaleDateString('vi-VN') : '—'}
                   </td>
@@ -131,8 +170,8 @@ export function SessionsClient({ sessions: initial }: { sessions: Session[] }) {
               )
             })}
             {!paginated.length && (
-              <tr><td colSpan={7} className="px-5 py-16 text-center text-gray-400 text-sm">
-                {search || band !== 'all' || testType !== 'all' ? 'Không tìm thấy' : 'Chưa có dữ liệu'}
+              <tr><td colSpan={8} className="px-5 py-16 text-center text-gray-400 text-sm">
+                {search || band !== 'all' || testType !== 'all' || testId !== 'all' ? 'Không tìm thấy bài thi' : 'Chưa có dữ liệu'}
               </td></tr>
             )}
           </tbody>
