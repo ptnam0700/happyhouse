@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import Image from 'next/image'
 import { Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -26,7 +27,7 @@ export function Header({ timeLeft, className }: HeaderProps) {
         className
       )}
     >
-      <div className="flex items-center gap-2 text-white font-bold text-base sm:text-xl min-w-0">
+      <Link href="/" className="flex items-center gap-2 text-white font-bold text-base sm:text-xl min-w-0 hover:opacity-85 transition-opacity">
         <div className="w-9 h-9 shrink-0 flex items-center justify-center">
           <Image
             src="/happy_house_sun.png"
@@ -37,7 +38,7 @@ export function Header({ timeLeft, className }: HeaderProps) {
           />
         </div>
         <span className="truncate">HappyHouse IELTS</span>
-      </div>
+      </Link>
 
       {showTimer && (
         <div
