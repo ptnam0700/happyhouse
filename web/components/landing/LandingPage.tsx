@@ -293,20 +293,86 @@ export function LandingPage() {
         .lp-sticky-row:hover .lp-sticky-label { opacity:1; transform:translateY(-50%) translateX(0); }
 
         /* Responsive */
+        /* ── Tablet (≤900px) ── */
         @media(max-width:900px) {
-          .lp-hero-grid { grid-template-columns:1fr; }
+          /* Hero */
+          .lp-hero { padding:56px 0 0; }
+          .lp-hero-grid { grid-template-columns:1fr; gap:32px; }
           .lp-hero-visual { display:none; }
-          .lp-hero h1 { font-size:36px; }
+          .lp-hero h1 { font-size:clamp(28px,7vw,40px); }
+          .lp-hero-desc { font-size:15px; margin-bottom:24px; }
+          .lp-hero-actions { flex-direction:column; align-items:stretch; gap:10px; margin-bottom:32px; }
+          .lp-btn-hp,.lp-btn-hs { justify-content:center; width:100%; }
+          .lp-hero-stats { gap:20px; flex-wrap:wrap; }
+          /* Header */
+          .lp-nav { display:none; }
+          .lp-hactions .lp-btn-outline { display:none; }
+          /* Sections */
+          .lp-section { padding:56px 0; }
+          .lp-sec-title { font-size:28px; }
+          /* Grids */
           .lp-why-grid,.lp-teachers-grid { grid-template-columns:repeat(2,1fr); }
-          .lp-courses-grid { grid-template-columns:1fr 1fr; }
           .lp-results-grid,.lp-testi-grid { grid-template-columns:1fr; }
           .lp-blog-grid { grid-template-columns:1fr; }
           .lp-footer-grid { grid-template-columns:1fr 1fr; }
-          .lp-nav { display:none; }
+          /* CTA band */
+          .lp-cta-band h2 { font-size:30px; }
+          .lp-cta-actions { flex-direction:column; align-items:center; gap:10px; }
+          .lp-btn-cta-w,.lp-btn-cta-o { width:100%; max-width:360px; text-align:center; }
         }
+
+        /* ── Mobile (≤600px) ── */
         @media(max-width:600px) {
-          .lp-why-grid,.lp-courses-grid,.lp-teachers-grid,.lp-footer-grid { grid-template-columns:1fr; }
-          .lp-cta-band h2 { font-size:28px; }
+          /* Topbar: hide email + hours on very small screens */
+          .lp-topbar-left span:not(:first-child) { display:none; }
+          .lp-topbar-right a { display:none; }
+          /* Hero */
+          .lp-hero { padding:36px 0 0; }
+          .lp-hero h1 { font-size:clamp(26px,8vw,34px); }
+          .lp-stat-num { font-size:22px; }
+          .lp-hero-stats { gap:14px; }
+          /* Header */
+          .lp-hactions { gap:6px; }
+          .lp-btn-primary { padding:8px 14px; font-size:12px; }
+          /* Sections */
+          .lp-section { padding:44px 0; }
+          .lp-container { padding:0 16px; }
+          .lp-sec-head { margin-bottom:36px; }
+          .lp-sec-title { font-size:22px; }
+          .lp-sec-desc { font-size:14px; }
+          /* Grids → single column */
+          .lp-why-grid,.lp-teachers-grid,.lp-footer-grid { grid-template-columns:1fr; }
+          /* Why cards */
+          .lp-why-num { font-size:30px; }
+          /* Score showcase */
+          .lp-score-show { grid-template-columns:repeat(2,1fr); }
+          /* Partners */
+          .lp-partners-logos { gap:20px; }
+          .lp-plogo { font-size:13px; }
+          /* Testimonials */
+          .lp-testi-card { padding:18px 16px; }
+          /* Blog */
+          .lp-blog-card.featured .lp-blog-thumb { height:180px; }
+          .lp-blog-title { font-size:14px; }
+          /* CTA band */
+          .lp-cta-band { padding:48px 0; }
+          .lp-cta-band h2 { font-size:24px; }
+          .lp-cta-band p { font-size:14px; margin-bottom:24px; }
+          /* Footer */
+          .lp-footer { padding:48px 0 0; }
+          .lp-footer-grid { grid-template-columns:1fr; gap:32px; }
+          .lp-footer-bottom { flex-direction:column; gap:10px; text-align:center; }
+          .lp-fsocial { justify-content:center; }
+          /* Sticky CTA */
+          .lp-sticky { bottom:16px; right:16px; }
+          .lp-sticky-btn { width:44px; height:44px; font-size:18px; }
+        }
+
+        /* ── Very small (≤380px) ── */
+        @media(max-width:380px) {
+          .lp-hero h1 { font-size:24px; }
+          .lp-sec-title { font-size:20px; }
+          .lp-ticker-item { padding:0 20px; font-size:12px; }
         }
       `}</style>
 
