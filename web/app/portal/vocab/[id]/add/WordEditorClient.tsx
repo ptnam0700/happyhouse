@@ -10,7 +10,7 @@ interface Props { collection: { id: string; name: string; color: string }; initi
 const PARTS_OF_SPEECH = ['noun','verb','adjective','adverb','phrase','idiom','preposition','conjunction','other']
 
 export function WordEditorClient({ collection, initialWord }: Props) {
-  const [, startTransition] = useTransition()
+  const [pending, startTransition] = useTransition()
   const [looking, setLooking] = useState(false)
 
   const [word,       setWord]       = useState(initialWord?.word ?? '')
@@ -231,10 +231,10 @@ export function WordEditorClient({ collection, initialWord }: Props) {
           </div>
         </div>
 
-        <button onClick={handleSubmit} disabled={!word.trim()}
-          className="w-full h-12 font-bold text-white rounded-xl transition-colors disabled:opacity-40"
+        <button onClick={handleSubmit} disabled={!word.trim() || pending}
+          className="w-full h-12 font-bold text-white rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ background: collection.color }}>
-          {initialWord ? 'Cập nhật từ' : 'Lưu từ vựng'} →
+          {pending ? 'Đang lưu...' : initialWord ? 'Cập nhật từ' : 'Lưu từ vựng'} →
         </button>
       </div>
     </div>
