@@ -1,8 +1,20 @@
 'use server'
 
 import { createServiceClient } from '@/lib/supabase/service'
+import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+
+/** Resolve the authenticated user's school_student id — call from any server action */
+async function getStudentId(): Promise<string> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/portal/login')
+  const db = createServiceClient()
+  const { data: s } = await db.from('school_students').select('id').eq('auth_user_id', user.id).single()
+  if (!s) redirect('/portal/login')
+  return s.id
+}
 
 // ── Collections ──────────────────────────────────────────────────────
 
@@ -16,7 +28,8 @@ export async function getCollections(studentId: string) {
   return data ?? []
 }
 
-export async function createCollection(studentId: string, data: { name: string; description: string; color: string }) {
+export async function createCollection(data: { name: string; description: string; color: string }) {
+  const studentId = await getStudentId()
   const db = createServiceClient()
   const { data: c, error } = await db.from('vocab_collections')
     .insert({ student_id: studentId, name: data.name.trim(), description: data.description.trim() || null, color: data.color })
