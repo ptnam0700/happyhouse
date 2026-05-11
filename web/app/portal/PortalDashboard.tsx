@@ -62,6 +62,18 @@ export function PortalDashboard({ student, classes, tests, allResults }: Props) 
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
 
+        {/* Quick nav */}
+        <div className="grid grid-cols-2 gap-3">
+          <Link href="/portal/vocab" className="flex items-center gap-3 bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(26,39,68,0.08)] hover:shadow-md transition-all">
+            <span className="text-2xl">📚</span>
+            <div><div className="font-bold text-[#1A2744] text-sm">Từ vựng</div><div className="text-xs text-gray-400">Bộ từ của tôi</div></div>
+          </Link>
+          <Link href="/test" className="flex items-center gap-3 bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(26,39,68,0.08)] hover:shadow-md transition-all">
+            <span className="text-2xl">📝</span>
+            <div><div className="font-bold text-[#1A2744] text-sm">Kiểm tra</div><div className="text-xs text-gray-400">Thi thử IELTS</div></div>
+          </Link>
+        </div>
+
         {/* Welcome */}
         <div className="bg-[#1A2744] rounded-2xl p-5 text-white">
           <p className="text-white/60 text-sm mb-0.5">Xin chào,</p>
