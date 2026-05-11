@@ -114,45 +114,52 @@ export function WordListClient({ collection, words: initial, progressMap, studen
         <div className="space-y-2">
           {filtered.map(w => (
             <div key={w.id} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(26,39,68,0.08)] overflow-hidden">
-              <div className="flex gap-4 p-4">
-                {/* Image */}
-                {w.image_url && (
-                  <img src={w.image_url} alt={w.word} className="w-14 h-14 rounded-xl object-cover shrink-0" onError={e => (e.currentTarget.style.display = 'none')} />
-                )}
+              <div className="flex items-center gap-3 px-4 py-3.5">
+                {/* Colour dot = status */}
+                <div className={cn('w-2 h-2 rounded-full shrink-0 mt-0.5', {
+                  'bg-gray-300':    (progressMap[w.id] ?? 'new') === 'new',
+                  'bg-blue-400':    progressMap[w.id] === 'learning',
+                  'bg-yellow-400':  progressMap[w.id] === 'review',
+                  'bg-emerald-500': progressMap[w.id] === 'mastered',
+                })} />
+
+                {/* Word + meaning */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 flex-wrap">
-                    <div>
-                      <span className="font-bold text-[#1A2744] text-base">{w.word}</span>
-                      {w.pronunciation && <span className="text-xs text-gray-400 ml-2">{w.pronunciation}</span>}
-                      {w.part_of_speech && <span className="text-xs text-purple-600 font-semibold ml-2 italic">{w.part_of_speech}</span>}
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className={cn('text-[0.65rem] font-bold px-2 py-0.5 rounded-full', STATUS_STYLE[progressMap[w.id] ?? 'new'])}>
-                        {STATUS_LABEL[progressMap[w.id] ?? 'new']}
-                      </span>
-                      <Link href={`/portal/vocab/${collection.id}/add?edit=${w.id}`} className="p-1.5 rounded-lg text-gray-300 hover:text-[#1A2744] hover:bg-gray-100 transition-colors">
-                        <Pencil size={13} />
-                      </Link>
-                      <button onClick={() => handleDelete(w.id)} className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors">
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="font-bold text-[#1A2744] text-[15px]">{w.word}</span>
+                    {w.pronunciation && <span className="text-xs text-gray-400">{w.pronunciation}</span>}
+                    {w.part_of_speech && <span className="text-[0.65rem] text-purple-500 font-semibold italic">{w.part_of_speech}</span>}
                   </div>
-                  {w.definition && <p className="text-sm text-gray-600 mt-1 leading-snug">{w.definition}</p>}
-                  {w.definition_vi && <p className="text-sm text-[#1A2744] font-medium mt-0.5">{w.definition_vi}</p>}
-                  {w.synonyms.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      <span className="text-xs text-gray-400">≈</span>
-                      {w.synonyms.slice(0, 4).map(s => <span key={s} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{s}</span>)}
-                    </div>
-                  )}
-                  {w.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      {w.tags.map(t => <span key={t} className="text-[0.65rem] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">#{t}</span>)}
-                    </div>
+                  {(w.definition_vi || w.definition) && (
+                    <p className="text-sm text-gray-500 truncate mt-0.5">
+                      {w.definition_vi || w.definition}
+                    </p>
                   )}
                 </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <span className={cn('text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full hidden sm:inline-block', STATUS_STYLE[progressMap[w.id] ?? 'new'])}>
+                    {STATUS_LABEL[progressMap[w.id] ?? 'new']}
+                  </span>
+                  <Link href={`/portal/vocab/${collection.id}/add?edit=${w.id}`} className="p-1.5 rounded-lg text-gray-300 hover:text-[#1A2744] hover:bg-gray-100 transition-colors">
+                    <Pencil size={13} />
+                  </Link>
+                  <button onClick={() => handleDelete(w.id)} className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors">
+                    <Trash2 size={13} />
+                  </button>
+                </div>
               </div>
+              {/* Synonyms row — only if present */}
+              {w.synonyms.length > 0 && (
+                <div className="flex gap-1.5 flex-wrap px-4 pb-3 -mt-1">
+                  <span className="text-[0.65rem] text-gray-300">≈</span>
+                  {w.synonyms.slice(0, 3).map(s => (
+                    <span key={s} className="text-[0.65rem] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">{s}</span>
+                  ))}
+                  {w.synonyms.length > 3 && <span className="text-[0.65rem] text-gray-300">+{w.synonyms.length - 3}</span>}
+                </div>
+              )}
             </div>
           ))}
           {filtered.length === 0 && search && (
