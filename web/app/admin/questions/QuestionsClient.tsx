@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { Search, X, Pencil, Trash2, Plus } from 'lucide-react'
+import { Search, X, Pencil, Trash2, Plus, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { ToggleActiveButton } from './ToggleActiveButton'
 import { deleteQuestionById } from './deleteAction'
+import { importQuestionsFromJson } from './crudActions'
 import { Pagination } from '@/components/admin/Pagination'
 import { cn } from '@/lib/utils'
 
@@ -26,6 +27,74 @@ const TYPE_LABEL: Record<string, string> = {
   multiple_choice: 'MC', fill_blank: 'Fill', true_false: 'T/F', reading: 'MC', listening: 'MC',
 }
 
+function ImportModal({ onClose, onImported }: { onClose: () => void; onImported: (n: number) => void }) {
+  const [raw, setRaw]       = useState('')
+  const [isPending, start]  = useTransition()
+  const [preview, setPreview] = useState<number | null>(null)
+  const [parseErr, setParseErr] = useState('')
+
+  const handleChange = (v: string) => {
+    setRaw(v)
+    setParseErr('')
+    setPreview(null)
+    if (!v.trim()) return
+    try {
+      const parsed = JSON.parse(v)
+      setPreview(Array.isArray(parsed) ? parsed.length : null)
+      if (!Array.isArray(parsed)) setParseErr('JSON phải là một mảng [ ... ]')
+    } catch {
+      setParseErr('JSON không hợp lệ')
+    }
+  }
+
+  const handleImport = () => {
+    let parsed: unknown[]
+    try { parsed = JSON.parse(raw) } catch { return }
+    start(async () => {
+      try {
+        const { inserted, errors } = await importQuestionsFromJson(parsed)
+        if (errors.length) toast.warning(`Nhập ${inserted} câu, bỏ qua ${errors.length} lỗi`)
+        else toast.success(`Đã nhập ${inserted} câu hỏi`)
+        onImported(inserted)
+        onClose()
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e)
+        console.error('[importQuestionsFromJson]', e)
+        toast.error(`Lỗi: ${msg}`)
+      }
+    })
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl flex flex-col gap-4 p-6" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-[#1A2744]">Nhập từ JSON</h2>
+          <button onClick={onClose} className="text-gray-300 hover:text-gray-500"><X size={16} /></button>
+        </div>
+        <textarea
+          className="w-full h-56 rounded-xl border border-gray-200 bg-gray-50 text-xs font-mono p-3 resize-none focus:outline-none focus:border-[#E8303A] placeholder:text-gray-300"
+          placeholder={'[\n  {\n    "section": "grammar",\n    "type": "multiple_choice",\n    ...\n  }\n]'}
+          value={raw}
+          onChange={e => handleChange(e.target.value)}
+          spellCheck={false}
+        />
+        <div className="flex items-center justify-between min-h-[20px]">
+          {parseErr  && <p className="text-xs text-red-500">{parseErr}</p>}
+          {!parseErr && preview !== null && <p className="text-xs text-gray-400">{preview} câu hỏi được phát hiện</p>}
+          {!parseErr && preview === null && <span />}
+          <button
+            disabled={isPending || !!parseErr || preview === null || preview === 0}
+            onClick={handleImport}
+            className="flex items-center gap-1.5 h-8 px-4 rounded-xl bg-[#E8303A] hover:bg-[#C0222B] text-white text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors ml-auto">
+            {isPending ? 'Đang nhập...' : `Nhập${preview ? ` ${preview} câu` : ''}`}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function DeleteButton({ id, onDeleted }: { id: string; onDeleted: () => void }) {
   const [, startTransition] = useTransition()
   const handle = () => {
@@ -41,10 +110,11 @@ function DeleteButton({ id, onDeleted }: { id: string; onDeleted: () => void }) 
 }
 
 export function QuestionsClient({ questions: initial }: { questions: Question[] }) {
-  const [questions, setQuestions] = useState(initial)
-  const [section,   setSection]   = useState('all')
-  const [search,    setSearch]    = useState('')
-  const [page,      setPage]      = useState(1)
+  const [questions,    setQuestions]    = useState(initial)
+  const [section,      setSection]      = useState('all')
+  const [search,       setSearch]       = useState('')
+  const [page,         setPage]         = useState(1)
+  const [showImport,   setShowImport]   = useState(false)
 
   const counts = {
     all:        initial.length,
@@ -72,6 +142,12 @@ export function QuestionsClient({ questions: initial }: { questions: Question[] 
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
+      {showImport && (
+        <ImportModal
+          onClose={() => setShowImport(false)}
+          onImported={() => { /* page will revalidate; optimistically clear nothing */ }}
+        />
+      )}
       {/* Toolbar */}
       <div className="shrink-0 px-4 sm:px-6 py-3 border-b border-gray-100 bg-white flex flex-wrap gap-2 items-center">
         <h1 className="text-base font-bold text-[#1A2744] mr-2">Câu hỏi</h1>
@@ -89,6 +165,10 @@ export function QuestionsClient({ questions: initial }: { questions: Question[] 
               className="w-full h-8 pl-7 pr-7 rounded-xl border border-gray-200 bg-gray-50 text-xs placeholder:text-gray-300 focus:outline-none focus:border-[#E8303A]" />
             {search && <button onClick={() => onFilter(() => setSearch(''))} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X size={12} /></button>}
           </div>
+          <button onClick={() => setShowImport(true)}
+            className="flex items-center gap-1 h-8 px-3 rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-100 text-xs font-semibold transition-colors shrink-0">
+            <Upload size={13} /> Nhập JSON
+          </button>
           <Link href="/admin/questions/new"
             className="flex items-center gap-1 h-8 px-3 rounded-xl bg-[#E8303A] hover:bg-[#C0222B] text-white text-xs font-semibold transition-colors shrink-0">
             <Plus size={13} /> Thêm

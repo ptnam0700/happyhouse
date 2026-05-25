@@ -101,44 +101,101 @@ export function subgroupInstruction(type: string, startNum: number, endNum: numb
   return `${range} — Chọn đáp án đúng.`
 }
 
+// Target number of questions per section per test type
+const SECTION_TARGETS: Record<string, Record<string, number>> = {
+  mini: { grammar: 16, vocabulary: 14 },
+  full: { grammar: 28, vocabulary: 24, reading: 24, listening: 19 },
+}
+
+// Desired level distribution across any section pool (must sum to 1)
+const LEVEL_RATIO: Record<string, number> = {
+  A1: 0.05, A2: 0.20, B1: 0.35, B2: 0.25, C1: 0.12, C2: 0.03,
+}
+const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
+
+function shuffle<T>(arr: T[]): T[] {
+  return [...arr].sort(() => Math.random() - 0.5)
+}
+
+// Pick `n` items from `pool` with level-balanced distribution.
+// Falls back to filling remaining slots from whatever is left if a level is short.
+function pickBalanced(pool: any[], n: number): any[] {
+  if (pool.length <= n) return shuffle(pool)
+
+  const byLevel: Record<string, any[]> = {}
+  LEVELS.forEach(l => { byLevel[l] = [] })
+  pool.forEach(q => {
+    const l = q.level ?? 'B1'
+    ;(byLevel[l] = byLevel[l] ?? []).push(q)
+  })
+  LEVELS.forEach(l => { byLevel[l] = shuffle(byLevel[l]) })
+
+  const picked: any[] = []
+  const leftover: any[] = []
+  LEVELS.forEach(l => {
+    const want = Math.round(LEVEL_RATIO[l] * n)
+    picked.push(...byLevel[l].slice(0, want))
+    leftover.push(...byLevel[l].slice(want))
+  })
+
+  if (picked.length < n) {
+    picked.push(...shuffle(leftover).slice(0, n - picked.length))
+  }
+  return picked.slice(0, n)
+}
+
 export async function loadQuestions(testType: TestType, supabase: ReturnType<typeof import('./supabase/client').createClient>): Promise<Question[]> {
-  let query = supabase
+  const sections = testType === 'mini'
+    ? ['grammar', 'vocabulary']
+    : ['grammar', 'vocabulary', 'reading', 'listening']
+
+  const { data, error } = await supabase
     .from('public_questions')
     .select('id, section, type, level, question_text, passage_id, passage_title, passage_content, passage_audio_url, question_audio_url, option_a, option_b, option_c, option_d')
-
-  if (testType === 'mini') {
-    query = query.in('section', ['grammar', 'vocabulary'])
-  }
-
-  const { data, error } = await query
+    .in('section', sections)
   if (error) throw error
 
-  const standalone = data.filter((q: any) => !q.passage_id)
-  const passageQs  = data.filter((q: any) =>  q.passage_id)
+  const all = data ?? []
+  const targets = SECTION_TARGETS[testType]
+  const result: any[] = []
 
-  standalone.sort(() => Math.random() - 0.5)
+  for (const section of sections) {
+    const pool     = all.filter((q: any) => q.section === section)
+    const target   = targets[section] ?? 0
+    const standalone = pool.filter((q: any) => !q.passage_id)
+    const passageQs  = pool.filter((q: any) =>  q.passage_id)
 
-  const groups: Record<string, any[]> = {}
-  passageQs.forEach((q: any) => {
-    if (!groups[q.passage_id]) groups[q.passage_id] = []
-    groups[q.passage_id].push(q)
-  })
-  const groupOrder = Object.keys(groups).sort(() => Math.random() - 0.5)
-  const ordered: any[] = []
-  groupOrder.forEach(k => ordered.push(...groups[k]))
+    if (passageQs.length > 0) {
+      // Group by passage, pick level-balanced groups until target is met
+      const groups: Record<string, any[]> = {}
+      passageQs.forEach((q: any) => {
+        if (!groups[q.passage_id]) groups[q.passage_id] = []
+        groups[q.passage_id].push(q)
+      })
+      const groupList = shuffle(Object.values(groups))
+      const picked: any[] = []
+      for (const g of groupList) {
+        if (picked.length >= target) break
+        picked.push(...g)
+      }
+      // Mix in any standalone questions from the same section if under target
+      const remaining = target - picked.length
+      if (remaining > 0) picked.push(...pickBalanced(standalone, remaining))
+      result.push(...picked.slice(0, target))
+    } else {
+      result.push(...pickBalanced(standalone, target))
+    }
+  }
 
-  const combined = [...standalone, ...ordered]
-  const limit = testType === 'mini' ? 30 : 95
-
-  return combined.slice(0, limit).map((q: any) => ({
+  return result.map((q: any) => ({
     id:             q.id,
     section:        q.section,
     type:           q.type,
     level:          q.level,
     question:       q.question_text,
-    passageId:      q.passage_id      ?? null,
-    passageTitle:   q.passage_title   ?? null,
-    passageContent: q.passage_content ?? null,
+    passageId:      q.passage_id       ?? null,
+    passageTitle:   q.passage_title    ?? null,
+    passageContent: q.passage_content  ?? null,
     passageAudio:   q.passage_audio_url ?? null,
     audio:          q.question_audio_url ?? null,
     options:        [q.option_a, q.option_b, q.option_c, q.option_d].filter(Boolean),
