@@ -1,794 +1,1116 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { LandingClient } from './LandingClient'
-import { CoursesSection } from './CoursesSection'
+
 
 export function LandingPage() {
-  // Scroll reveal + tab switcher
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [consultForm, setConsultForm] = useState({
+    name: '', phone: '', childAge: '', program: '', note: '',
+  })
+  const [consultSubmitted, setConsultSubmitted] = useState(false)
+  const [consultError, setConsultError] = useState('')
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => entries.forEach(e => {
         if (e.isIntersecting) {
-          (e.target as HTMLElement).style.opacity = '1';
-          (e.target as HTMLElement).style.transform = 'translateY(0)'
+          ;(e.target as HTMLElement).style.opacity = '1'
+          ;(e.target as HTMLElement).style.transform = 'translateY(0)'
         }
       }),
-      { threshold: 0.1 }
+      { threshold: 0.08 },
     )
     document.querySelectorAll('.lp-reveal').forEach(el => {
       const h = el as HTMLElement
       h.style.opacity = '0'
-      h.style.transform = 'translateY(24px)'
-      h.style.transition = 'opacity 0.5s ease, transform 0.5s ease'
+      h.style.transform = 'translateY(28px)'
+      h.style.transition = 'opacity 0.6s ease, transform 0.6s ease'
       observer.observe(el)
     })
 
     const handleScroll = () => {
       const header = document.getElementById('lp-header')
-      if (header) header.style.boxShadow = window.scrollY > 10
-        ? '0 4px 24px rgba(0,0,0,0.12)' : '0 2px 16px rgba(0,0,0,0.08)'
+      if (header) {
+        if (window.scrollY > 8) {
+          header.style.boxShadow = '0 4px 24px rgba(23,43,85,0.10)'
+          header.style.backdropFilter = 'blur(12px)'
+        } else {
+          header.style.boxShadow = 'none'
+          header.style.backdropFilter = 'none'
+        }
+      }
     }
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => { observer.disconnect(); window.removeEventListener('scroll', handleScroll) }
   }, [])
 
-  // Smooth scroll to any section, accounting for the 72px sticky header
   const scrollTo = (id: string) => (e: React.MouseEvent) => {
     e.preventDefault()
+    setMobileOpen(false)
     const el = document.getElementById(id)
     if (!el) return
-    const offset = 80 // sticky header height + breathing room
-    const top = el.getBoundingClientRect().top + window.scrollY - offset
+    const top = el.getBoundingClientRect().top + window.scrollY - 80
     window.scrollTo({ top, behavior: 'smooth' })
   }
 
-  const scrollToTest = scrollTo('test-entry')
+  const handleConsultSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!consultForm.name.trim() || !consultForm.phone.trim()) {
+      setConsultError('Vui lòng điền họ tên và số điện thoại để tiếp tục.')
+      return
+    }
+    setConsultError('')
+    setConsultSubmitted(true)
+  }
 
   return (
     <>
       <style>{`
+        /* ─── Reset + Base ─── */
         html { scroll-padding-top: 80px; }
         :root {
-          --lp-red: #E8303A; --lp-red-dark: #C0222B;
-          --lp-navy: #1A2744; --lp-gold: #F5A623;
-          --lp-gray-50: #F9FAFB; --lp-gray-100: #F3F4F6;
-          --lp-gray-200: #E5E7EB; --lp-gray-400: #9CA3AF;
-          --lp-gray-600: #4B5563; --lp-gray-800: #1F2937;
-          --lp-shadow: 0 4px 24px rgba(0,0,0,0.08);
-          --lp-shadow-lg: 0 12px 48px rgba(0,0,0,0.14);
+          --lp-navy:    #172B55;
+          --lp-red:     #E8303A;
+          --lp-red-dk:  #C0222B;
+          --lp-cream:   #FFF9F5;
+          --lp-pink:    #FFF1F3;
+          --lp-mint:    #EDF9F1;
+          --lp-sky:     #EEF5FF;
+          --lp-yellow:  #FFF4D8;
+          --lp-text:    #17233D;
+          --lp-muted:   #667085;
+          --lp-gray1:   #F8F9FB;
+          --lp-gray2:   #E5E7EB;
+          --lp-gray4:   #9CA3AF;
+          --lp-shadow:  0 4px 24px rgba(23,43,85,0.08);
+          --lp-shadowlg:0 12px 48px rgba(23,43,85,0.14);
         }
-        .lp-wrap { font-family: 'Be Vietnam Pro', sans-serif; color: #111827; background:#fff; line-height:1.6; overflow-x:hidden; }
+        .lp-wrap { font-family: 'Be Vietnam Pro', sans-serif; color: var(--lp-text); background: #fff; line-height: 1.6; overflow-x: hidden; }
+        .lp-container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+        .lp-section  { padding: 88px 0; }
+        .lp-sec-head { text-align: center; margin-bottom: 56px; }
+        .lp-sec-eye  { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--lp-red); margin-bottom: 10px; }
+        .lp-sec-h2   { font-weight: 800; font-size: clamp(24px, 3.5vw, 36px); color: var(--lp-navy); line-height: 1.2; margin: 0 0 14px; }
+        .lp-sec-desc { color: var(--lp-muted); font-size: 15.5px; max-width: 600px; margin: 0 auto; line-height: 1.7; }
 
-        /* Topbar */
-        .lp-topbar { background:var(--lp-navy); color:#ccc; font-size:12.5px; padding:6px 0; }
-        .lp-topbar-inner { max-width:1200px; margin:auto; padding:0 24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; }
-        .lp-topbar a { color:#ccc; text-decoration:none; } .lp-topbar a:hover { color:#fff; }
-        .lp-topbar-left { display:flex; gap:20px; flex-wrap:wrap; }
-        .lp-topbar-right { display:flex; gap:16px; align-items:center; }
-        .lp-tsocial { display:flex; gap:8px; }
-        .lp-tsocial a { width:22px; height:22px; background:rgba(255,255,255,.12); border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff; text-decoration:none; }
-        .lp-tsocial a:hover { background:var(--lp-red); }
+/* ─── Topbar ─── */
+        .lp-topbar { background: var(--lp-navy); color: rgba(255,255,255,.65); font-size: 12px; padding: 7px 0; }
+        .lp-topbar-in { max-width: 1200px; margin: auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .lp-topbar a { color: rgba(255,255,255,.7); text-decoration: none; transition: color .15s; }
+        .lp-topbar a:hover { color: #fff; }
+        .lp-topbar-left { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+        .lp-topbar-right { display: flex; gap: 14px; align-items: center; }
 
-        /* Header */
-        .lp-header { background:#fff; position:sticky; top:0; z-index:100; box-shadow:0 2px 16px rgba(0,0,0,.08); }
-        .lp-header-inner { max-width:1200px; margin:auto; padding:0 24px; height:72px; display:flex; align-items:center; gap:32px; }
-        .lp-logo { display:flex; align-items:center; gap:10px; text-decoration:none; flex-shrink:0; }
-        .lp-logo-text { font-weight:800; font-size:20px; color:var(--lp-navy); line-height:1.1; }
-        .lp-logo-sub { font-size:9px; font-weight:500; letter-spacing:1.5px; color:var(--lp-red); text-transform:uppercase; }
-        .lp-nav { flex:1; display:flex; gap:0; }
-        .lp-nav a { padding:0 14px; height:72px; display:flex; align-items:center; font-weight:600; font-size:13.5px; color:var(--lp-gray-800); text-decoration:none; border-bottom:3px solid transparent; transition:all .2s; white-space:nowrap; }
-        .lp-nav a:hover,.lp-nav a.active { color:var(--lp-red); border-bottom-color:var(--lp-red); }
-        .lp-nav .lp-badge { background:var(--lp-red); color:#fff; font-size:9px; padding:1px 5px; border-radius:20px; margin-left:4px; font-weight:700; }
-        .lp-hactions { display:flex; gap:10px; align-items:center; margin-left:auto; }
-        .lp-btn-outline { border:2px solid var(--lp-red); color:var(--lp-red); padding:8px 18px; border-radius:8px; font-weight:700; font-size:13px; text-decoration:none; transition:all .2s; white-space:nowrap; }
-        .lp-btn-outline:hover { background:var(--lp-red); color:#fff; }
-        .lp-btn-primary { background:var(--lp-red); color:#fff; padding:9px 20px; border-radius:8px; font-weight:700; font-size:13px; text-decoration:none; transition:all .2s; white-space:nowrap; border:none; cursor:pointer; display:inline-block; }
-        .lp-btn-primary:hover { background:var(--lp-red-dark); transform:translateY(-1px); box-shadow:0 4px 12px rgba(232,48,58,.3); }
+        /* ─── Header ─── */
+        .lp-header { background: rgba(255,255,255,.96); position: sticky; top: 0; z-index: 100; transition: box-shadow .2s, backdrop-filter .2s; border-bottom: 1px solid rgba(23,43,85,.06); }
+        .lp-header-in { max-width: 1200px; margin: auto; padding: 0 24px; height: 72px; display: flex; align-items: center; gap: 24px; }
+        .lp-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+        .lp-logo-text { font-weight: 800; font-size: 19px; color: var(--lp-navy); }
+        .lp-logo-sub  { font-size: 9px; font-weight: 600; letter-spacing: 1.6px; color: var(--lp-red); text-transform: uppercase; }
+        .lp-nav { flex: 1; display: flex; gap: 0; align-items: center; }
+        .lp-nav a { padding: 0 13px; height: 72px; display: inline-flex; align-items: center; font-weight: 600; font-size: 13px; color: var(--lp-text); text-decoration: none; border-bottom: 3px solid transparent; white-space: nowrap; transition: color .2s, border-color .2s; }
+        .lp-nav a:hover { color: var(--lp-red); border-bottom-color: var(--lp-red); }
+        .lp-hactions { display: flex; gap: 8px; align-items: center; margin-left: auto; flex-shrink: 0; }
+        .lp-btn-ghost  { border: 1.5px solid var(--lp-navy); color: var(--lp-navy); padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; text-decoration: none; transition: all .2s; white-space: nowrap; }
+        .lp-btn-ghost:hover { background: var(--lp-navy); color: #fff; }
+        .lp-btn-primary { background: var(--lp-red); color: #fff; padding: 9px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; text-decoration: none; transition: all .2s; white-space: nowrap; border: none; cursor: pointer; font-family: inherit; }
+        .lp-btn-primary:hover { background: var(--lp-red-dk); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(232,48,58,.28); }
+        .lp-hamburger { display: none; background: none; border: none; cursor: pointer; padding: 4px; flex-direction: column; gap: 5px; margin-left: auto; }
+        .lp-hamburger span { display: block; width: 22px; height: 2px; background: var(--lp-navy); border-radius: 2px; transition: all .25s; }
+        .lp-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .lp-hamburger.open span:nth-child(2) { opacity: 0; }
+        .lp-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-        /* Hero */
-        .lp-hero { background:linear-gradient(135deg,#1A2744 0%,#1e3060 40%,#16305a 100%); position:relative; overflow:hidden; padding:80px 0 0; }
-        .lp-hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 60% 80% at 80% 60%,rgba(232,48,58,.15) 0%,transparent 60%),radial-gradient(ellipse 40% 40% at 20% 30%,rgba(245,166,35,.08) 0%,transparent 50%); }
-        .lp-hero-grid { max-width:1200px; margin:auto; padding:0 24px; display:grid; grid-template-columns:1fr 480px; gap:60px; align-items:end; position:relative; }
-        .lp-hero-tag { display:inline-flex; align-items:center; gap:8px; background:rgba(232,48,58,.15); border:1px solid rgba(232,48,58,.4); border-radius:100px; padding:6px 16px; font-size:12px; font-weight:700; color:#FF8A8C; letter-spacing:.5px; margin-bottom:20px; text-transform:uppercase; }
-        .lp-hero-tag span { width:6px; height:6px; background:var(--lp-red); border-radius:50%; animation:lp-blink 1.5s infinite; }
-        @keyframes lp-blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-        .lp-hero h1 { font-weight:900; font-size:54px; line-height:1.08; color:#fff; margin-bottom:20px; }
-        .lp-hero h1 .lp-hl { color:var(--lp-red); position:relative; }
-        .lp-hero h1 .lp-hl::after { content:''; position:absolute; bottom:-4px; left:0; right:0; height:3px; background:var(--lp-red); border-radius:2px; opacity:.4; }
-        .lp-hero-desc { color:rgba(255,255,255,.72); font-size:16px; line-height:1.7; margin-bottom:32px; max-width:520px; }
-        .lp-hero-actions { display:flex; gap:12px; margin-bottom:48px; flex-wrap:wrap; }
-        .lp-btn-hp { background:var(--lp-red); color:#fff; padding:14px 28px; border-radius:10px; font-weight:700; font-size:15px; text-decoration:none; display:inline-flex; align-items:center; gap:8px; transition:all .25s; box-shadow:0 8px 24px rgba(232,48,58,.35); border:none; cursor:pointer; }
-        .lp-btn-hp:hover { transform:translateY(-2px); box-shadow:0 12px 32px rgba(232,48,58,.45); }
-        .lp-btn-hs { background:rgba(255,255,255,.1); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.2); color:#fff; padding:14px 28px; border-radius:10px; font-weight:600; font-size:15px; text-decoration:none; display:inline-flex; align-items:center; gap:8px; transition:all .25s; }
-        .lp-btn-hs:hover { background:rgba(255,255,255,.18); }
-        .lp-hero-stats { display:flex; gap:32px; flex-wrap:wrap; }
-        .lp-stat-num { font-weight:800; font-size:30px; color:#fff; line-height:1; }
-        .lp-stat-num span { color:var(--lp-red); }
-        .lp-stat-label { font-size:12px; color:rgba(255,255,255,.5); font-weight:500; margin-top:2px; }
-        .lp-hero-visual { position:relative; align-self:end; }
-        .lp-hero-card { background:linear-gradient(135deg,#fff 0%,#F8FAFF 100%); border-radius:20px 20px 0 0; padding:32px; box-shadow:0 -8px 40px rgba(0,0,0,.3); }
-        .lp-card-label { font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--lp-red); margin-bottom:10px; }
-        .lp-card-title { font-weight:800; font-size:18px; color:var(--lp-navy); margin-bottom:6px; }
-        .lp-card-sub { font-size:13px; color:var(--lp-gray-600); margin-bottom:20px; }
-        .lp-score-pills { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
-        .lp-score-pill { background:var(--lp-gray-100); border-radius:100px; padding:6px 14px; font-size:13px; font-weight:700; color:var(--lp-navy); }
-        .lp-score-pill.on { background:var(--lp-red); color:#fff; }
-        .lp-meta { display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
-        .lp-meta-chip { display:flex; align-items:center; gap:5px; font-size:12.5px; color:var(--lp-gray-600); }
-        .lp-card-btn { width:100%; background:var(--lp-red); color:#fff; border:none; border-radius:10px; padding:13px; font-weight:700; font-size:14px; cursor:pointer; transition:all .2s; font-family:inherit; }
-        .lp-card-btn:hover { background:var(--lp-red-dark); }
-        .lp-fb { position:absolute; background:#fff; border-radius:12px; padding:10px 14px; box-shadow:0 8px 24px rgba(0,0,0,.15); display:flex; align-items:center; gap:10px; }
-        .lp-fb-icon { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
-        .lp-fb-text { font-size:11px; color:var(--lp-gray-600); }
-        .lp-fb-val { font-weight:800; font-size:15px; color:var(--lp-navy); line-height:1; }
-        .lp-fb1 { top:-32px; left:-24px; } .lp-fb2 { top:-16px; right:-16px; }
+        /* Mobile Nav Drawer */
+        .lp-mobile-nav { position: fixed; inset: 0; z-index: 99; pointer-events: none; }
+        .lp-mobile-nav.open { pointer-events: all; }
+        .lp-mobile-overlay { position: absolute; inset: 0; background: rgba(23,43,85,.4); opacity: 0; transition: opacity .25s; }
+        .lp-mobile-nav.open .lp-mobile-overlay { opacity: 1; }
+        .lp-mobile-drawer { position: absolute; top: 72px; left: 0; right: 0; background: #fff; padding: 16px 20px 24px; transform: translateY(-8px); opacity: 0; transition: transform .25s, opacity .25s; box-shadow: 0 12px 40px rgba(23,43,85,.15); }
+        .lp-mobile-nav.open .lp-mobile-drawer { transform: translateY(0); opacity: 1; }
+        .lp-mobile-links { display: flex; flex-direction: column; gap: 0; border-bottom: 1px solid var(--lp-gray2); margin-bottom: 16px; }
+        .lp-mobile-links a { padding: 13px 0; font-weight: 600; font-size: 15px; color: var(--lp-text); text-decoration: none; border-bottom: 1px solid rgba(23,43,85,.06); display: block; }
+        .lp-mobile-links a:last-child { border-bottom: none; }
+        .lp-mobile-cta { display: block; text-align: center; background: var(--lp-red); color: #fff; padding: 14px; border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; }
 
-        /* Ticker */
-        .lp-ticker { background:var(--lp-red); padding:10px 0; overflow:hidden; }
-        .lp-ticker-inner { display:flex; animation:lp-ticker 35s linear infinite; white-space:nowrap; width:max-content; }
-        @keyframes lp-ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
-        .lp-ticker-item { padding:0 32px; font-weight:700; font-size:13px; color:rgba(255,255,255,.9); letter-spacing:.3px; display:inline-flex; align-items:center; gap:12px; }
-        .lp-ticker-item::after { content:'★'; color:rgba(255,255,255,.4); }
+        /* ─── Hero ─── */
+        .lp-hero { background: var(--lp-cream); padding: 80px 0 0; position: relative; overflow: hidden; }
+        .lp-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 60% at 80% 80%, rgba(232,48,58,.06) 0%, transparent 60%), radial-gradient(ellipse 40% 40% at 20% 20%, rgba(23,43,85,.04) 0%, transparent 60%); pointer-events: none; }
+        .lp-hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; position: relative; }
+        .lp-hero-eye  { display: inline-block; background: rgba(232,48,58,.1); border: 1px solid rgba(232,48,58,.25); border-radius: 100px; padding: 5px 14px; font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--lp-red); text-transform: uppercase; margin-bottom: 20px; }
+        .lp-hero h1  { font-weight: 900; font-size: clamp(28px, 4.5vw, 50px); line-height: 1.1; color: var(--lp-navy); margin: 0 0 20px; }
+        .lp-hero h1 em { font-style: normal; color: var(--lp-red); }
+        .lp-hero-p  { color: var(--lp-muted); font-size: 16px; line-height: 1.75; margin: 0 0 32px; max-width: 520px; }
+        .lp-hero-btns { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+        .lp-btn-hp { background: var(--lp-red); color: #fff; padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all .25s; box-shadow: 0 6px 20px rgba(232,48,58,.28); border: none; cursor: pointer; font-family: inherit; }
+        .lp-btn-hp:hover { background: var(--lp-red-dk); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(232,48,58,.38); }
+        .lp-btn-hs { background: rgba(23,43,85,.08); border: 1.5px solid rgba(23,43,85,.15); color: var(--lp-navy); padding: 13px 26px; border-radius: 10px; font-weight: 600; font-size: 15px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all .25s; }
+        .lp-btn-hs:hover { background: rgba(23,43,85,.14); }
+        .lp-hero-trust { font-size: 12.5px; color: var(--lp-muted); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+        .lp-hero-trust::before { content: '✓'; color: #22C55E; font-weight: 700; }
 
-        /* Shared */
-        .lp-section { padding:72px 0; }
-        .lp-container { max-width:1200px; margin:auto; padding:0 24px; }
-        .lp-sec-head { text-align:center; margin-bottom:52px; }
-        .lp-sec-tag { display:inline-flex; align-items:center; gap:6px; background:rgba(232,48,58,.08); border:1px solid rgba(232,48,58,.2); border-radius:100px; padding:5px 14px; font-size:11.5px; font-weight:700; color:var(--lp-red); letter-spacing:.8px; text-transform:uppercase; margin-bottom:14px; }
-        .lp-sec-title { font-weight:800; font-size:34px; color:var(--lp-navy); line-height:1.2; margin-bottom:12px; }
-        .lp-sec-desc { color:var(--lp-gray-600); font-size:15.5px; max-width:580px; margin:auto; line-height:1.65; }
+        /* Hero image collage */
+        .lp-hero-visual { position: relative; align-self: end; }
+        .lp-hero-col-main { border-radius: 24px; overflow: hidden; width: 100%; aspect-ratio: 4/3; }
+        .lp-hero-col-smalls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+        .lp-hero-col-small  { border-radius: 16px; overflow: hidden; aspect-ratio: 5/3; }
+        .lp-hero-float { position: absolute; bottom: 28px; left: -24px; background: #fff; border-radius: 14px; padding: 12px 16px; box-shadow: 0 8px 28px rgba(23,43,85,.18); display: flex; align-items: center; gap: 12px; z-index: 10; min-width: 200px; }
+        .lp-hero-float-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--lp-sky); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .lp-hero-float-text { font-size: 11.5px; color: var(--lp-muted); line-height: 1.3; }
+        .lp-hero-float-val  { font-weight: 800; font-size: 13px; color: var(--lp-navy); }
 
-        /* Partners */
-        .lp-partners { padding:48px 0; border-top:1px solid var(--lp-gray-200); border-bottom:1px solid var(--lp-gray-200); }
-        .lp-partners-label { text-align:center; font-size:12px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--lp-gray-400); margin-bottom:24px; }
-        .lp-partners-logos { display:flex; align-items:center; justify-content:center; gap:40px; flex-wrap:wrap; }
-        .lp-plogo { font-weight:800; font-size:16px; color:var(--lp-gray-400); letter-spacing:-.5px; cursor:default; transition:color .2s; }
-        .lp-plogo:hover { color:var(--lp-red); }
+        /* ─── Trust Strip ─── */
+        .lp-trust { background: #fff; border-top: 1px solid var(--lp-gray2); border-bottom: 1px solid var(--lp-gray2); padding: 32px 0; }
+        .lp-trust-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+        .lp-trust-item { display: flex; align-items: center; gap: 14px; }
+        .lp-trust-icon { width: 44px; height: 44px; border-radius: 10px; background: var(--lp-sky); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .lp-trust-text h4 { font-weight: 700; font-size: 13.5px; color: var(--lp-navy); margin: 0 0 2px; }
+        .lp-trust-text p  { font-size: 12px; color: var(--lp-muted); margin: 0; line-height: 1.4; }
 
-        /* Why */
-        .lp-why { background:var(--lp-gray-50); }
-        .lp-why-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; }
-        .lp-why-card { background:#fff; border-radius:12px; padding:28px 24px; text-align:center; border:1px solid var(--lp-gray-200); transition:all .3s; position:relative; overflow:hidden; }
-        .lp-why-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--lp-red); transform:scaleX(0); transition:transform .3s; }
-        .lp-why-card:hover { box-shadow:var(--lp-shadow-lg); transform:translateY(-4px); }
-        .lp-why-card:hover::before { transform:scaleX(1); }
-        .lp-why-icon { width:60px; height:60px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:28px; margin:0 auto 16px; }
-        .lp-why-num { font-weight:900; font-size:38px; color:var(--lp-red); line-height:1; margin-bottom:4px; }
-        .lp-why-label { font-weight:700; font-size:15px; color:var(--lp-navy); margin-bottom:8px; }
-        .lp-why-desc { font-size:13px; color:var(--lp-gray-600); line-height:1.6; }
+        /* ─── Age Programs Section ─── */
+        .lp-progs { background: var(--lp-cream); }
+        .lp-progs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px; }
+        .lp-prog-card { background: #fff; border-radius: 24px; overflow: hidden; border: 1px solid rgba(23,43,85,.08); box-shadow: var(--lp-shadow); transition: all .3s; }
+        .lp-prog-card:hover { box-shadow: var(--lp-shadowlg); transform: translateY(-4px); }
+        .lp-prog-img  { height: 200px; overflow: hidden; }
+        .lp-prog-body { padding: 24px 28px 28px; }
+        .lp-prog-age  { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--lp-red); margin-bottom: 6px; }
+        .lp-prog-h3   { font-weight: 800; font-size: 20px; color: var(--lp-navy); margin: 0 0 10px; }
+        .lp-prog-desc { font-size: 14px; color: var(--lp-muted); line-height: 1.65; margin: 0 0 16px; }
+        .lp-prog-goals { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+        .lp-prog-goal  { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--lp-text); }
+        .lp-prog-goal::before { content: '✓'; color: #22C55E; font-weight: 700; font-size: 12px; margin-top: 1px; flex-shrink: 0; }
+        .lp-prog-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 700; color: var(--lp-red); text-decoration: none; transition: gap .2s; }
+        .lp-prog-link:hover { gap: 10px; }
+        .lp-prog-card.ielts-card { border-color: rgba(23,43,85,.12); background: var(--lp-sky); }
+        .lp-prog-card.ielts-card .lp-prog-img { background: var(--lp-navy); }
 
-        /* Courses */
-        .lp-tabs { display:flex; gap:8px; justify-content:center; margin-bottom:40px; flex-wrap:wrap; }
-        .lp-tab { padding:9px 22px; border-radius:100px; border:2px solid var(--lp-gray-200); background:#fff; font-weight:700; font-size:13px; color:var(--lp-gray-600); cursor:pointer; transition:all .2s; font-family:inherit; }
-        .lp-tab:hover { border-color:var(--lp-red); color:var(--lp-red); }
-        .lp-tab.on { background:var(--lp-red); border-color:var(--lp-red); color:#fff; }
-        .lp-courses-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
-        .lp-course-card { background:#fff; border-radius:16px; border:1px solid var(--lp-gray-200); overflow:hidden; transition:all .3s; cursor:pointer; }
-        .lp-course-card:hover { box-shadow:var(--lp-shadow-lg); transform:translateY(-4px); }
-        .lp-course-thumb { height:190px; position:relative; display:flex; align-items:center; justify-content:center; font-size:60px; }
-        .lp-cbadge { position:absolute; top:14px; left:14px; padding:4px 12px; border-radius:100px; font-size:11px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; }
-        .lp-badge-hot { background:var(--lp-red); color:#fff; }
-        .lp-badge-new { background:var(--lp-gold); color:#fff; }
-        .lp-badge-sale { background:#10B981; color:#fff; }
-        .lp-clevel { position:absolute; top:14px; right:14px; background:rgba(255,255,255,.95); border-radius:100px; padding:4px 12px; font-size:11px; font-weight:700; color:var(--lp-navy); }
-        .lp-cbody { padding:20px; }
-        .lp-ccategory { font-size:11px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--lp-red); margin-bottom:6px; }
-        .lp-cname { font-weight:800; font-size:16px; color:var(--lp-navy); margin-bottom:8px; line-height:1.3; }
-        .lp-cdesc { font-size:13px; color:var(--lp-gray-600); line-height:1.5; margin-bottom:14px; }
-        .lp-cinfo { display:flex; gap:14px; margin-bottom:14px; padding-top:12px; border-top:1px solid var(--lp-gray-100); flex-wrap:wrap; }
-        .lp-ci { display:flex; align-items:center; gap:4px; font-size:12.5px; color:var(--lp-gray-600); font-weight:500; }
-        .lp-cfooter { display:flex; justify-content:space-between; align-items:center; }
-        .lp-cprice { font-weight:800; font-size:20px; color:var(--lp-red); }
-        .lp-cprice-old { font-size:13px; color:var(--lp-gray-400); text-decoration:line-through; font-weight:500; margin-bottom:-2px; }
-        .lp-enroll-sm { background:var(--lp-red); color:#fff; padding:9px 18px; border-radius:8px; font-weight:700; font-size:13px; text-decoration:none; transition:all .2s; border:none; cursor:pointer; font-family:inherit; }
-        .lp-enroll-sm:hover { background:var(--lp-red-dark); }
+        /* ─── Gallery ─── */
+        .lp-gallery { background: var(--lp-navy); padding: 88px 0; }
+        .lp-gallery .lp-sec-h2 { color: #fff; }
+        .lp-gallery .lp-sec-desc { color: rgba(255,255,255,.65); }
+        .lp-gallery .lp-sec-eye { color: rgba(255,255,255,.5); }
+        .lp-gallery-bento { display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: auto auto; gap: 14px; }
+        .lp-gal-main  { grid-row: 1 / 3; border-radius: 20px; overflow: hidden; min-height: 420px; }
+        .lp-gal-small { border-radius: 16px; overflow: hidden; min-height: 190px; }
+        .lp-gal-caption { position: absolute; bottom: 0; left: 0; right: 0; padding: 16px; background: linear-gradient(to top, rgba(23,43,85,.7) 0%, transparent 100%); color: #fff; font-size: 12px; font-weight: 600; letter-spacing: .3px; }
+        .lp-gal-item { position: relative; }
+        .lp-gallery-cta { text-align: center; margin-top: 28px; }
+        .lp-gallery-cta a { display: inline-flex; align-items: center; gap: 6px; color: rgba(255,255,255,.75); font-size: 14px; font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.3); padding-bottom: 2px; transition: all .2s; }
+        .lp-gallery-cta a:hover { color: #fff; border-color: rgba(255,255,255,.7); }
 
-        /* Teachers */
-        .lp-teachers { background:var(--lp-gray-50); }
-        .lp-teachers-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; }
-        .lp-teacher-card { background:#fff; border-radius:16px; overflow:hidden; border:1px solid var(--lp-gray-200); transition:all .3s; text-align:center; }
-        .lp-teacher-card:hover { box-shadow:var(--lp-shadow-lg); transform:translateY(-4px); }
-        .lp-teacher-ava { height:200px; display:flex; align-items:center; justify-content:center; font-size:80px; position:relative; }
-        .lp-teacher-score { position:absolute; bottom:12px; right:12px; background:var(--lp-red); color:#fff; font-weight:800; font-size:13px; padding:4px 12px; border-radius:100px; }
-        .lp-tbody { padding:18px 16px; }
-        .lp-tname { font-weight:800; font-size:16px; color:var(--lp-navy); margin-bottom:4px; }
-        .lp-trole { font-size:12.5px; color:var(--lp-gray-600); margin-bottom:10px; }
-        .lp-ttags { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-bottom:12px; }
-        .lp-ttag { background:var(--lp-gray-100); border-radius:100px; padding:3px 10px; font-size:11px; font-weight:600; color:var(--lp-gray-600); }
-        .lp-tstats { display:flex; gap:0; border-top:1px solid var(--lp-gray-100); }
-        .lp-tstat { flex:1; padding:10px 0; text-align:center; }
-        .lp-tstat:not(:last-child) { border-right:1px solid var(--lp-gray-100); }
-        .lp-tstat-val { font-weight:800; font-size:15px; color:var(--lp-navy); }
-        .lp-tstat-label { font-size:10px; color:var(--lp-gray-400); }
+        /* ─── Pathway ─── */
+        .lp-path { background: #fff; }
+        .lp-path-stages { display: flex; gap: 0; align-items: flex-start; position: relative; margin: 0; padding: 0; list-style: none; }
+        .lp-path-stages::before { content: ''; position: absolute; top: 28px; left: 28px; right: 28px; height: 2px; background: linear-gradient(to right, #22C55E, var(--lp-red)); z-index: 0; }
+        .lp-path-stage { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; z-index: 1; padding: 0 8px; }
+        .lp-path-dot { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 16px; flex-shrink: 0; border: 3px solid #fff; box-shadow: 0 0 0 2px; }
+        .lp-path-stage:nth-child(1) .lp-path-dot { background: #EDF9F1; box-shadow: 0 0 0 2px #22C55E; }
+        .lp-path-stage:nth-child(2) .lp-path-dot { background: #EEF5FF; box-shadow: 0 0 0 2px #60A5FA; }
+        .lp-path-stage:nth-child(3) .lp-path-dot { background: #FFF4D8; box-shadow: 0 0 0 2px #FBBF24; }
+        .lp-path-stage:nth-child(4) .lp-path-dot { background: #FFF1F3; box-shadow: 0 0 0 2px #F87171; }
+        .lp-path-stage:nth-child(5) .lp-path-dot { background: var(--lp-navy); box-shadow: 0 0 0 2px var(--lp-navy); }
+        .lp-path-stage:nth-child(5) .lp-path-dot span { filter: brightness(0) invert(1); }
+        .lp-path-label { font-weight: 700; font-size: 14px; color: var(--lp-navy); margin-bottom: 6px; line-height: 1.3; }
+        .lp-path-sub   { font-size: 12px; color: var(--lp-muted); line-height: 1.45; }
+        .lp-path-stage:nth-child(5) .lp-path-label { color: var(--lp-muted); font-weight: 600; }
+        .lp-path-stage:nth-child(5) .lp-path-sub   { font-size: 11.5px; }
+        .lp-path-cta { text-align: center; margin-top: 52px; }
 
-        /* Results */
-        .lp-results { background:linear-gradient(135deg,#1A2744 0%,#16305a 100%); position:relative; overflow:hidden; }
-        .lp-results::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 70% 70% at 90% 50%,rgba(232,48,58,.12) 0%,transparent 60%); }
-        .lp-results .lp-sec-title { color:#fff; }
-        .lp-results .lp-sec-desc { color:rgba(255,255,255,.6); }
-        .lp-results .lp-sec-tag { background:rgba(232,48,58,.2); border-color:rgba(232,48,58,.4); }
-        .lp-results-grid { display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center; position:relative; }
-        .lp-score-show { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-        .lp-score-card { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:20px 16px; text-align:center; transition:all .3s; }
-        .lp-score-card:hover { background:rgba(232,48,58,.15); border-color:rgba(232,48,58,.3); }
-        .lp-score-card.feat { background:var(--lp-red); border-color:var(--lp-red); }
-        .lp-sc-stu { font-size:26px; margin-bottom:6px; }
-        .lp-sc-name { font-weight:700; font-size:13px; color:rgba(255,255,255,.9); margin-bottom:2px; }
-        .lp-sc-score { font-weight:900; font-size:30px; color:#fff; }
-        .lp-sc-score span { font-size:14px; font-weight:500; opacity:.7; }
-        .lp-sc-skill { font-size:11px; color:rgba(255,255,255,.5); }
-        .lp-sc-skill.feat { color:rgba(255,255,255,.85); }
-        .lp-rpoints { display:flex; flex-direction:column; gap:20px; margin-top:32px; }
-        .lp-rpoint { display:flex; gap:16px; align-items:flex-start; }
-        .lp-rp-icon { width:44px; height:44px; background:rgba(232,48,58,.15); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
-        .lp-rp-title { font-weight:700; font-size:15px; color:#fff; margin-bottom:4px; }
-        .lp-rp-desc { font-size:13px; color:rgba(255,255,255,.55); line-height:1.55; }
+        /* ─── Benefits ─── */
+        .lp-benefits { background: var(--lp-mint); }
+        .lp-ben-grid  { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        .lp-ben-card  { background: #fff; border-radius: 20px; padding: 28px; border: 1px solid rgba(34,197,94,.12); }
+        .lp-ben-icon  { width: 52px; height: 52px; border-radius: 14px; background: var(--lp-mint); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 16px; }
+        .lp-ben-h4    { font-weight: 700; font-size: 17px; color: var(--lp-navy); margin: 0 0 10px; }
+        .lp-ben-p     { font-size: 14px; color: var(--lp-muted); line-height: 1.65; margin: 0; }
 
-        /* Testimonials */
-        .lp-testi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
-        .lp-testi-card { background:#fff; border-radius:16px; border:1px solid var(--lp-gray-200); padding:24px; transition:all .3s; position:relative; }
-        .lp-testi-card:hover { box-shadow:var(--lp-shadow-lg); }
-        .lp-testi-quote { font-size:48px; color:var(--lp-red); line-height:.6; margin-bottom:14px; font-family:Georgia,serif; opacity:.3; }
-        .lp-testi-text { font-size:14px; color:var(--lp-gray-800); line-height:1.65; margin-bottom:20px; font-style:italic; }
-        .lp-testi-author { display:flex; gap:12px; align-items:center; }
-        .lp-testi-ava { width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
-        .lp-testi-name { font-weight:700; font-size:14px; color:var(--lp-navy); }
-        .lp-testi-info { font-size:12px; color:var(--lp-gray-600); }
-        .lp-testi-score { position:absolute; top:20px; right:20px; background:var(--lp-red); color:#fff; font-weight:800; font-size:14px; padding:4px 12px; border-radius:100px; }
-        .lp-stars { color:#F5A623; font-size:13px; }
+        /* ─── Teachers ─── */
+        .lp-teachers { background: var(--lp-sky); }
+        .lp-teach-split { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+        .lp-teach-img { border-radius: 24px; overflow: hidden; aspect-ratio: 4/5; }
+        .lp-teach-points { display: flex; flex-direction: column; gap: 28px; }
+        .lp-teach-pt { display: flex; gap: 18px; align-items: flex-start; }
+        .lp-teach-pt-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--lp-navy); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+        .lp-teach-pt-h4 { font-weight: 700; font-size: 16px; color: var(--lp-navy); margin: 0 0 6px; }
+        .lp-teach-pt-p  { font-size: 13.5px; color: var(--lp-muted); margin: 0; line-height: 1.6; }
+        .lp-teach-head { margin-bottom: 36px; }
+        .lp-teach-head .lp-sec-eye { display: block; margin-bottom: 8px; }
+        .lp-teach-head h2 { font-weight: 800; font-size: clamp(22px, 3vw, 32px); color: var(--lp-navy); margin: 0 0 12px; }
+        .lp-teach-head p  { font-size: 15px; color: var(--lp-muted); line-height: 1.7; margin: 0; }
 
-        /* Blog */
-        .lp-blog { background:var(--lp-gray-50); }
-        .lp-blog-grid { display:grid; grid-template-columns:2fr 1fr 1fr; gap:24px; }
-        .lp-blog-card { background:#fff; border-radius:16px; overflow:hidden; border:1px solid var(--lp-gray-200); transition:all .3s; cursor:pointer; }
-        .lp-blog-card:hover { box-shadow:var(--lp-shadow-lg); }
-        .lp-blog-thumb { height:200px; display:flex; align-items:center; justify-content:center; font-size:60px; position:relative; }
-        .lp-blog-card.feat .lp-blog-thumb { height:260px; }
-        .lp-blog-tag { position:absolute; bottom:12px; left:12px; background:var(--lp-red); color:#fff; font-size:10.5px; font-weight:700; padding:3px 10px; border-radius:100px; letter-spacing:.5px; text-transform:uppercase; }
-        .lp-blog-body { padding:20px; }
-        .lp-blog-date { font-size:11.5px; color:var(--lp-gray-400); margin-bottom:8px; }
-        .lp-blog-title { font-weight:700; font-size:15px; color:var(--lp-navy); margin-bottom:8px; line-height:1.35; }
-        .lp-blog-card.feat .lp-blog-title { font-size:18px; }
-        .lp-blog-excerpt { font-size:13px; color:var(--lp-gray-600); line-height:1.55; }
-        .lp-blog-more { display:inline-flex; align-items:center; gap:4px; font-size:13px; font-weight:700; color:var(--lp-red); margin-top:12px; text-decoration:none; }
+        /* ─── Testimonials ─── */
+        .lp-testi { background: var(--lp-pink); }
+        .lp-testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .lp-testi-card { background: #fff; border-radius: 20px; padding: 28px; border: 1px solid rgba(232,48,58,.08); box-shadow: 0 2px 16px rgba(23,43,85,.05); }
+        .lp-testi-quote { font-size: 40px; color: var(--lp-red); line-height: .8; margin-bottom: 10px; font-family: Georgia, serif; opacity: .3; }
+        .lp-testi-text  { font-size: 13.5px; color: #374151; line-height: 1.7; margin: 0 0 20px; font-style: italic; }
+        .lp-testi-author { display: flex; gap: 12px; align-items: center; }
+        .lp-testi-ava   { width: 44px; height: 44px; border-radius: 50%; background: var(--lp-cream); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .lp-testi-name  { font-weight: 700; font-size: 13.5px; color: var(--lp-navy); }
+        .lp-testi-role  { font-size: 12px; color: var(--lp-muted); }
+        .lp-testi-placeholder { font-size: 12px; color: #B0B8C9; font-style: italic; line-height: 1.6; }
 
-        /* CTA band */
-        .lp-cta-band { background:linear-gradient(135deg,var(--lp-red) 0%,#C0222B 100%); padding:64px 0; text-align:center; position:relative; overflow:hidden; }
-        .lp-cta-band::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 60% 100% at 10% 50%,rgba(255,255,255,.05) 0%,transparent 60%),radial-gradient(ellipse 40% 80% at 90% 50%,rgba(0,0,0,.1) 0%,transparent 60%); }
-        .lp-cta-band h2 { font-weight:900; font-size:40px; color:#fff; margin-bottom:14px; position:relative; }
-        .lp-cta-band p { color:rgba(255,255,255,.8); font-size:16px; margin-bottom:32px; position:relative; }
-        .lp-cta-actions { display:flex; gap:12px; justify-content:center; position:relative; flex-wrap:wrap; }
-        .lp-btn-cta-w { background:#fff; color:var(--lp-red); padding:14px 32px; border-radius:10px; font-weight:700; font-size:15px; text-decoration:none; transition:all .2s; box-shadow:0 8px 24px rgba(0,0,0,.15); }
-        .lp-btn-cta-w:hover { transform:translateY(-2px); }
-        .lp-btn-cta-o { background:transparent; color:#fff; border:2px solid rgba(255,255,255,.6); padding:14px 32px; border-radius:10px; font-weight:700; font-size:15px; text-decoration:none; transition:all .2s; }
-        .lp-btn-cta-o:hover { border-color:#fff; background:rgba(255,255,255,.1); }
+        /* ─── Advanced / IELTS ─── */
+        .lp-advanced { background: var(--lp-navy); padding: 72px 0; }
+        .lp-adv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+        .lp-adv-eye  { display: block; font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,255,255,.5); margin-bottom: 10px; }
+        .lp-adv-h2   { font-weight: 800; font-size: clamp(22px, 3vw, 32px); color: #fff; line-height: 1.25; margin: 0 0 16px; }
+        .lp-adv-p    { font-size: 15px; color: rgba(255,255,255,.65); line-height: 1.75; margin: 0 0 28px; }
+        .lp-adv-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+        .lp-adv-btn-p { background: var(--lp-red); color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; text-decoration: none; transition: all .2s; }
+        .lp-adv-btn-p:hover { background: var(--lp-red-dk); }
+        .lp-adv-btn-s { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); color: rgba(255,255,255,.85); padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; text-decoration: none; transition: all .2s; }
+        .lp-adv-btn-s:hover { background: rgba(255,255,255,.18); }
+        .lp-adv-badges { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
+        .lp-adv-badge { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15); border-radius: 100px; padding: 5px 14px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,.8); }
+        .lp-adv-visual { border-radius: 20px; overflow: hidden; aspect-ratio: 4/3; }
 
-        /* Footer */
-        .lp-footer { background:#0D1117; color:rgba(255,255,255,.6); padding:64px 0 0; }
-        .lp-footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:48px; margin-bottom:48px; }
-        .lp-footer-desc { font-size:13.5px; line-height:1.7; margin-bottom:20px; margin-top:16px; }
-        .lp-fci { display:flex; align-items:flex-start; gap:10px; font-size:13px; margin-bottom:10px; }
-        .lp-footer-col h4 { font-weight:700; font-size:14px; color:#fff; margin-bottom:16px; letter-spacing:.3px; }
-        .lp-flinks { display:flex; flex-direction:column; gap:10px; }
-        .lp-flinks a { font-size:13.5px; color:rgba(255,255,255,.55); text-decoration:none; transition:color .2s; display:flex; align-items:center; gap:6px; }
-        .lp-flinks a::before { content:'→'; font-size:10px; opacity:.5; }
-        .lp-flinks a:hover { color:#fff; }
-        .lp-footer-bottom { border-top:1px solid rgba(255,255,255,.08); padding:20px 0; display:flex; justify-content:space-between; align-items:center; font-size:12.5px; flex-wrap:wrap; gap:12px; }
-        .lp-fsocial { display:flex; gap:8px; }
-        .lp-fsocial a { width:34px; height:34px; background:rgba(255,255,255,.08); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; color:rgba(255,255,255,.6); text-decoration:none; transition:all .2s; }
-        .lp-fsocial a:hover { background:var(--lp-red); color:#fff; }
+        /* ─── Activities ─── */
+        .lp-activities { background: var(--lp-gray1); }
+        .lp-act-grid  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .lp-act-card  { background: #fff; border-radius: 20px; overflow: hidden; border: 1px solid var(--lp-gray2); transition: all .3s; }
+        .lp-act-card:hover { box-shadow: var(--lp-shadowlg); transform: translateY(-3px); }
+        .lp-act-img   { height: 190px; overflow: hidden; }
+        .lp-act-body  { padding: 20px 22px 24px; }
+        .lp-act-cat   { font-size: 11px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--lp-red); margin-bottom: 8px; }
+        .lp-act-title { font-weight: 700; font-size: 15px; color: var(--lp-navy); line-height: 1.4; margin: 0 0 12px; }
+        .lp-act-more  { font-size: 13px; font-weight: 700; color: var(--lp-red); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: gap .2s; }
+        .lp-act-more:hover { gap: 8px; }
+        .lp-act-cta { text-align: center; margin-top: 36px; }
 
-        /* Sticky CTA */
-        .lp-sticky { position:fixed; bottom:24px; right:24px; z-index:200; display:flex; flex-direction:column; gap:10px; align-items:flex-end; }
-        .lp-sticky-btn { width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.2); transition:all .2s; text-decoration:none; border:none; font-family:inherit; }
-        .lp-sticky-btn:hover { transform:scale(1.1); }
-        .lp-sticky-btn.ph { background:#25D366; color:#fff; }
-        .lp-sticky-btn.za { background:#0068FF; color:#fff; }
-        .lp-sticky-btn.tp { background:var(--lp-red); color:#fff; }
-        .lp-sticky-row { position:relative; display:flex; align-items:center; }
-        .lp-sticky-label { background:rgba(0,0,0,.8); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:100px; opacity:0; pointer-events:none; white-space:nowrap; position:absolute; right:58px; top:50%; transform:translateY(-50%) translateX(-8px); transition:all .2s; }
-        .lp-sticky-row:hover .lp-sticky-label { opacity:1; transform:translateY(-50%) translateX(0); }
+        /* ─── Consultation Form ─── */
+        .lp-consult { background: var(--lp-cream); }
+        .lp-consult-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+        .lp-consult-left .lp-sec-eye { display: block; margin-bottom: 10px; }
+        .lp-consult-left h2 { font-weight: 800; font-size: clamp(24px, 3vw, 34px); color: var(--lp-navy); margin: 0 0 14px; }
+        .lp-consult-left p  { font-size: 15px; color: var(--lp-muted); line-height: 1.75; margin: 0 0 32px; }
+        .lp-consult-trust { display: flex; flex-direction: column; gap: 14px; }
+        .lp-consult-pt { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; color: var(--lp-text); }
+        .lp-consult-pt::before { content: '✓'; color: #22C55E; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+        .lp-form { background: #fff; border-radius: 24px; padding: 36px; border: 1px solid rgba(23,43,85,.08); box-shadow: var(--lp-shadow); }
+        .lp-field { margin-bottom: 18px; }
+        .lp-field label { display: block; font-size: 13px; font-weight: 600; color: var(--lp-navy); margin-bottom: 6px; }
+        .lp-field input, .lp-field select, .lp-field textarea { width: 100%; border: 1.5px solid var(--lp-gray2); border-radius: 10px; padding: 11px 14px; font-size: 14px; font-family: inherit; color: var(--lp-text); background: #fff; outline: none; transition: border-color .2s; }
+        .lp-field input:focus, .lp-field select:focus, .lp-field textarea:focus { border-color: var(--lp-red); }
+        .lp-field textarea { resize: vertical; min-height: 80px; }
+        .lp-field .req { color: var(--lp-red); }
+        .lp-form-err  { background: #FEF2F2; color: #DC2626; font-size: 13px; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; }
+        .lp-form-ok   { text-align: center; padding: 32px 20px; }
+        .lp-form-ok-icon { font-size: 48px; margin-bottom: 12px; }
+        .lp-form-ok h3  { font-weight: 800; font-size: 20px; color: var(--lp-navy); margin: 0 0 8px; }
+        .lp-form-ok p   { font-size: 14px; color: var(--lp-muted); margin: 0; }
+        .lp-form-micro  { font-size: 12px; color: var(--lp-gray4); margin-top: 14px; text-align: center; }
 
-        /* Responsive */
-        /* ── Tablet (≤900px) ── */
-        @media(max-width:900px) {
-          /* Hero */
-          .lp-hero { padding:56px 0 0; }
-          .lp-hero-grid { grid-template-columns:1fr; gap:32px; }
-          .lp-hero-visual { display:none; }
-          .lp-hero h1 { font-size:clamp(28px,7vw,40px); }
-          .lp-hero-desc { font-size:15px; margin-bottom:24px; }
-          .lp-hero-actions { flex-direction:column; align-items:stretch; gap:10px; margin-bottom:32px; }
-          .lp-btn-hp,.lp-btn-hs { justify-content:center; width:100%; }
-          .lp-hero-stats { gap:20px; flex-wrap:wrap; }
-          /* Header */
-          .lp-nav { display:none; }
-          .lp-hactions .lp-btn-outline { display:none; }
-          /* Sections */
-          .lp-section { padding:56px 0; }
-          .lp-sec-title { font-size:28px; }
-          /* Grids */
-          .lp-why-grid,.lp-teachers-grid { grid-template-columns:repeat(2,1fr); }
-          .lp-results-grid,.lp-testi-grid { grid-template-columns:1fr; }
-          .lp-blog-grid { grid-template-columns:1fr; }
-          .lp-footer-grid { grid-template-columns:1fr 1fr; }
-          /* CTA band */
-          .lp-cta-band h2 { font-size:30px; }
-          .lp-cta-actions { flex-direction:column; align-items:center; gap:10px; }
-          .lp-btn-cta-w,.lp-btn-cta-o { width:100%; max-width:360px; text-align:center; }
-        }
+        /* ─── Test Entry ─── */
+        .lp-test-entry { background: #fff; border-top: 1px solid var(--lp-gray2); padding: 80px 0; }
 
-        /* ── Mobile (≤600px) ── */
-        @media(max-width:600px) {
-          /* Topbar: hide email + hours on very small screens */
-          .lp-topbar-left span:not(:first-child) { display:none; }
-          .lp-topbar-right a { display:none; }
-          /* Hero */
-          .lp-hero { padding:36px 0 0; }
-          .lp-hero h1 { font-size:clamp(26px,8vw,34px); }
-          .lp-stat-num { font-size:22px; }
-          .lp-hero-stats { gap:14px; }
-          /* Header */
-          .lp-hactions { gap:6px; }
-          .lp-btn-primary { padding:8px 14px; font-size:12px; }
-          /* Sections */
-          .lp-section { padding:44px 0; }
-          .lp-container { padding:0 16px; }
-          .lp-sec-head { margin-bottom:36px; }
-          .lp-sec-title { font-size:22px; }
-          .lp-sec-desc { font-size:14px; }
-          /* Grids → single column */
-          .lp-why-grid,.lp-teachers-grid,.lp-footer-grid { grid-template-columns:1fr; }
-          /* Why cards */
-          .lp-why-num { font-size:30px; }
-          /* Score showcase */
-          .lp-score-show { grid-template-columns:repeat(2,1fr); }
-          /* Partners */
-          .lp-partners-logos { gap:20px; }
-          .lp-plogo { font-size:13px; }
-          /* Testimonials */
-          .lp-testi-card { padding:18px 16px; }
-          /* Blog */
-          .lp-blog-card.featured .lp-blog-thumb { height:180px; }
-          .lp-blog-title { font-size:14px; }
-          /* CTA band */
-          .lp-cta-band { padding:48px 0; }
-          .lp-cta-band h2 { font-size:24px; }
-          .lp-cta-band p { font-size:14px; margin-bottom:24px; }
-          /* Footer */
-          .lp-footer { padding:48px 0 0; }
-          .lp-footer-grid { grid-template-columns:1fr; gap:32px; }
-          .lp-footer-bottom { flex-direction:column; gap:10px; text-align:center; }
-          .lp-fsocial { justify-content:center; }
-          /* Sticky CTA */
-          .lp-sticky { bottom:16px; right:16px; }
-          .lp-sticky-btn { width:44px; height:44px; font-size:18px; }
+        /* ─── CTA Band ─── */
+        .lp-cta-band { background: linear-gradient(135deg, #E8303A 0%, #C0222B 100%); padding: 72px 0; text-align: center; position: relative; overflow: hidden; }
+        .lp-cta-band::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 100% at 10% 50%, rgba(255,255,255,.06) 0%, transparent 60%); pointer-events: none; }
+        .lp-cta-band h2 { font-weight: 900; font-size: clamp(24px, 4vw, 40px); color: #fff; margin: 0 0 14px; position: relative; }
+        .lp-cta-band p  { color: rgba(255,255,255,.8); font-size: 16px; margin: 0 0 32px; position: relative; }
+        .lp-cta-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; }
+        .lp-btn-cta-w { background: #fff; color: var(--lp-red); padding: 14px 32px; border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; transition: all .2s; box-shadow: 0 6px 24px rgba(0,0,0,.15); }
+        .lp-btn-cta-w:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(0,0,0,.2); }
+        .lp-btn-cta-o { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.6); padding: 14px 32px; border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; transition: all .2s; }
+        .lp-btn-cta-o:hover { border-color: #fff; background: rgba(255,255,255,.1); }
+
+        /* ─── Footer ─── */
+        .lp-footer { background: #0D1117; color: rgba(255,255,255,.6); padding: 64px 0 0; }
+        .lp-footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+        .lp-footer-brand-desc { font-size: 13px; line-height: 1.7; margin: 14px 0 20px; color: rgba(255,255,255,.55); }
+        .lp-fci { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; margin-bottom: 8px; }
+        .lp-footer-col h4 { font-weight: 700; font-size: 13.5px; color: #fff; margin: 0 0 16px; letter-spacing: .3px; }
+        .lp-flinks { display: flex; flex-direction: column; gap: 9px; }
+        .lp-flinks a { font-size: 13px; color: rgba(255,255,255,.5); text-decoration: none; transition: color .2s; display: flex; align-items: center; gap: 6px; }
+        .lp-flinks a::before { content: '→'; font-size: 9px; opacity: .4; }
+        .lp-flinks a:hover { color: #fff; }
+        .lp-footer-bottom { border-top: 1px solid rgba(255,255,255,.08); padding: 20px 0; display: flex; justify-content: space-between; align-items: center; font-size: 12px; flex-wrap: wrap; gap: 12px; }
+        .lp-fsocial { display: flex; gap: 8px; }
+        .lp-fsocial a { width: 32px; height: 32px; background: rgba(255,255,255,.08); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: rgba(255,255,255,.55); text-decoration: none; transition: all .2s; }
+        .lp-fsocial a:hover { background: var(--lp-red); color: #fff; }
+
+        /* ─── Sticky ─── */
+        .lp-sticky { position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+        .lp-sticky-btn { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,.2); transition: all .2s; text-decoration: none; border: none; font-family: inherit; }
+        .lp-sticky-btn:hover { transform: scale(1.1); }
+        .lp-sticky-ph { background: #25D366; color: #fff; }
+        .lp-sticky-za { background: #0068FF; color: #fff; }
+        .lp-sticky-tp { background: var(--lp-navy); color: #fff; }
+        .lp-sticky-row { position: relative; display: flex; align-items: center; }
+        .lp-sticky-tip { background: rgba(0,0,0,.75); color: #fff; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 100px; opacity: 0; pointer-events: none; white-space: nowrap; position: absolute; right: 56px; top: 50%; transform: translateY(-50%) translateX(-6px); transition: all .2s; }
+        .lp-sticky-row:hover .lp-sticky-tip { opacity: 1; transform: translateY(-50%) translateX(0); }
+
+        /* ─── Responsive — Tablet ≤ 920px ─── */
+        @media (max-width: 920px) {
+          .lp-hero-grid { grid-template-columns: 1fr; gap: 40px; }
+          .lp-hero-visual { display: none; }
+          .lp-hero { padding: 56px 0 0; }
+          .lp-hero h1 { font-size: clamp(26px, 7vw, 38px); }
+          .lp-trust-grid { grid-template-columns: repeat(2, 1fr); }
+          .lp-progs-grid { grid-template-columns: 1fr; }
+          .lp-gallery-bento { grid-template-columns: 1fr 1fr; }
+          .lp-gal-main { grid-row: auto; grid-column: 1 / -1; }
+          .lp-path-stages { flex-direction: column; align-items: flex-start; gap: 28px; }
+          .lp-path-stages::before { top: 28px; left: 27px; right: auto; width: 2px; height: calc(100% - 56px); background: linear-gradient(to bottom, #22C55E, var(--lp-red)); }
+          .lp-path-stage { flex-direction: row; text-align: left; gap: 18px; align-items: flex-start; width: 100%; }
+          .lp-path-dot { margin-bottom: 0; flex-shrink: 0; }
+          .lp-ben-grid { grid-template-columns: 1fr; }
+          .lp-teach-split { grid-template-columns: 1fr; gap: 40px; }
+          .lp-teach-img { display: none; }
+          .lp-testi-grid { grid-template-columns: 1fr; }
+          .lp-adv-grid { grid-template-columns: 1fr; gap: 36px; }
+          .lp-adv-visual { display: none; }
+          .lp-act-grid { grid-template-columns: 1fr 1fr; }
+          .lp-consult-grid { grid-template-columns: 1fr; gap: 40px; }
+          .lp-footer-grid { grid-template-columns: 1fr 1fr; }
+          .lp-nav { display: none; }
+          .lp-hactions .lp-btn-ghost { display: none; }
+          .lp-hamburger { display: flex; }
+          .lp-section { padding: 64px 0; }
         }
 
-        /* ── Very small (≤380px) ── */
-        @media(max-width:380px) {
-          .lp-hero h1 { font-size:24px; }
-          .lp-sec-title { font-size:20px; }
-          .lp-ticker-item { padding:0 20px; font-size:12px; }
+        /* ─── Responsive — Mobile ≤ 600px ─── */
+        @media (max-width: 600px) {
+          .lp-section { padding: 52px 0; }
+          .lp-container { padding: 0 16px; }
+          .lp-trust-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+          .lp-trust-item { flex-direction: column; gap: 8px; text-align: center; }
+          .lp-progs-grid { grid-template-columns: 1fr; }
+          .lp-gallery-bento { grid-template-columns: 1fr; }
+          .lp-gal-main, .lp-gal-small { grid-column: auto; }
+          .lp-act-grid { grid-template-columns: 1fr; }
+          .lp-footer-grid { grid-template-columns: 1fr; gap: 32px; }
+          .lp-footer-bottom { flex-direction: column; text-align: center; }
+          .lp-fsocial { justify-content: center; }
+          .lp-cta-band { padding: 52px 0; }
+          .lp-cta-actions { flex-direction: column; align-items: center; }
+          .lp-btn-cta-w, .lp-btn-cta-o { width: 100%; max-width: 340px; text-align: center; }
+          .lp-hero-btns { flex-direction: column; align-items: stretch; }
+          .lp-btn-hp, .lp-btn-hs { justify-content: center; }
+          .lp-sticky { bottom: 14px; right: 14px; }
+          .lp-sticky-btn { width: 42px; height: 42px; font-size: 16px; }
+          .lp-testi-grid { gap: 16px; }
+          .lp-path-sub { font-size: 12px; }
+          .lp-topbar-left span:not(:first-child) { display: none; }
+          .lp-topbar-right a:not(:first-child) { display: none; }
         }
       `}</style>
 
       <div className="lp-wrap">
 
-        {/* Topbar */}
+        {/* ── Topbar ── */}
         <div className="lp-topbar">
-          <div className="lp-topbar-inner">
+          <div className="lp-topbar-in">
             <div className="lp-topbar-left">
-              <span>📞 Hotline: <a href="tel:0845956888">0845 956 888</a></span>
+              <span>📞 <a href="tel:0845956888">0845 956 888</a></span>
               <span>✉️ <a href="mailto:hello@happyhouseielts.com">hello@happyhouseielts.com</a></span>
               <span>⏰ Thứ 2 – Chủ nhật: 8:00 – 21:00</span>
             </div>
             <div className="lp-topbar-right">
-              <Link href="/portal/login">Đăng nhập</Link>
-              <a href="#test-entry" onClick={scrollToTest}>Kiểm tra ngay</a>
-              <div className="lp-tsocial">
-                <a href="#" title="Facebook">f</a>
-                <a href="#" title="YouTube">▶</a>
-                <a href="#" title="TikTok">♪</a>
-                <a href="#" title="Zalo">Z</a>
-              </div>
+              <Link href="/portal/login">Cổng học viên</Link>
+              <a href="#consult" onClick={scrollTo('consult')}>Đăng ký tư vấn</a>
             </div>
           </div>
         </div>
 
-        {/* Header */}
-        <header className="lp-header" id="lp-header">
-          <div className="lp-header-inner">
-            <a className="lp-logo" href="/">
-              <Image src="/happy_house_sun.png" alt="HappyHouse" width={44} height={44} style={{ borderRadius: 8, objectFit: 'contain' }} />
+        {/* ── Header ── */}
+        <header className="lp-header" id="lp-header" role="banner">
+          <div className="lp-header-in">
+            <a className="lp-logo" href="/" aria-label="HappyHouse English Center — Trang chủ">
+              <Image
+                src="/happy_house_sun.png"
+                alt="HappyHouse"
+                width={42}
+                height={42}
+                style={{ borderRadius: 8, objectFit: 'contain' }}
+              />
               <div>
                 <div className="lp-logo-text">HappyHouse</div>
                 <div className="lp-logo-sub">English Center</div>
               </div>
             </a>
-            <nav className="lp-nav">
-              <a href="/" className="active">Trang chủ</a>
-              <a href="#courses"   onClick={scrollTo('courses')}>Khoá học <span className="lp-badge">HOT</span></a>
-              <a href="#teachers"  onClick={scrollTo('teachers')}>Giáo viên</a>
-              <a href="#results"   onClick={scrollTo('results')}>Kết quả</a>
-              <a href="/test">Thi thử IELTS</a>
-              <a href="#blog"      onClick={scrollTo('blog')}>Blog</a>
+            <nav className="lp-nav" aria-label="Điều hướng chính">
+              <a href="#gioi-thieu" onClick={scrollTo('gioi-thieu')}>Giới thiệu</a>
+              <a href="#chuong-trinh" onClick={scrollTo('chuong-trinh')}>Chương trình học</a>
+              <a href="#lo-trinh" onClick={scrollTo('lo-trinh')}>Lộ trình</a>
+              <a href="#hinh-anh" onClick={scrollTo('hinh-anh')}>Hình ảnh lớp học</a>
+              <a href="#giao-vien" onClick={scrollTo('giao-vien')}>Đội ngũ giáo viên</a>
+              <a href="#phu-huynh" onClick={scrollTo('phu-huynh')}>Phụ huynh chia sẻ</a>
+              <a href="#consult" onClick={scrollTo('consult')}>Liên hệ</a>
             </nav>
             <div className="lp-hactions">
-              <a className="lp-btn-outline" href="/test">Thi thử miễn phí</a>
-              <a className="lp-btn-primary" href="#test-entry" onClick={scrollToTest}>Đăng ký ngay</a>
+              <Link className="lp-btn-ghost" href="/portal/login">Cổng học viên</Link>
+              <a className="lp-btn-primary" href="#consult" onClick={scrollTo('consult')}>Đăng ký học thử</a>
             </div>
+            <button
+              className={`lp-hamburger${mobileOpen ? ' open' : ''}`}
+              onClick={() => setMobileOpen(o => !o)}
+              aria-label={mobileOpen ? 'Đóng menu' : 'Mở menu'}
+              aria-expanded={mobileOpen}
+            >
+              <span /><span /><span />
+            </button>
           </div>
         </header>
 
-        {/* Hero */}
-        <section className="lp-hero">
-          <div className="lp-hero-grid">
-            <div>
-              <div className="lp-hero-tag"><span></span>Trung tâm Anh ngữ IELTS chuyên sâu</div>
-              <h1>Chinh phục <span className="lp-hl">IELTS</span><br />cùng đội ngũ<br />8.5+ HappyHouse</h1>
-              <p className="lp-hero-desc">
-                HappyHouse đồng hành cùng hàng nghìn học viên trên hành trình IELTS. Phương pháp học hiệu quả, giáo viên tận tâm và lộ trình cá nhân hoá cho từng mục tiêu.
-              </p>
-              <div className="lp-hero-actions">
-                <a className="lp-btn-hp" href="#test-entry" onClick={scrollToTest}>✦ Kiểm tra trình độ miễn phí</a>
-                <a className="lp-btn-hs" href="#courses">▶ Xem các khoá học</a>
-              </div>
-              <div className="lp-hero-stats">
-                <div><div className="lp-stat-num">5<span>+</span></div><div className="lp-stat-label">Năm kinh nghiệm</div></div>
-                <div><div className="lp-stat-num">2<span>K+</span></div><div className="lp-stat-label">Học viên</div></div>
-                <div><div className="lp-stat-num">8.5<span>★</span></div><div className="lp-stat-label">IELTS giáo viên</div></div>
-                <div><div className="lp-stat-num">4.9<span>/5</span></div><div className="lp-stat-label">Đánh giá học viên</div></div>
-              </div>
-            </div>
-            <div className="lp-hero-visual">
-              <div className="lp-fb lp-fb1">
-                <div className="lp-fb-icon" style={{ background: '#FEF3C7' }}>🏆</div>
-                <div><div className="lp-fb-text">Học viên xuất sắc</div><div className="lp-fb-val">IELTS 8.0</div></div>
-              </div>
-              <div className="lp-fb lp-fb2">
-                <div className="lp-fb-icon" style={{ background: '#DCFCE7' }}>📈</div>
-                <div><div className="lp-fb-text">Tỷ lệ đạt mục tiêu</div><div className="lp-fb-val">92%</div></div>
-              </div>
-              <div className="lp-hero-card">
-                <div className="lp-card-label">🔥 Khoá học phổ biến nhất</div>
-                <div className="lp-card-title">IELTS Foundation to Advanced</div>
-                <div className="lp-card-sub">Từ 4.5 lên 7.0+ trong 6 tháng · Online & Offline</div>
-                <div className="lp-score-pills">
-                  <div className="lp-score-pill on">Target 6.5</div>
-                  <div className="lp-score-pill">Target 7.0</div>
-                  <div className="lp-score-pill">Target 7.5+</div>
-                  <div className="lp-score-pill">8.0+</div>
-                </div>
-                <div className="lp-meta">
-                  <div className="lp-meta-chip">👥 Lớp nhỏ ≤ 12 HV</div>
-                  <div className="lp-meta-chip">⏱ 4–6 tháng</div>
-                  <div className="lp-meta-chip">💬 1-1 feedback</div>
-                </div>
-                <button className="lp-card-btn" onClick={scrollToTest}>Đăng ký tư vấn miễn phí →</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Ticker */}
-        <div className="lp-ticker">
-          <div className="lp-ticker-inner">
-            {[
-              '🎓 Nguyễn Minh Anh – IELTS 8.0',
-              '🏅 Trần Thị Hoa – IELTS 7.5 Writing',
-              '⭐ Phạm Hữu Đức – IELTS 8.0 Overall',
-              '🎯 Lê Thị Mai – 7.5 Speaking',
-              '🔥 Hoàng Văn Nam – IELTS 7.5 (từ 5.5)',
-              '🌟 Đỗ Thanh Huyền – IELTS 7.0 trong 3 tháng',
-              '💪 Vũ Khánh Linh – 8.0 Listening',
-              '🎓 Nguyễn Minh Anh – IELTS 8.0',
-              '🏅 Trần Thị Hoa – IELTS 7.5 Writing',
-              '⭐ Phạm Hữu Đức – IELTS 8.0 Overall',
-              '🎯 Lê Thị Mai – 7.5 Speaking',
-              '🔥 Hoàng Văn Nam – IELTS 7.5 (từ 5.5)',
-              '🌟 Đỗ Thanh Huyền – IELTS 7.0 trong 3 tháng',
-              '💪 Vũ Khánh Linh – 8.0 Listening',
-            ].map((item, i) => <span key={i} className="lp-ticker-item">{item}</span>)}
+        {/* ── Mobile Nav Drawer ── */}
+        <div className={`lp-mobile-nav${mobileOpen ? ' open' : ''}`} aria-hidden={!mobileOpen}>
+          <div className="lp-mobile-overlay" onClick={() => setMobileOpen(false)} />
+          <div className="lp-mobile-drawer">
+            <nav className="lp-mobile-links">
+              <a href="#gioi-thieu"   onClick={scrollTo('gioi-thieu')}>Giới thiệu</a>
+              <a href="#chuong-trinh" onClick={scrollTo('chuong-trinh')}>Chương trình học</a>
+              <a href="#lo-trinh"     onClick={scrollTo('lo-trinh')}>Lộ trình học tập</a>
+              <a href="#hinh-anh"     onClick={scrollTo('hinh-anh')}>Hình ảnh lớp học</a>
+              <a href="#giao-vien"    onClick={scrollTo('giao-vien')}>Đội ngũ giáo viên</a>
+              <a href="#phu-huynh"    onClick={scrollTo('phu-huynh')}>Phụ huynh chia sẻ</a>
+              <Link href="/portal/login">Cổng học viên</Link>
+            </nav>
+            <a className="lp-mobile-cta" href="#consult" onClick={scrollTo('consult')}>Đăng ký tư vấn</a>
           </div>
         </div>
 
-        {/* Partners */}
-        <div className="lp-partners">
+        {/* ── 1. Hero ── */}
+        <section className="lp-hero" id="gioi-thieu" aria-labelledby="hero-heading">
           <div className="lp-container">
-            <div className="lp-partners-label">Học viên HappyHouse hiện đang học tại & làm việc tại</div>
-            <div className="lp-partners-logos">
-              {['VinGroup', 'FPT', 'RMIT', 'British Council', 'BIDV', 'Viettel', 'VTV', 'VnExpress'].map(p => (
-                <div key={p} className="lp-plogo">{p}</div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Why HappyHouse */}
-        <section className="lp-section lp-why" id="why">
-          <div className="lp-container">
-            <div className="lp-sec-head">
-              <div className="lp-sec-tag">Tại sao chọn HappyHouse?</div>
-              <h2 className="lp-sec-title">Khác biệt tạo nên<br />sự thành công</h2>
-              <p className="lp-sec-desc">HappyHouse xây dựng phương pháp học IELTS thực chiến, phù hợp với từng học viên Việt Nam với mọi trình độ và mục tiêu.</p>
-            </div>
-            <div className="lp-why-grid">
-              {[
-                { icon: '🧠', bg: '#FEF2F2', num: '5+', label: 'Năm kinh nghiệm', desc: 'Chuyên đào tạo IELTS với phương pháp không ngừng cải tiến, cập nhật theo format thi mới nhất.' },
-                { icon: '👩‍🏫', bg: '#EFF6FF', num: '15+', label: 'Giáo viên xuất sắc', desc: 'Đội ngũ 100% IELTS 8.0+, tận tâm và có kinh nghiệm giảng dạy thực tế cho nhiều trình độ.' },
-                { icon: '🎓', bg: '#F0FDF4', num: '2K+', label: 'Học viên thành công', desc: 'Hàng nghìn học viên đạt 6.5–8.5 IELTS, nhận học bổng và cơ hội việc làm quốc tế.' },
-                { icon: '📚', bg: '#FFFBEB', num: '100%', label: 'Lộ trình cá nhân', desc: 'Mỗi học viên có lộ trình và kế hoạch học tập riêng, phù hợp với thời gian và mục tiêu.' },
-              ].map((c, i) => (
-                <div key={i} className="lp-why-card lp-reveal">
-                  <div className="lp-why-icon" style={{ background: c.bg }}>{c.icon}</div>
-                  <div className="lp-why-num">{c.num}</div>
-                  <div className="lp-why-label">{c.label}</div>
-                  <div className="lp-why-desc">{c.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Courses — new horizontal card layout */}
-        <CoursesSection onEnroll={scrollToTest} />
-
-        {/* Teachers */}
-        <section className="lp-section lp-teachers" id="teachers">
-          <div className="lp-container">
-            <div className="lp-sec-head">
-              <div className="lp-sec-tag">Đội ngũ giáo viên</div>
-              <h2 className="lp-sec-title">Học cùng những<br />chuyên gia IELTS</h2>
-              <p className="lp-sec-desc">100% giáo viên IELTS 8.0+, tận tâm, truyền cảm hứng và có phương pháp giảng dạy được học viên yêu thích.</p>
-            </div>
-            <div className="lp-teachers-grid">
-              {[
-                { bg: 'linear-gradient(135deg,#FEF2F2,#FECACA)', emoji: '👨‍🏫', score: 'IELTS 8.5', name: 'Phạm Hồng Long', role: 'Giám đốc Học thuật · 8 năm kinh nghiệm', tags: ['Reading', 'Writing', 'Strategy'], students: '1.800+', rating: '4.9★' },
-                { bg: 'linear-gradient(135deg,#EFF6FF,#BFDBFE)', emoji: '👩‍🏫', score: 'IELTS 8.0', name: 'Nguyễn Khánh Linh', role: 'Giảng viên Speaking · CELTA Certified', tags: ['Speaking', 'Pronunciation'], students: '900+', rating: '4.9★' },
-                { bg: 'linear-gradient(135deg,#F0FDF4,#BBF7D0)', emoji: '👨‍💻', score: 'IELTS 8.0', name: 'Trần Công Minh', role: 'Giảng viên Writing · Du học Anh Quốc', tags: ['Writing', 'Grammar'], students: '700+', rating: '4.8★' },
-                { bg: 'linear-gradient(135deg,#FFFBEB,#FDE68A)', emoji: '👩‍🎓', score: 'IELTS 8.5', name: 'Lê Huyền Thương', role: 'Giảng viên Listening & Reading', tags: ['Listening', 'Reading'], students: '600+', rating: '4.9★' },
-              ].map((t, i) => (
-                <div key={i} className="lp-teacher-card lp-reveal">
-                  <div className="lp-teacher-ava" style={{ background: t.bg }}>
-                    {t.emoji}
-                    <div className="lp-teacher-score">{t.score}</div>
-                  </div>
-                  <div className="lp-tbody">
-                    <div className="lp-tname">{t.name}</div>
-                    <div className="lp-trole">{t.role}</div>
-                    <div className="lp-ttags">{t.tags.map(tag => <span key={tag} className="lp-ttag">{tag}</span>)}</div>
-                    <div className="lp-tstats">
-                      <div className="lp-tstat"><div className="lp-tstat-val">{t.students}</div><div className="lp-tstat-label">Học viên</div></div>
-                      <div className="lp-tstat"><div className="lp-tstat-val">{t.rating}</div><div className="lp-tstat-label">Đánh giá</div></div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Results */}
-        <section className="lp-section lp-results" id="results">
-          <div className="lp-container">
-            <div className="lp-results-grid">
+            <div className="lp-hero-grid">
+              {/* Left: content */}
               <div>
-                <div className="lp-sec-head" style={{ textAlign: 'left' }}>
-                  <div className="lp-sec-tag">Kết quả học viên</div>
-                  <h2 className="lp-sec-title">Hàng nghìn học viên<br />đã chinh phục IELTS</h2>
-                  <p className="lp-sec-desc" style={{ maxWidth: '100%' }}>Với phương pháp giảng dạy hiệu quả và đội ngũ giáo viên tận tâm, học viên HappyHouse đạt kết quả vượt mong đợi.</p>
+                <div className="lp-hero-eye">Trung tâm tiếng Anh cho trẻ em &amp; học sinh</div>
+                <h1 id="hero-heading">
+                  Đồng hành cùng con trên hành trình tiếng Anh{' '}
+                  <em>vững vàng</em> và{' '}
+                  <em>đầy hứng khởi</em>
+                </h1>
+                <p className="lp-hero-p">
+                  Tại HappyHouse, mỗi học viên được học theo đúng độ tuổi, trình độ và mục tiêu: từ làm quen tiếng Anh, xây nền tảng giao tiếp, Cambridge, tiếng Anh học đường đến những cột mốc lớn hơn trong tương lai.
+                </p>
+                <div className="lp-hero-btns">
+                  <a className="lp-btn-hp" href="#consult" onClick={scrollTo('consult')}>Đăng ký học thử</a>
+                  <a className="lp-btn-hs" href="#lo-trinh" onClick={scrollTo('lo-trinh')}>Xem lộ trình cho con</a>
                 </div>
-                <div className="lp-rpoints">
+                <div className="lp-hero-trust">
+                  Kiểm tra trình độ &nbsp;•&nbsp; Tư vấn lộ trình &nbsp;•&nbsp; Đồng hành cùng phụ huynh
+                </div>
+              </div>
+
+              {/* Right: image collage */}
+              <div className="lp-hero-visual" aria-hidden="true">
+                <div className="lp-hero-col-main" style={{ position: 'relative', minHeight: 320 }}>
+                  <Image
+                    src="/images/home/hero-main.jpg"
+                    alt="Giáo viên và học sinh trong lớp học thực tế"
+                    fill
+                    style={{ objectFit: 'cover', borderRadius: 'inherit' }}
+                    priority
+                  />
+                </div>
+                <div className="lp-hero-col-smalls">
+                  <div className="lp-hero-col-small" style={{ position: 'relative', minHeight: 130 }}>
+                    <Image
+                      src="/images/home/hero-small-1.jpg"
+                      alt="Trẻ tự tin nói tiếng Anh"
+                      fill
+                      style={{ objectFit: 'cover', borderRadius: 'inherit' }}
+                    />
+                  </div>
+                  <div className="lp-hero-col-small" style={{ position: 'relative', minHeight: 130 }}>
+                    <Image
+                      src="/images/home/hero-small-2.jpg"
+                      alt="Hoạt động nhóm trong lớp"
+                      fill
+                      style={{ objectFit: 'cover', borderRadius: 'inherit' }}
+                    />
+                  </div>
+                </div>
+                <div className="lp-hero-float">
+                  <div className="lp-hero-float-icon">🗺</div>
+                  <div>
+                    <div className="lp-hero-float-text">Lộ trình phù hợp theo độ tuổi</div>
+                    <div className="lp-hero-float-val">Trẻ em · Tiểu học · THCS</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 2. Trust Strip ── */}
+        <div className="lp-trust">
+          <div className="lp-container">
+            <div className="lp-trust-grid">
+              {[
+                { icon: '🗺', title: 'Lộ trình theo độ tuổi', desc: 'Mỗi giai đoạn có nội dung phù hợp' },
+                { icon: '💬', title: 'Lớp học tương tác', desc: 'Học qua giao tiếp thực tế' },
+                { icon: '📊', title: 'Theo sát tiến bộ', desc: 'Phản hồi rõ ràng cho phụ huynh' },
+                { icon: '🤝', title: 'Tư vấn cùng phụ huynh', desc: 'Gia đình đồng hành cùng trung tâm' },
+              ].map((t, i) => (
+                <div key={i} className="lp-trust-item">
+                  <div className="lp-trust-icon">{t.icon}</div>
+                  <div className="lp-trust-text">
+                    <h4>{t.title}</h4>
+                    <p>{t.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── 3. Age Programs ── */}
+        <section className="lp-section lp-progs" id="chuong-trinh" aria-labelledby="progs-heading">
+          <div className="lp-container">
+            <div className="lp-sec-head lp-reveal">
+              <div className="lp-sec-eye">Chương trình học</div>
+              <h2 className="lp-sec-h2" id="progs-heading">Mỗi độ tuổi, một lộ trình phù hợp</h2>
+              <p className="lp-sec-desc">Từ những buổi học đầu tiên đến các mục tiêu học thuật cao hơn, HappyHouse giúp con học đúng giai đoạn và tiến bộ bền vững.</p>
+            </div>
+            <div className="lp-progs-grid">
+              {[
+                {
+                  age: 'Giai đoạn làm quen',
+                  title: 'Tiếng Anh trẻ em',
+                  desc: 'Học tiếng Anh tự nhiên qua âm thanh, hình ảnh, vận động và hoạt động tương tác.',
+                  goals: ['Phát âm và phản xạ cơ bản', 'Từ vựng gần gũi, dễ nhớ', 'Yêu thích việc học tiếng Anh'],
+                  imgSrc: '/images/home/program-young-learners.jpg',
+                  label: 'Trẻ nhỏ vui học tiếng Anh',
+                  href: '/khoa-hoc/tieng-anh-tieu-hoc',
+                  cta: 'Tìm hiểu chương trình',
+                  ielts: false,
+                },
+                {
+                  age: 'Xây nền tảng vững',
+                  title: 'Tiếng Anh Tiểu học',
+                  desc: 'Phát triển đồng đều nghe, nói, đọc, viết và xây dựng sự tự tin khi sử dụng tiếng Anh.',
+                  goals: ['Giao tiếp tự tin, mạch lạc', 'Cambridge Starters / Movers / Flyers', 'Hỗ trợ việc học tại trường'],
+                  imgSrc: '/images/home/program-primary.jpg',
+                  label: 'Học sinh tiểu học học tiếng Anh',
+                  href: '/khoa-hoc/cambridge-tieu-hoc',
+                  cta: 'Tìm hiểu chương trình',
+                  ielts: false,
+                },
+                {
+                  age: 'Phát triển học thuật',
+                  title: 'Tiếng Anh THCS',
+                  desc: 'Củng cố ngữ pháp, từ vựng, kỹ năng giao tiếp và tư duy tiếng Anh cho học sinh cấp 2.',
+                  goals: ['Học tốt tiếng Anh trên lớp', 'Cambridge KET / PET', 'Chuẩn bị cho mục tiêu vào 10'],
+                  imgSrc: '/images/home/program-secondary.jpg',
+                  label: 'Học sinh THCS học tiếng Anh',
+                  href: '/khoa-hoc/tieng-anh-thcs-thpt',
+                  cta: 'Tìm hiểu chương trình',
+                  ielts: false,
+                },
+                {
+                  age: 'Khi con đã sẵn sàng',
+                  title: 'Luyện thi & mục tiêu nâng cao',
+                  desc: 'Định hướng cho học sinh lớn hơn với các mục tiêu như thi vào 10, tiếng Anh học thuật và IELTS.',
+                  goals: ['Ôn thi vào 10 chuyên & công lập', 'Pre-IELTS / IELTS theo lộ trình', 'Định hướng cá nhân hóa'],
+                  imgSrc: '/images/home/program-advanced.jpg',
+                  label: 'Học sinh luyện thi nâng cao',
+                  href: '/khoa-hoc/luyen-thi-ielts',
+                  cta: 'Xem lộ trình nâng cao',
+                  ielts: true,
+                },
+              ].map((prog, i) => (
+                <article key={i} className={`lp-prog-card lp-reveal${prog.ielts ? ' ielts-card' : ''}`}>
+                  <div className="lp-prog-img" style={{ position: 'relative' }}>
+                    <Image
+                      src={prog.imgSrc}
+                      alt={prog.label}
+                      fill
+                      style={{ objectFit: 'cover' }}
+                    />
+                  </div>
+                  <div className="lp-prog-body">
+                    <div className="lp-prog-age">{prog.age}</div>
+                    <h3 className="lp-prog-h3">{prog.title}</h3>
+                    <p className="lp-prog-desc">{prog.desc}</p>
+                    <div className="lp-prog-goals">
+                      {prog.goals.map((g, j) => <div key={j} className="lp-prog-goal">{g}</div>)}
+                    </div>
+                    <Link href={prog.href} className="lp-prog-link">{prog.cta} →</Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 4. Gallery ── */}
+        <section className="lp-section lp-gallery" id="hinh-anh" aria-labelledby="gallery-heading">
+          <div className="lp-container">
+            <div className="lp-sec-head lp-reveal">
+              <div className="lp-sec-eye" style={{ color: 'rgba(255,255,255,.5)' }}>Khoảnh khắc HappyHouse</div>
+              <h2 className="lp-sec-h2 lp-reveal" id="gallery-heading" style={{ color: '#fff' }}>Một ngày học tại HappyHouse</h2>
+              <p className="lp-sec-desc" style={{ color: 'rgba(255,255,255,.65)' }}>Không chỉ học kiến thức, các con được giao tiếp, tương tác, vui chơi và trưởng thành trong một môi trường tích cực mỗi ngày.</p>
+            </div>
+            <div className="lp-gallery-bento">
+              <div className="lp-gal-item lp-gal-main lp-reveal" style={{ position: 'relative', minHeight: 420 }}>
+                <Image
+                  src="/images/home/gallery-classroom.jpg"
+                  alt="Giờ học tương tác"
+                  fill
+                  style={{ objectFit: 'cover', borderRadius: 20 }}
+                />
+                <div className="lp-gal-caption">Giờ học tương tác</div>
+              </div>
+              {[
+                { imgSrc: '/images/home/gallery-activity.jpg', label: 'Hoạt động nhóm vui nhộn', caption: 'Hoạt động nhóm' },
+                { imgSrc: '/images/home/gallery-teacher.jpg',  label: 'Giáo viên hướng dẫn tận tình', caption: 'Giáo viên đồng hành' },
+                { imgSrc: '/images/home/gallery-center.jpg',   label: 'Không gian lớp học HappyHouse', caption: 'Không gian học tập' },
+              ].map((g, i) => (
+                <div key={i} className="lp-gal-item lp-gal-small lp-reveal" style={{ position: 'relative' }}>
+                  <Image
+                    src={g.imgSrc}
+                    alt={g.label}
+                    fill
+                    style={{ objectFit: 'cover', borderRadius: 16 }}
+                  />
+                  <div className="lp-gal-caption">{g.caption}</div>
+                </div>
+              ))}
+            </div>
+            <div className="lp-gallery-cta lp-reveal">
+              <a href="#consult" onClick={scrollTo('consult')}>Xem thêm hình ảnh lớp học →</a>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 5. Learning Pathway ── */}
+        <section className="lp-section lp-path" id="lo-trinh" aria-labelledby="path-heading">
+          <div className="lp-container">
+            <div className="lp-sec-head lp-reveal">
+              <div className="lp-sec-eye">Lộ trình học tập</div>
+              <h2 className="lp-sec-h2" id="path-heading">Từ nền tảng đầu đời đến những cột mốc lớn</h2>
+              <p className="lp-sec-desc">HappyHouse xây dựng lộ trình để con không học rời rạc, mà tiến bộ từng bước theo độ tuổi và năng lực.</p>
+            </div>
+            <ol className="lp-path-stages lp-reveal" aria-label="Lộ trình học tập 5 giai đoạn">
+              {[
+                { icon: '🌱', label: 'Làm quen tiếng Anh', sub: 'Âm thanh, phát âm, từ vựng và phản xạ đầu tiên' },
+                { icon: '📖', label: 'Tiểu học & Cambridge', sub: '4 kỹ năng, Starters, Movers, Flyers' },
+                { icon: '🎓', label: 'THCS & nền tảng học thuật', sub: 'Từ vựng, ngữ pháp, giao tiếp, KET/PET' },
+                { icon: '✏️', label: 'Ôn thi vào 10', sub: 'Củng cố kiến thức và chiến lược làm bài' },
+                { icon: '🌍', label: 'IELTS & mục tiêu quốc tế', sub: 'Dành cho học sinh lớn hơn khi đã có nền tảng' },
+              ].map((stage, i) => (
+                <li key={i} className="lp-path-stage">
+                  <div className="lp-path-dot"><span>{stage.icon}</span></div>
+                  <div>
+                    <div className="lp-path-label">{stage.label}</div>
+                    <div className="lp-path-sub">{stage.sub}</div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <div className="lp-path-cta lp-reveal">
+              <a className="lp-btn-hp" href="#consult" onClick={scrollTo('consult')}>Nhận tư vấn lộ trình cho con</a>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 6. Why Parents Choose ── */}
+        <section className="lp-section lp-benefits" id="tai-sao" aria-labelledby="ben-heading">
+          <div className="lp-container">
+            <div className="lp-sec-head lp-reveal">
+              <div className="lp-sec-eye">Vì sao phụ huynh tin chọn</div>
+              <h2 className="lp-sec-h2" id="ben-heading">Con tiến bộ, phụ huynh luôn được đồng hành</h2>
+            </div>
+            <div className="lp-ben-grid">
+              {[
+                { icon: '🎯', title: 'Học đúng trình độ', text: 'Con được đánh giá đầu vào và tư vấn lớp học phù hợp với năng lực hiện tại, không học lại những gì đã biết.' },
+                { icon: '👩‍🏫', title: 'Giáo viên tận tâm', text: 'Giáo viên theo sát quá trình học, khuyến khích con tự tin tham gia và sử dụng tiếng Anh mỗi buổi học.' },
+                { icon: '📊', title: 'Phản hồi tiến bộ rõ ràng', text: 'Phụ huynh nắm được tình hình học tập, điểm mạnh và nội dung con cần cải thiện sau mỗi giai đoạn.' },
+                { icon: '🏡', title: 'Môi trường tích cực', text: 'Lớp học gần gũi, nhiều tương tác, giúp con yêu thích tiếng Anh và chủ động hơn trong từng buổi học.' },
+              ].map((b, i) => (
+                <article key={i} className="lp-ben-card lp-reveal">
+                  <div className="lp-ben-icon">{b.icon}</div>
+                  <h3 className="lp-ben-h4">{b.title}</h3>
+                  <p className="lp-ben-p">{b.text}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 7. Teachers ── */}
+        <section className="lp-section lp-teachers" id="giao-vien" aria-labelledby="teach-heading">
+          <div className="lp-container">
+            <div className="lp-teach-split">
+              <div className="lp-teach-img" aria-hidden="true" style={{ position: 'relative' }}>
+                <Image
+                  src="/images/home/gallery-teacher.jpg"
+                  alt="Giáo viên HappyHouse trong lớp học"
+                  fill
+                  style={{ objectFit: 'cover', borderRadius: 24 }}
+                />
+              </div>
+              <div>
+                <div className="lp-teach-head">
+                  <span className="lp-sec-eye">Đội ngũ giáo viên</span>
+                  <h2 id="teach-heading">Người đồng hành cùng con trong từng buổi học</h2>
+                  <p>Không chỉ truyền đạt kiến thức, giáo viên HappyHouse tạo nên những giờ học tích cực, giúp học sinh tự tin giao tiếp và tiến bộ từng ngày.</p>
+                </div>
+                <div className="lp-teach-points">
                   {[
-                    { icon: '🎯', title: '92% học viên đạt mục tiêu', desc: 'Tỷ lệ học viên đạt band điểm mục tiêu đã đặt ra, với cam kết hỗ trợ đến khi đạt.' },
-                    { icon: '⚡', title: 'Tăng 1.0–1.5 band trong 3–5 tháng', desc: 'Phương pháp học thực chiến giúp học viên tiến bộ nhanh và bền vững.' },
-                    { icon: '🏅', title: 'Nhiều học viên đạt 7.5–8.5 IELTS', desc: 'Học viên HappyHouse đang học tập và làm việc tại UK, Úc, Canada, Singapore.' },
-                  ].map((p, i) => (
-                    <div key={i} className="lp-rpoint">
-                      <div className="lp-rp-icon">{p.icon}</div>
-                      <div><div className="lp-rp-title">{p.title}</div><div className="lp-rp-desc">{p.desc}</div></div>
+                    { icon: '👶', title: 'Thấu hiểu từng độ tuổi', text: 'Hoạt động học tập được điều chỉnh phù hợp với trẻ em, học sinh tiểu học và THCS.' },
+                    { icon: '🗣', title: 'Khuyến khích con sử dụng tiếng Anh', text: 'Con được thực hành nói, phản xạ và tương tác ngay trong lớp học, không chỉ học lý thuyết.' },
+                    { icon: '📱', title: 'Phối hợp cùng phụ huynh', text: 'Gia đình được cập nhật để cùng trung tâm hỗ trợ con hiệu quả hơn tại nhà.' },
+                  ].map((pt, i) => (
+                    <div key={i} className="lp-teach-pt lp-reveal">
+                      <div className="lp-teach-pt-icon">{pt.icon}</div>
+                      <div>
+                        <h4 className="lp-teach-pt-h4">{pt.title}</h4>
+                        <p className="lp-teach-pt-p">{pt.text}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="lp-score-show">
-                {[
-                  { stu: '👩', name: 'Minh Anh', score: '8.0', sub: 'Overall', skill: 'W:7.5 · S:8.0 · R:8.5 · L:8.0', feat: false },
-                  { stu: '👨', name: 'Hữu Đức', score: '8.0', sub: 'Overall', skill: 'W:7.5 · S:8.0 · R:8.5 · L:8.0', feat: true },
-                  { stu: '👩', name: 'Bảo Châu', score: '7.5', sub: 'Overall', skill: 'W:7.0 · S:7.5 · R:8.0 · L:7.5', feat: false },
-                  { stu: '👨', name: 'Văn Nam', score: '7.0', sub: 'từ 5.5', skill: 'Tăng 1.5 band · 4 tháng', feat: false },
-                  { stu: '👩', name: 'Khánh Hà', score: '7.5', sub: 'Overall', skill: 'W:7.5 · S:7.5 · R:8.0 · L:7.5', feat: false },
-                  { stu: '👨', name: 'Tiến Dũng', score: '6.5', sub: 'từ 5.0', skill: 'Tăng 1.5 band · 3 tháng', feat: false },
-                ].map((s, i) => (
-                  <div key={i} className={`lp-score-card lp-reveal${s.feat ? ' feat' : ''}`}>
-                    <div className="lp-sc-stu">{s.stu}</div>
-                    <div className="lp-sc-name">{s.name}</div>
-                    <div className="lp-sc-score">{s.score} <span>{s.sub}</span></div>
-                    <div className={`lp-sc-skill${s.feat ? ' feat' : ''}`}>{s.skill}</div>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </section>
 
-        {/* Testimonials */}
-        <section className="lp-section">
+        {/* ── 8. Testimonials ── */}
+        <section className="lp-section lp-testi" id="phu-huynh" aria-labelledby="testi-heading">
           <div className="lp-container">
-            <div className="lp-sec-head">
-              <div className="lp-sec-tag">Học viên nói gì</div>
-              <h2 className="lp-sec-title">2.000+ học viên<br />tin tưởng HappyHouse</h2>
+            <div className="lp-sec-head lp-reveal">
+              <div className="lp-sec-eye">Câu chuyện tiến bộ</div>
+              <h2 className="lp-sec-h2" id="testi-heading">Điều phụ huynh mong nhất là thấy con tự tin hơn mỗi ngày</h2>
             </div>
             <div className="lp-testi-grid">
               {[
-                { score: 'IELTS 8.0', text: 'HappyHouse hoàn toàn thay đổi cách mình học IELTS. Thầy Long dạy mình cách phân tích đề, xử lý thời gian và tư duy đúng cách. Từ 6.0 lên 8.0 chỉ trong 5 tháng!', name: 'Nguyễn Minh Anh', info: 'Du học sinh Đại học Edinburgh · 2025', bg: '#FEF2F2', emoji: '😊' },
-                { score: 'IELTS 7.5', text: 'Cô Khánh Linh chỉ mình đúng chỗ sai trong Speaking, framework Writing của thầy Minh cực kỳ rõ ràng. Đã thử nhiều trung tâm nhưng HappyHouse hiệu quả nhất!', name: 'Trần Bảo Châu', info: 'Học bổng Chính phủ Úc · 2025', bg: '#EFF6FF', emoji: '😄' },
-                { score: 'IELTS 8.0', text: 'Điều ấn tượng nhất là sự tận tâm của giáo viên. Thầy chữa bài Writing rất chi tiết, hệ thống mock test bài bản, giúp mình tự tin vào phòng thi thật sự.', name: 'Phạm Hữu Đức', info: 'Du học UCL London · 2024', bg: '#F0FDF4', emoji: '🙂' },
+                {
+                  role: 'Phụ huynh học sinh Tiểu học',
+                  emoji: '👩',
+                  bg: '#FFF1F3',
+                  // PLACEHOLDER: Replace with verified parent testimonial
+                  quote: '[Chờ phản hồi thật của phụ huynh về sự tự tin và tiến bộ của con trong các buổi học tại HappyHouse]',
+                  name: '[Tên phụ huynh]',
+                  isPlaceholder: true,
+                },
+                {
+                  role: 'Phụ huynh học sinh THCS',
+                  emoji: '👨',
+                  bg: '#EDF9F1',
+                  // PLACEHOLDER: Replace with verified parent testimonial
+                  quote: '[Chờ phản hồi thật về việc học trên lớp hoặc lộ trình Cambridge của con]',
+                  name: '[Tên phụ huynh]',
+                  isPlaceholder: true,
+                },
+                {
+                  role: 'Học sinh chương trình nâng cao',
+                  emoji: '🧑‍🎓',
+                  bg: '#EEF5FF',
+                  // PLACEHOLDER: Replace with verified result (entrance exam / IELTS)
+                  quote: '[Chờ kết quả thật về thi vào 10 hoặc IELTS của học sinh nếu có]',
+                  name: '[Tên học sinh]',
+                  isPlaceholder: true,
+                },
               ].map((t, i) => (
-                <div key={i} className="lp-testi-card lp-reveal">
-                  <div className="lp-testi-score">{t.score}</div>
+                <article key={i} className="lp-testi-card lp-reveal">
                   <div className="lp-testi-quote">&ldquo;</div>
-                  <div className="lp-stars">★★★★★</div>
-                  <div className="lp-testi-text">{t.text}</div>
+                  <p className={t.isPlaceholder ? 'lp-testi-placeholder' : 'lp-testi-text'}>{t.quote}</p>
                   <div className="lp-testi-author">
                     <div className="lp-testi-ava" style={{ background: t.bg }}>{t.emoji}</div>
-                    <div><div className="lp-testi-name">{t.name}</div><div className="lp-testi-info">{t.info}</div></div>
+                    <div>
+                      <div className="lp-testi-name">{t.name}</div>
+                      <div className="lp-testi-role">{t.role}</div>
+                    </div>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Blog */}
-        <section className="lp-section lp-blog" id="blog">
+        {/* ── 9. Advanced / IELTS Section (compact) ── */}
+        <section className="lp-advanced" aria-labelledby="adv-heading">
           <div className="lp-container">
-            <div className="lp-sec-head">
-              <div className="lp-sec-tag">Blog IELTS</div>
-              <h2 className="lp-sec-title">Kiến thức & chiến lược<br />IELTS miễn phí</h2>
+            <div className="lp-adv-grid">
+              <div>
+                <span className="lp-adv-eye">Khi con sẵn sàng cho mục tiêu xa hơn</span>
+                <h2 className="lp-adv-h2" id="adv-heading">Từ nền tảng vững đến IELTS và những cơ hội lớn</h2>
+                <p className="lp-adv-p">Với học sinh lớn hơn, HappyHouse tiếp tục đồng hành qua các chương trình tiếng Anh học thuật, ôn thi và IELTS theo mục tiêu phù hợp.</p>
+                <div className="lp-adv-badges">
+                  <span className="lp-adv-badge">Pre-IELTS</span>
+                  <span className="lp-adv-badge">IELTS</span>
+                  <span className="lp-adv-badge">Ôn thi vào 10</span>
+                  <span className="lp-adv-badge">Tiếng Anh học thuật</span>
+                </div>
+                <div className="lp-adv-btns">
+                  <Link className="lp-adv-btn-p" href="/khoa-hoc/luyen-thi-ielts">Xem chương trình nâng cao</Link>
+                  <a className="lp-adv-btn-s" href="#consult" onClick={scrollTo('consult')}>Đăng ký tư vấn</a>
+                </div>
+              </div>
+              <div className="lp-adv-visual" aria-hidden="true" style={{ position: 'relative' }}>
+                <Image
+                  src="/images/home/program-advanced.jpg"
+                  alt="Học sinh nâng cao luyện thi"
+                  fill
+                  style={{ objectFit: 'cover', borderRadius: 20 }}
+                />
+              </div>
             </div>
-            <div className="lp-blog-grid">
-              <div className="lp-blog-card feat lp-reveal">
-                <div className="lp-blog-thumb" style={{ background: 'linear-gradient(135deg,#FEF2F2,#FECACA)', height: 260 }}>
-                  📝
-                  <div className="lp-blog-tag">Writing Task 2</div>
-                </div>
-                <div className="lp-blog-body">
-                  <div className="lp-blog-date">10 Tháng 5, 2025</div>
-                  <div className="lp-blog-title">Bí kíp viết IELTS Writing Task 2 đạt band 7.0+ – Framework độc quyền HappyHouse</div>
-                  <div className="lp-blog-excerpt">Phân tích cấu trúc bài essay theo tiêu chí Task Achievement, Coherence & Cohesion, Lexical Resource và Grammatical Range. Áp dụng ngay để tăng ít nhất 0.5 band Writing...</div>
-                  <a className="lp-blog-more" href="#">Đọc tiếp →</a>
+          </div>
+        </section>
+
+        {/* ── 10. Activities ── */}
+        <section className="lp-section lp-activities" aria-labelledby="act-heading">
+          <div className="lp-container">
+            <div className="lp-sec-head lp-reveal">
+              <div className="lp-sec-eye">Hoạt động &amp; kiến thức</div>
+              <h2 className="lp-sec-h2" id="act-heading">Học tiếng Anh không chỉ diễn ra trong sách vở</h2>
+            </div>
+            <div className="lp-act-grid">
+              {[
+                {
+                  cat: 'Hoạt động tại trung tâm',
+                  title: 'Những giờ học tương tác giúp con tự tin nói tiếng Anh',
+                  imgSrc: '/images/home/gallery-activity.jpg',
+                  label: 'Hoạt động tiếng Anh vui tại trung tâm',
+                },
+                {
+                  cat: 'Góc dành cho phụ huynh',
+                  title: 'Làm thế nào để đồng hành cùng con học tiếng Anh tại nhà?',
+                  imgSrc: '/images/home/parent-testimonial.jpg',
+                  label: 'Phụ huynh đồng hành cùng con học tiếng Anh',
+                },
+                {
+                  cat: 'Lộ trình học tập',
+                  title: 'Khi nào con nên bắt đầu Cambridge hoặc IELTS?',
+                  imgSrc: '/images/home/program-secondary.jpg',
+                  label: 'Lộ trình Cambridge và IELTS cho học sinh',
+                },
+              ].map((a, i) => (
+                <article key={i} className="lp-act-card lp-reveal">
+                  <div className="lp-act-img" style={{ position: 'relative' }}>
+                    <Image
+                      src={a.imgSrc}
+                      alt={a.label}
+                      fill
+                      style={{ objectFit: 'cover' }}
+                    />
+                  </div>
+                  <div className="lp-act-body">
+                    <div className="lp-act-cat">{a.cat}</div>
+                    <h3 className="lp-act-title">{a.title}</h3>
+                    <a className="lp-act-more" href="#">Đọc thêm →</a>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className="lp-act-cta lp-reveal">
+              <a className="lp-btn-hs" href="#">Xem tất cả hoạt động &amp; bài viết →</a>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 11. Consultation Form ── */}
+        <section className="lp-section lp-consult" id="consult" aria-labelledby="consult-heading">
+          <div className="lp-container">
+            <div className="lp-consult-grid">
+              <div className="lp-consult-left lp-reveal">
+                <span className="lp-sec-eye">Đăng ký tư vấn</span>
+                <h2 id="consult-heading">Nhận lộ trình phù hợp cho con</h2>
+                <p>Để lại thông tin, HappyHouse sẽ tư vấn lớp học phù hợp với độ tuổi, trình độ và mục tiêu của con.</p>
+                <div className="lp-consult-trust">
+                  <div className="lp-consult-pt">Kiểm tra trình độ đầu vào miễn phí</div>
+                  <div className="lp-consult-pt">Tư vấn lộ trình phù hợp theo độ tuổi</div>
+                  <div className="lp-consult-pt">Phụ huynh được đồng hành và cập nhật tiến độ</div>
+                  <div className="lp-consult-pt">Lớp học cỡ nhỏ, giáo viên tận tâm</div>
                 </div>
               </div>
-              <div className="lp-blog-card lp-reveal">
-                <div className="lp-blog-thumb" style={{ background: 'linear-gradient(135deg,#EFF6FF,#BFDBFE)' }}>
-                  🗣️
-                  <div className="lp-blog-tag">Speaking</div>
-                </div>
-                <div className="lp-blog-body">
-                  <div className="lp-blog-date">7 Tháng 5, 2025</div>
-                  <div className="lp-blog-title">Top 50 cụm từ Speaking Part 2 giúp bạn nói tự nhiên và tự tin</div>
-                  <a className="lp-blog-more" href="#">Đọc tiếp →</a>
-                </div>
-              </div>
-              <div className="lp-blog-card lp-reveal">
-                <div className="lp-blog-thumb" style={{ background: 'linear-gradient(135deg,#F0FDF4,#BBF7D0)' }}>
-                  👂
-                  <div className="lp-blog-tag">Listening</div>
-                </div>
-                <div className="lp-blog-body">
-                  <div className="lp-blog-date">4 Tháng 5, 2025</div>
-                  <div className="lp-blog-title">Chiến lược làm Listening Section 4 đạt điểm tối đa – Không bỏ sót đáp án</div>
-                  <a className="lp-blog-more" href="#">Đọc tiếp →</a>
+              <div className="lp-reveal">
+                <div className="lp-form">
+                  {consultSubmitted ? (
+                    <div className="lp-form-ok">
+                      <div className="lp-form-ok-icon">✅</div>
+                      <h3>HappyHouse đã nhận được thông tin!</h3>
+                      <p>Chúng tôi sẽ liên hệ trong thời gian sớm nhất để tư vấn lộ trình phù hợp cho con.</p>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleConsultSubmit} noValidate>
+                      <div className="lp-field">
+                        <label htmlFor="cf-name">Họ và tên phụ huynh <span className="req">*</span></label>
+                        <input
+                          id="cf-name"
+                          type="text"
+                          placeholder="Nguyễn Văn A"
+                          value={consultForm.name}
+                          onChange={e => setConsultForm(f => ({ ...f, name: e.target.value }))}
+                          autoComplete="name"
+                        />
+                      </div>
+                      <div className="lp-field">
+                        <label htmlFor="cf-phone">Số điện thoại <span className="req">*</span></label>
+                        <input
+                          id="cf-phone"
+                          type="tel"
+                          placeholder="0845 956 888"
+                          value={consultForm.phone}
+                          onChange={e => setConsultForm(f => ({ ...f, phone: e.target.value }))}
+                          autoComplete="tel"
+                        />
+                      </div>
+                      <div className="lp-field">
+                        <label htmlFor="cf-age">Độ tuổi / lớp hiện tại của con</label>
+                        <input
+                          id="cf-age"
+                          type="text"
+                          placeholder="Ví dụ: 8 tuổi, lớp 3"
+                          value={consultForm.childAge}
+                          onChange={e => setConsultForm(f => ({ ...f, childAge: e.target.value }))}
+                        />
+                      </div>
+                      <div className="lp-field">
+                        <label htmlFor="cf-prog">Chương trình quan tâm</label>
+                        <select
+                          id="cf-prog"
+                          value={consultForm.program}
+                          onChange={e => setConsultForm(f => ({ ...f, program: e.target.value }))}
+                        >
+                          <option value="">-- Chọn chương trình --</option>
+                          <option value="young">Tiếng Anh trẻ em</option>
+                          <option value="primary">Tiếng Anh Tiểu học</option>
+                          <option value="secondary">Tiếng Anh THCS</option>
+                          <option value="entrance">Ôn thi vào 10</option>
+                          <option value="ielts">IELTS / mục tiêu nâng cao</option>
+                          <option value="unsure">Chưa xác định, cần tư vấn</option>
+                        </select>
+                      </div>
+                      <div className="lp-field">
+                        <label htmlFor="cf-note">Ghi chú thêm</label>
+                        <textarea
+                          id="cf-note"
+                          placeholder="Ví dụ: Con đang học lớp 5, cần chuẩn bị Cambridge..."
+                          value={consultForm.note}
+                          onChange={e => setConsultForm(f => ({ ...f, note: e.target.value }))}
+                          rows={3}
+                        />
+                      </div>
+                      {consultError && <div className="lp-form-err">{consultError}</div>}
+                      <button type="submit" className="lp-btn-primary" style={{ width: '100%', height: 48, fontSize: 15, borderRadius: 10, fontWeight: 700 }}>
+                        Nhận tư vấn lộ trình
+                      </button>
+                      <p className="lp-form-micro">HappyHouse sẽ liên hệ để tư vấn. Thông tin của phụ huynh được bảo mật.</p>
+                    </form>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ── TEST ENTRY SECTION ── */}
-        <section id="test-entry" style={{ background: '#F7F6F2', padding: '72px 0' }}>
+        {/* ── 12. Test Entry (preserved) ── */}
+        <section className="lp-test-entry" id="test-entry" aria-labelledby="test-heading">
           <div className="lp-container">
-            <div className="lp-sec-head" style={{ marginBottom: 0 }}>
-              <div className="lp-sec-tag">Kiểm tra trình độ miễn phí</div>
-              <h2 className="lp-sec-title">Bắt đầu hành trình IELTS<br />của bạn ngay hôm nay</h2>
-              <p className="lp-sec-desc" style={{ marginBottom: 0 }}>Làm bài kiểm tra chuẩn hoá, nhận kết quả ngay và lộ trình học phù hợp nhất.</p>
+            <div className="lp-sec-head">
+              <div className="lp-sec-eye">Kiểm tra trình độ miễn phí</div>
+              <h2 className="lp-sec-h2" id="test-heading">Biết trình độ hiện tại, xác định lộ trình phù hợp</h2>
+              <p className="lp-sec-desc" style={{ marginBottom: 0 }}>Làm bài kiểm tra chuẩn hoá miễn phí và nhận kết quả ngay để HappyHouse tư vấn lớp phù hợp nhất cho con.</p>
             </div>
-            <div style={{ marginTop: 32 }}>
+            <div style={{ marginTop: 28 }}>
               <LandingClient />
             </div>
           </div>
         </section>
 
-        {/* CTA band */}
-        <section className="lp-cta-band">
+        {/* ── 13. Final CTA ── */}
+        <section className="lp-cta-band" aria-labelledby="cta-heading">
           <div className="lp-container">
-            <h2>Sẵn sàng chinh phục IELTS<br />cùng HappyHouse?</h2>
-            <p>Tư vấn miễn phí · Xếp lớp theo trình độ · Lộ trình cá nhân hoá</p>
+            <h2 id="cta-heading">Cùng HappyHouse gieo nền tảng tiếng Anh<br />vững vàng cho con</h2>
+            <p>Một lộ trình phù hợp hôm nay có thể mở ra nhiều cơ hội lớn cho con trong tương lai.</p>
             <div className="lp-cta-actions">
-              <a className="lp-btn-cta-w" href="#test-entry" onClick={scrollToTest}>Kiểm tra trình độ ngay</a>
-              <Link className="lp-btn-cta-o" href="/portal/login">Đăng nhập học viên</Link>
+              <a className="lp-btn-cta-w" href="#consult" onClick={scrollTo('consult')}>Đăng ký học thử</a>
+              <a className="lp-btn-cta-o" href="tel:0845956888">Liên hệ tư vấn</a>
             </div>
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="lp-footer">
+        {/* ── 14. Footer ── */}
+        <footer className="lp-footer" role="contentinfo">
           <div className="lp-container">
             <div className="lp-footer-grid">
               <div>
                 <a className="lp-logo" href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-                  <Image src="/happy_house_sun.png" alt="HappyHouse" width={40} height={40} style={{ borderRadius: 8, objectFit: 'contain' }} />
+                  <Image src="/happy_house_sun.png" alt="HappyHouse" width={38} height={38} style={{ borderRadius: 8, objectFit: 'contain' }} />
                   <div>
-                    <div style={{ fontWeight: 800, fontSize: 18, color: '#fff' }}>HappyHouse</div>
-                    <div style={{ fontSize: 9, fontWeight: 500, letterSpacing: '1.5px', color: 'rgba(255,255,255,.4)', textTransform: 'uppercase' }}>English Center</div>
+                    <div style={{ fontWeight: 800, fontSize: 17, color: '#fff' }}>HappyHouse</div>
+                    <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1.6px', color: 'rgba(255,255,255,.35)', textTransform: 'uppercase' }}>English Center</div>
                   </div>
                 </a>
-                <div className="lp-footer-desc">Trung tâm Anh ngữ IELTS chuyên sâu. Đồng hành cùng học viên trên hành trình chinh phục mục tiêu quốc tế.</div>
-                <div className="lp-fci"><span>📍</span><span>CS1: Số 2 Hàm Từ Quan, Hà Nội<br/>CS2: Số 4 Ngõ 35 Phúc Lợi, Hà Nội</span></div>
-                <div className="lp-fci"><span>📞</span><span>Hotline: 0845 956 888</span></div>
-                <div className="lp-fci"><span>✉️</span><span>hello@happyhouseielts.com</span></div>
+                <p className="lp-footer-brand-desc">
+                  HappyHouse English Center đồng hành cùng trẻ em và học sinh trên hành trình xây dựng nền tảng tiếng Anh, phát triển sự tự tin và hướng tới những mục tiêu học tập dài hạn.
+                </p>
+                <div className="lp-fci"><span>📍</span><span>CS1: Số 2 Hàm Từ Quan, Hà Nội<br />CS2: Số 4 Ngõ 35 Phúc Lợi, Hà Nội</span></div>
+                <div className="lp-fci"><span>📞</span><a href="tel:0845956888" style={{ color: 'inherit' }}>0845 956 888</a></div>
+                <div className="lp-fci"><span>✉️</span><a href="mailto:hello@happyhouseielts.com" style={{ color: 'inherit' }}>hello@happyhouseielts.com</a></div>
               </div>
               <div className="lp-footer-col">
-                <h4>Khoá học</h4>
+                <h4>Chương trình học</h4>
                 <div className="lp-flinks">
-                  <Link href="/khoa-hoc/cambridge-tieu-hoc">Cambridge Tiểu học</Link>
+                  <Link href="/khoa-hoc/cambridge-tieu-hoc">Tiếng Anh trẻ em</Link>
                   <Link href="/khoa-hoc/tieng-anh-tieu-hoc">Tiếng Anh Tiểu học</Link>
-                  <Link href="/khoa-hoc/tieng-anh-thcs-thpt">Tiếng Anh THCS &amp; THPT</Link>
-                  <Link href="/khoa-hoc/on-thi-vao-10">Ôn thi Vào 10</Link>
-                  <Link href="/khoa-hoc/on-thi-dai-hoc">Ôn thi Đại học</Link>
-                  <Link href="/khoa-hoc/luyen-thi-ielts">Luyện thi IELTS</Link>
+                  <Link href="/khoa-hoc/tieng-anh-thcs-thpt">Tiếng Anh THCS</Link>
+                  <Link href="/khoa-hoc/on-thi-vao-10">Ôn thi vào 10</Link>
+                  <Link href="/khoa-hoc/luyen-thi-ielts">IELTS &amp; mục tiêu nâng cao</Link>
                 </div>
               </div>
               <div className="lp-footer-col">
-                <h4>HappyHouse</h4>
+                <h4>Về HappyHouse</h4>
                 <div className="lp-flinks">
-                  <a href="#why">Giới thiệu</a>
-                  <a href="#teachers">Đội ngũ giáo viên</a>
-                  <a href="#results">Kết quả học viên</a>
-                  <a href="#blog">Blog IELTS</a>
+                  <a href="#gioi-thieu" onClick={scrollTo('gioi-thieu')}>Giới thiệu</a>
+                  <a href="#giao-vien"  onClick={scrollTo('giao-vien')}>Đội ngũ giáo viên</a>
+                  <a href="#hinh-anh"   onClick={scrollTo('hinh-anh')}>Hình ảnh lớp học</a>
+                  <a href="#phu-huynh"  onClick={scrollTo('phu-huynh')}>Phụ huynh chia sẻ</a>
+                  <a href="#act">Hoạt động &amp; bài viết</a>
+                </div>
+              </div>
+              <div className="lp-footer-col">
+                <h4>Hỗ trợ</h4>
+                <div className="lp-flinks">
+                  <a href="#consult"    onClick={scrollTo('consult')}>Đăng ký tư vấn</a>
+                  <a href="#test-entry" onClick={scrollTo('test-entry')}>Kiểm tra trình độ</a>
                   <Link href="/portal/login">Cổng học viên</Link>
-                </div>
-              </div>
-              <div className="lp-footer-col">
-                <h4>Tài nguyên</h4>
-                <div className="lp-flinks">
-                  <a href="#test-entry" onClick={scrollToTest}>Kiểm tra trình độ</a>
-                  <Link href="/test">Thi thử IELTS</Link>
-                  <a href="#blog">Blog IELTS</a>
-                  <a href="#courses">Lộ trình học</a>
+                  <a href="#">Chính sách bảo mật</a>
+                  <a href="tel:0845956888">Liên hệ</a>
                 </div>
               </div>
             </div>
             <div className="lp-footer-bottom">
               <div>© 2025 HappyHouse English Center. All rights reserved.</div>
               <div className="lp-fsocial">
-                <a href="#" title="Facebook">f</a>
-                <a href="#" title="YouTube">▶</a>
-                <a href="#" title="Zalo">Z</a>
-                <a href="#" title="TikTok">♪</a>
+                <a href="#" title="Facebook" aria-label="Facebook">f</a>
+                <a href="#" title="YouTube"  aria-label="YouTube">▶</a>
+                <a href="#" title="Zalo"     aria-label="Zalo">Z</a>
+                <a href="#" title="TikTok"   aria-label="TikTok">♪</a>
               </div>
             </div>
           </div>
         </footer>
 
-        {/* Sticky CTA */}
-        <div className="lp-sticky">
+        {/* ── Floating Contact Buttons ── */}
+        <div className="lp-sticky" role="complementary" aria-label="Liên hệ nhanh">
           <div className="lp-sticky-row">
-            <div className="lp-sticky-label">Gọi ngay</div>
-            <a className="lp-sticky-btn ph" href="tel:0845956888">📞</a>
+            <span className="lp-sticky-tip">Gọi ngay</span>
+            <a className="lp-sticky-btn lp-sticky-ph" href="tel:0845956888" aria-label="Gọi điện">📞</a>
           </div>
           <div className="lp-sticky-row">
-            <div className="lp-sticky-label">Chat Zalo</div>
-            <a className="lp-sticky-btn za" href="#">Z</a>
+            <span className="lp-sticky-tip">Chat Zalo</span>
+            <a className="lp-sticky-btn lp-sticky-za" href="#" aria-label="Chat Zalo">Z</a>
           </div>
           <div className="lp-sticky-row">
-            <div className="lp-sticky-label">Lên đầu trang</div>
-            <button className="lp-sticky-btn tp" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>↑</button>
+            <span className="lp-sticky-tip">Lên đầu trang</span>
+            <button
+              className="lp-sticky-btn lp-sticky-tp"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              aria-label="Lên đầu trang"
+            >↑</button>
           </div>
         </div>
 
