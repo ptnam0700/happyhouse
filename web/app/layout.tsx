@@ -20,14 +20,14 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'HappyHouse IELTS',
-    template: '%s | HappyHouse IELTS',
+    default: 'HappyHouse English Center',
+    template: '%s | HappyHouse English Center',
   },
-  description: 'Trung tâm luyện thi IELTS chuyên nghiệp với bài kiểm tra trình độ miễn phí và lộ trình học phù hợp.',
-  applicationName: 'HappyHouse IELTS',
-  authors: [{ name: 'HappyHouse IELTS', url: SITE_URL }],
-  creator: 'HappyHouse IELTS',
-  publisher: 'HappyHouse IELTS',
+  description: 'Trung tâm tiếng Anh đồng hành cùng trẻ em và học sinh. Lộ trình phù hợp theo độ tuổi, lớp học tương tác, tư vấn tận tâm.',
+  applicationName: 'HappyHouse English Center',
+  authors: [{ name: 'HappyHouse English Center', url: SITE_URL }],
+  creator: 'HappyHouse English Center',
+  publisher: 'HappyHouse English Center',
   icons: {
     icon: '/happy_house_sun.png',
     apple: '/happy_house_sun.png',
